@@ -1,3 +1,20 @@
+"""
+
+TODO:
+    
+    1) Re-parameterize endogenous variables so that they are not defined for
+    0, 1 and then look for a root. This should correspond to an interior 
+    equilibrium. Inverse-hyperbolic tangent is one such transform
+    2) Set up non-linear optimization problem with inequality constraints and 
+    solve for feasible point.
+    3) Refactor code into an OOP framework.
+    4) Need to automate stability analysis (which requires understanding 
+    stability of non-hyperbolic fixed points!)
+    5) Automate parameter sweep (but for which parameters?)
+    6) Set up private github repo to share code with Mark and Paul.
+    7) Selfish Gene - Dawkins; Evolution and Theory of Games - J.M. Smith
+    
+"""
 from __future__ import division
 
 import matplotlib.pyplot as plt
@@ -17,8 +34,11 @@ mg = mgA + mga
 fA = fGA + fgA
 fa = fGa + fga
 
-# discrimination parameters
-dA, da, eA, ea = sp.var('dA, da, eA, ea')
+# female signaling probabilities
+dA, da = sp.var('dA, da') 
+
+# male screening probabilities
+eA, ea = sp.var('eA, ea')
 
 # probability that male gets matched with preferred feature
 SGA = (dA * fA) / (dA * fA + (1 - eA) * (1 - da) * fa)
@@ -147,7 +167,7 @@ def F(X, params):
 # compute the Jacobian of the non-linear dynamical system   
 _symbolic_F_jac = _symbolic_F.jacobian(endog_vars)
 
-# wrap the Jacobian f(used for local stability analysis)
+# wrap the Jacobian F (used for local stability analysis)
 _numeric_F_jac = sp.lambdify(args, _symbolic_F_jac, modules=['numpy'])
 
 def get_F_jac(X, params):
@@ -213,6 +233,7 @@ result = optimize.root(get_steady_state,
 print(result.x)
 
 # check local stability? Need a check for stability with unit eigenvalues
+# Consider imposing restrictions that require strictly positive frequencies!
 mga = 1 - result.x[:3].sum()
 fga = 1 - result.x[3:].sum()
 steady_state_vals = np.hstack((result.x[:3], mga, result.x[3:], fga))
@@ -222,10 +243,12 @@ print(eig_vals_modulus)
 print(np.less(eig_vals_modulus, 1.0))
 
 ##### Simulate a trajectory from the model #####
+
+# For simulation need to use same initial conditions for both males and females
 T = 100
-mga0 = 1 - initial_guesses[97,:3].sum()
-fga0 = 1 - initial_guesses[97,3:].sum()
-initial_cond = np.hstack((initial_guesses[97,:3], mga0, initial_guesses[97,3:], fga0))
+mga0 = 1 - initial_guess[:3].sum()
+fga0 = 1 - initial_guess[3:].sum()
+initial_cond = np.hstack((initial_guess[:3], mga0, initial_guess[3:], fga0))
 traj = np.maximum(initial_cond[:,np.newaxis], 0.0)
 
 for t in range(T):
@@ -264,7 +287,7 @@ initial_males = prng.dirichlet(np.ones(4), size=N)
 initial_females = prng.dirichlet(np.ones(4), size=N)
 
 # array of initial guesses for root finder
-initial_guesses = np.hstack((initial_males[:,:-1], initial_males[:,:-1])) 
+initial_guesses = np.hstack((initial_males[:,:-1], initial_females[:,:-1])) 
 
 steady_states = np.empty((N, 8))
 
@@ -291,7 +314,8 @@ for i in range(N):
    
 fig, ax = plt.subplots()
 ind = np.arange(-0.5, 7.5) 
-ax.bar(left=ind, height=steady_states[77], width=1.0, alpha=0.25)
+#for i in range(N):
+ax.bar(left=ind, height=steady_states[78], width=1.0, alpha=0.5)
 male_labels = ('$m_{GA}$', '$m_{Ga}$', '$m_{gA}$', '$m_{ga}$')
 female_labels = ('$f_{GA}$', '$f_{Ga}$', '$f_{gA}$', '$f_{ga}$')
 
@@ -299,3 +323,4 @@ ax.set_xlim(-1.0, 8.5)
 ax.set_xticks(np.arange(8))
 ax.set_xticklabels(male_labels + female_labels) 
 ax.set_ylim(0,1)
+plt.show()
