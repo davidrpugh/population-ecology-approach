@@ -2,7 +2,7 @@ from __future__ import division
 
 import sympy as sp
 
-from traits.api import Dict, Float, HasPrivateTraits, Property, Str
+from traits.api import cached_property, Dict, Float, HasPrivateTraits, Property, Str
 
 class Model(HasPrivateTraits):
     """Base class representing the model of Pugh-Schaefer-Seabright."""
@@ -39,9 +39,9 @@ class Model(HasPrivateTraits):
 
     _phenotype_shares = Property
 
-    _symbolic_simulation_system = Property
+    _symbolic_simulation_jacobian = Property(depends_on='_symbolic_simulation_system')
 
-    _symbolic_simulation_jacobian = Property
+    _symbolic_simulation_system = Property
 
     params = Dict(Str, Float)
 
@@ -285,6 +285,27 @@ class Model(HasPrivateTraits):
         fa = fGa + fga
 
         return mG, mg, fA, fa
+
+    @cached_property
+    def _get__symbolic_simulation_jacobian(self):
+        """Symbolic Jacobian matrix for stability analysis."""
+        # extract variables
+        mGA, mGa, mgA, mga = self._male_allele_shares
+        fGA, fGa, fgA, fga = self._female_allele_shares
+        endog_vars = [mGA, mGa, mgA, mga, fGA, fGa, fgA, fga]
+
+        # compute the jacobian (this may take a while!)
+        jacobian = self._symbolic_simulation_system.jacobian(endog_vars)
+
+        return jacobian
+
+    def _get__symbolic_simulation_system(self):
+        """Symbolic system of equations for model simulation."""
+        system = sp.Matrix([self._equation_1, self._equation_2, 
+                            self._equation_3, self._equation_4, 
+                            self._equation_5, self._equation_6, 
+                            self._equation_7, self._equation_8])
+        return system
 
 if __name__ == '__main__':
     
