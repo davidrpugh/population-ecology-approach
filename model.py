@@ -29,6 +29,8 @@ class Model(HasPrivateTraits):
 
     _male_screening_probs = Property
 
+    _matching_probs = Property
+
     _phenotype_shares = Property
 
     params = Dict(Str, Float)
@@ -73,6 +75,20 @@ class Model(HasPrivateTraits):
         """Male screening probabilities."""
         return sp.var('eA, ea') 
 
+    def _get__matching_probs(self):
+        """Probabilities that male matches with desired female."""
+        mG, mg, fA, fa = self._phenotype_shares
+        dA, da = self._female_signaling_probs
+        eA, ea = self._male_screening_probs
+
+        # compute the matching probabilities
+        SGA = (dA * fA) / (dA * fA + (1 - eA) * (1 - da) * fa)
+        SGa = 1 - SGA
+        SgA = 1 - Sga
+        Sga = (da * fa) / (da * fa + (1 - ea) * (1 - dA) * fA)
+
+        return SGA, SGa, SgA, Sga 
+        
     def _get__phenotype_shares(self):
         """Population shares by phenotype."""
         mGA, mGa, mgA, mga = self._male_allele_shares
