@@ -4,7 +4,7 @@ TODO:
     
     1) Re-parameterize endogenous variables so that they are not defined for
     0, 1 and then look for a root. This should correspond to an interior 
-    equilibrium. Inverse-hyperbolic tangent is one such transform
+    equilibrium. Use logistic function to perform transformation of vars.
     2) Set up non-linear optimization problem with inequality constraints and 
     solve for feasible point.
     3) Refactor code into an OOP framework.
