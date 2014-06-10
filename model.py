@@ -31,21 +31,99 @@ class Model(HasPrivateTraits):
 
     _matching_probs = Property
 
+    _payoffs = Property
+
     _phenotype_shares = Property
 
     params = Dict(Str, Float)
 
     def _get__equation_1(self):
-        raise NotImplementedError
+        """Recurrence relation for mGA."""
+        # extract the variables
+        mGA, mGa, mgA, mga = self._male_allele_shares
+        fGA, fGa, fgA, fga = self._female_allele_shares
+        PiaA, PiAA, Piaa, PiAa = self._payoffs
+        mG, mg, fA, fa = self._phenotype_shares
+        SGA, SGa, SgA, Sga = self._matching_probs
+
+        eqn1 = (mGA * SGA**2 * ((fGA + 0.5 * fgA) / fA) + 
+                mGA * SGa**2 * ((0.5 * fGa + 0.25 * fga) / fa) + 
+                2 * mGA * SGA * SGa * (((fGA + 0.5 * fgA) / fA) * (PiAa / (PiAa + PiaA)) + ((0.5 * fGa + 0.25 * fga) / fa) * (PiaA / (PiAa + PiaA))) + 
+                mGa * SGA**2 * ((0.5 * fGA + 0.25 * fgA) / fA) +
+                2 * mGa * SGA * SGa * (((0.5 * fGA + 0.25 * fgA) / fA) * (PiAa / (PiAa + PiaA))) + 
+                mgA * SgA**2 * (0.5 * fGA / fA) + 
+                mgA * Sga**2 * (0.25 * fGa / fa) + 
+                2 * mgA * SgA * Sga * ((0.5 * fGA / fA) * (PiAa / (PiAa + PiaA)) + (0.25 * fGa / fa) * (PiaA / (PiAa + PiaA))) + 
+                mga * SgA**2 * (0.25 * fGA / fA) +
+                2 * mga * SgA * Sga * ((0.25 * fGA / fA) * (PiAa / (PiAa + PiaA))))
+
+        return eqn1
 
     def _get__equation_2(self):
-        raise NotImplementedError
+        """Recurrence relation for mGa."""
+        # extract the variables
+        mGA, mGa, mgA, mga = self._male_allele_shares
+        fGA, fGa, fgA, fga = self._female_allele_shares
+        PiaA, PiAA, Piaa, PiAa = self._payoffs
+        mG, mg, fA, fa = self._phenotype_shares
+        SGA, SGa, SgA, Sga = self._matching_probs
+
+        eqn2 = (mGA * SGa**2 * ((0.5 * fGa + 0.25 * fga) / fa) + 
+                2 * mGA * SGA * SGa * (((0.5 * fGa + 0.25 * fga) / fa) * (PiaA / (PiAa + PiaA))) + 
+                mGa * SGA**2 * ((0.5 * fGA + 0.25 * fgA) / fA) +
+                mGa * SGa**2 * ((fGa + 0.5 * fga) / fa) + 
+                2 * mGa * SGA * SGa * (((0.5 * fGA + 0.25 * fgA) / fA) * (PiAa / (PiAa + PiaA)) + ((fGa + 0.5 * fga) / fa) * (PiaA / (PiAa + PiaA))) + 
+                mgA * Sga**2 * (0.25 * fGa / fa) + 
+                2 * mgA * SgA * Sga * ((0.25 * fGa / fa) * (PiaA / (PiAa + PiaA))) +
+                mga * SgA**2 * (0.25 * fGA / fA) + 
+                mga * Sga**2 * (0.5 * fGa / fa) +
+                2 * mga * SgA * Sga * ((0.25 * fGA / fA) * (PiAa / (PiAa + PiaA)) + (0.5 * fGa / fa) * (PiaA / (PiAa + PiaA))))
+
+        return eqn2
 
     def _get__equation_3(self):
-        raise NotImplementedError
+        """Recurrence relation for mgA.""" 
+        # extract the variables
+        mGA, mGa, mgA, mga = self._male_allele_shares
+        fGA, fGa, fgA, fga = self._female_allele_shares
+        PiaA, PiAA, Piaa, PiAa = self._payoffs
+        mG, mg, fA, fa = self._phenotype_shares
+        SGA, SGa, SgA, Sga = self._matching_probs
+
+        eqn3 = (mGA * SGA**2 * (0.5 * fgA / fA) + 
+                mGA * SGa**2 * (0.25 * fga / fa) + 
+                2 * mGA * SGA * SGa * ((0.5 * fgA / fA) * (PiAa / (PiAa + PiaA)) + (0.25 * fga / fa) * (PiaA / (PiAa + PiaA))) +
+                mGa * SGA**2 * (0.25 * fgA / fA) + 
+                2 * mGa * SGA * SGa * ((0.25 * fgA / fA) * (PiAa / (PiAa + PiaA))) + 
+                mgA * SgA**2 * ((0.5 * fGA + fgA) / fA) + 
+                mgA * Sga**2 * ((0.25 * fGa + 0.5 * fga) / fa) + 
+                2 * mgA * SgA * Sga * (((0.5 * fGA + fgA) / fA) * (PiAa / (PiAa + PiaA)) + ((0.25 * fGa + 0.5 * fga) / fa) * (PiaA / (PiAa + PiaA))) + 
+                mga * SgA**2 * ((0.25 * fGA + 0.5 * fgA) / fA) + 
+                2 * mga * SgA * Sga * (((0.25 * fGA + 0.5 * fgA) / fA) * (PiAa / (PiAa + PiaA))))
+
+        return eqn3
 
     def _get__equation_4(self):
-        raise NotImplementedError
+        """Recurrence relation for mga."""
+        # extract the variables
+        mGA, mGa, mgA, mga = self._male_allele_shares
+        fGA, fGa, fgA, fga = self._female_allele_shares
+        PiaA, PiAA, Piaa, PiAa = self._payoffs
+        mG, mg, fA, fa = self._phenotype_shares
+        SGA, SGa, SgA, Sga = self._matching_probs
+
+        eqn4 = (mGA * SGa**2 * (0.25 * fga / fa) + 
+                2 * mGA * SGA * SGa * ((0.25 * fga / fa) * (PiaA / (PiAa + PiaA))) + 
+                mGa * SGA**2 * (0.25 * fgA / fA) + 
+                mGa * SGa**2 * (0.5 * fga / fa) + 
+                2 * mGa * SGA * SGa * ((0.25 * fgA / fA) * (PiAa / (PiAa + PiaA)) + (0.5 * fga / fa) * (PiaA / (PiAa + PiaA))) + 
+                mgA * Sga**2 * ((0.25 * fGa + 0.5 * fga) / fa) + 
+                2 * mgA * SgA * Sga * (((0.25 * fGa + 0.5 * fga) / fa) * (PiaA / (PiAa + PiaA))) + 
+                mga * SgA**2 * ((0.25 * fGA + 0.5 * fgA) / fA) + 
+                mga * Sga**2 * ((0.5 * fGa + fga) / fa) + 
+                2 * mga * SgA * Sga * (((0.25 * fGA + 0.5 * fgA) / fA) * (PiAa / (PiAa + PiaA)) + ((0.5 * fGa + fga) / fa) * (PiaA / (PiAa + PiaA))))
+
+        return eqn4
 
     def _get__equation_5(self):
         raise NotImplementedError
@@ -84,11 +162,15 @@ class Model(HasPrivateTraits):
         # compute the matching probabilities
         SGA = (dA * fA) / (dA * fA + (1 - eA) * (1 - da) * fa)
         SGa = 1 - SGA
-        SgA = 1 - Sga
         Sga = (da * fa) / (da * fa + (1 - ea) * (1 - dA) * fA)
+        SgA = 1 - Sga
 
         return SGA, SGa, SgA, Sga 
-        
+
+    def _get__payoffs(self):
+        """Payoff parameters (from a Prisoner's dilemma)."""
+        return sp.var('PiaA, PiAA, Piaa, PiAa')
+
     def _get__phenotype_shares(self):
         """Population shares by phenotype."""
         mGA, mGa, mgA, mga = self._male_allele_shares
