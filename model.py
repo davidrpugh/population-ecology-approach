@@ -1,11 +1,6 @@
 import sympy as sp
-from traits.api import Dict, Float, HasPrivateTraits, Property, Str
 
-# population shares by phenotype
-#mG = mGA + mGa
-#mg = mgA + mga
-#fA = fGA + fgA
-#fa = fGa + fga
+from traits.api import Dict, Float, HasPrivateTraits, Property, Str
 
 class Model(HasPrivateTraits):
     """Base class representing the model of Pugh-Schaefer-Seabright."""
