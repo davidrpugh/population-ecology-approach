@@ -35,6 +35,10 @@ class Model(HasPrivateTraits):
 
     _number_female_children = Property
 
+    _numeric_simulation_jacobian = Property(depends_on='_symbolic_simulation_jacobian')
+
+    _numeric_simulation_system = Property(depends_on='_symbolic_simulation_system')
+
     _payoffs = Property
 
     _phenotype_shares = Property
@@ -269,6 +273,26 @@ class Model(HasPrivateTraits):
 
         return Nprime
 
+    @cached_property
+    def _get__numeric_simulation_jacobian(self):
+        """Wraps the symbolic system of equations for use in simulation."""
+        tmp_args = (self._male_allele_shares + self._female_allele_shares + 
+                    self._female_signaling_probs + self._male_screening_probs +
+                    self._payoffs)
+        tmp_jacobian = sp.lambdify(tmp_args, self._symbolic_simulation_jacobian, 
+                                 modules=['numpy'])
+        return tmp_jacobian
+
+    @cached_property
+    def _get__numeric_simulation_system(self):
+        """Wraps the symbolic system of equations for use in simulation."""
+        tmp_args = (self._male_allele_shares + self._female_allele_shares + 
+                    self._female_signaling_probs + self._male_screening_probs +
+                    self._payoffs)
+        tmp_system = sp.lambdify(tmp_args, self._symbolic_simulation_system, 
+                                 modules=['numpy'])
+        return tmp_system
+
     def _get__payoffs(self):
         """Payoff parameters (from a Prisoner's dilemma)."""
         return sp.var('PiaA, PiAA, Piaa, PiAa')
@@ -313,3 +337,6 @@ if __name__ == '__main__':
               'Piaa':4.0, 'PiAa':3.0}
 
     model = Model(params=params)
+
+    print model._numeric_simulation_jacobian(0.05, 0.05, 0.05, 0.85, 0.05, 0.05, 0.05, 0.85, **params)
+    print model._numeric_simulation_system(0.05, 0.05, 0.05, 0.85, 0.05, 0.05, 0.05, 0.85, **params)
