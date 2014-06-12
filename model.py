@@ -342,6 +342,20 @@ class Model(HasPrivateTraits):
         out = self._numeric_simulation_jacobian(*X, **self.params)
         return np.array(out)
 
+    def simulate(self, initial_condition, T=10):
+        """Simulates a run of the model given some initial_condition."""
+
+        # sets up the trajectory array
+        traj = np.empty((8, T))
+        traj[:,0] = initial_condition
+
+        # runs the simulation
+        for t in range(1,T):
+            traj[:,t] = self.F(traj[:,t-1])
+
+        return traj
+
+
 
 if __name__ == '__main__':
     
