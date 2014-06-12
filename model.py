@@ -3,7 +3,8 @@ from __future__ import division
 import numpy as np
 import sympy as sp
 
-from traits.api import cached_property, Dict, Float, HasPrivateTraits, Property, Str
+from traits.api import (cached_property, Dict, Float, HasPrivateTraits, 
+                        Property, Str)
 
 class Model(HasPrivateTraits):
     """Base class representing the model of Pugh-Schaefer-Seabright."""
@@ -358,13 +359,37 @@ class Model(HasPrivateTraits):
 
 
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
     
     params = {'dA':0.25, 'da':0.75, 'eA':0.25, 'ea':0.5, 'PiaA':6.0, 'PiAA':5.0, 
               'Piaa':4.0, 'PiAa':3.0}
 
     model = Model(params=params)
 
+    # simulate the model
     initial_condition = np.array([0.05, 0.05, 0.05, 0.85, 0.05, 0.05, 0.05, 0.85])
+    traj = model.simulate(initial_condition, T=100)
 
-    print model._numeric_simulation_jacobian(*initial_condition, **params)
-    print model._numeric_simulation_system(*initial_condition, **params)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 8))
+
+    axes[0].plot(traj[0], label=r'$m_{GA}$')
+    axes[0].plot(traj[1], label=r'$m_{Ga}$')
+    axes[0].plot(traj[2], label=r'$m_{gA}$')
+    axes[0].plot(traj[3], label=r'$m_{ga}$')
+
+    axes[0].set_ylim(0, 1)
+    axes[0].set_ylabel('Population shares', family='serif', fontsize=15)
+    axes[0].set_title('Males', family='serif', fontsize=20)
+    axes[0].legend(loc=0, frameon=False)
+
+    axes[1].plot(traj[4], label=r'$f_{GA}$')
+    axes[1].plot(traj[5], label=r'$f_{Ga}$')
+    axes[1].plot(traj[6], label=r'$f_{gA}$')
+    axes[1].plot(traj[7], label=r'$f_{ga}$')
+
+    axes[1].set_ylim(0, 1)
+    axes[1].set_title('Females', family='serif', fontsize=20)
+    axes[1].legend(loc=0, frameon=False)
+
+    plt.show()
+
