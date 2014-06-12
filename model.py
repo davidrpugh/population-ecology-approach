@@ -3,7 +3,7 @@ from __future__ import division
 import numpy as np
 import sympy as sp
 
-from traits.api import (cached_property, Dict, Float, HasPrivateTraits, 
+from traits.api import (Array, cached_property, Dict, Float, HasPrivateTraits, 
                         Property, Str)
 
 class Model(HasPrivateTraits):
@@ -57,7 +57,11 @@ class Model(HasPrivateTraits):
 
     _symbolic_steady_state_system = Property
 
+    initial_guess = Array 
+
     params = Dict(Str, Float)
+
+    steady_state = Property(depends_on=['initial_guess, params'])
 
     def _get__equation_1(self):
         """Recurrence relation for mGA."""
@@ -381,6 +385,17 @@ class Model(HasPrivateTraits):
                             self._equation_6, self._equation_7])
         return system
 
+    @cached_property
+    def _get_steady_state(self):
+        """Return a steady state for the model."""
+        result = optimize.root(self.steady_state_system, 
+                               args=(self.params,), 
+                               x0=self.initial_guess, 
+                               jac=self.steady_state_jacobian, 
+                               method='hybr', 
+                               tol=1e-12)
+        return result
+
     def F(self, X):
         """Equation of motion for population allele shares."""
         out = self._numeric_simulation_system(*X, **self.params)
@@ -404,9 +419,8 @@ class Model(HasPrivateTraits):
 
         return traj
 
-    def steady_state(self, X, params):
+    def steady_state_system(self, X, params):
         """System of equations for finding the steady state of the model."""
-
         # need to reassemble the vectors of endog variables
         mga = 1 - X[:3].sum()
         fga = 1 - X[3:].sum()
@@ -433,8 +447,6 @@ if __name__ == '__main__':
     params = {'dA':0.25, 'da':0.75, 'eA':0.25, 'ea':0.5, 'PiaA':6.0, 'PiAA':5.0, 
               'Piaa':4.0, 'PiAa':3.0}
 
-    model = Model(params=params)
-
     # initial guess for the solver       
     mGA0 = 0.05
     mGa0 = 0.05
@@ -448,14 +460,18 @@ if __name__ == '__main__':
 
     initial_guess = np.array([mGA0, mGa0, mgA0, fGA0, fGa0, fgA0])
 
+    model = Model(initial_guess=initial_guess,
+                  params=params)
+
     # solve the nonlinear system using root finding
-    result = optimize.root(model.steady_state, 
+    result = optimize.root(model.steady_state_system, 
                            args=(params,), 
                            x0=initial_guess, 
                            jac=model.steady_state_jacobian, 
                            method='hybr', 
                            tol=1e-12)
     print(result.x)
+    print model.steady_state
 
     # simulate the model
     initial_condition = np.array([0.05, 0.05, 0.05, 0.85, 0.05, 0.05, 0.05, 0.85])
