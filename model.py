@@ -1,5 +1,6 @@
 from __future__ import division
 
+import numpy as np
 import sympy as sp
 
 from traits.api import cached_property, Dict, Float, HasPrivateTraits, Property, Str
@@ -193,16 +194,16 @@ class Model(HasPrivateTraits):
         SGA, SGa, SgA, Sga = self._matching_probs
         Nprime = self._number_female_children
 
-        eqn7 =(mGA * SGA**2 * ((0.5 * fgA / fA) * (2 * PiAA / Nprime)) +
-               mGA * SGa**2 * ((0.25 * fga / fa) * (2 * Piaa / Nprime)) + 
-               2 * mGA * SGA * SGa * ((0.5 * fgA / fA) * (PiAa / Nprime) + (0.25 * fga / fa) * (PiaA / Nprime)) +
-               mGa * SGA**2 * ((0.25 * fgA / fA) * (2 * PiAA / Nprime)) + 
-               2 * mGa * SGA * SGa * ((0.25 * fgA / fA) * (PiAa / Nprime)) + 
-               mgA * SgA**2 * (((0.5 * fGA + fgA) / fA) * (2 * PiAA / Nprime)) + 
-               mgA * Sga**2 * (((0.25 * fGa + 0.5 * fga) / fa) * (2 * Piaa / Nprime)) + 
-               2 * mgA * SgA * Sga * (((0.5 * fGA + fgA) / fA) * (PiAa / Nprime) + ((0.25 * fGa + 0.5 * fga) / fa) * (PiaA / Nprime)) +
-               mga * SgA**2 * (((0.25 * fGA + 0.5 * fgA) / fA) * (2 * PiAA / Nprime)) +
-               2 * mga * SgA * Sga * (((0.25 * fGA + 0.5 * fgA) / fA) * (PiAa / Nprime)))
+        eqn7 = (mGA * SGA**2 * ((0.5 * fgA / fA) * (2 * PiAA / Nprime)) +
+                mGA * SGa**2 * ((0.25 * fga / fa) * (2 * Piaa / Nprime)) + 
+                2 * mGA * SGA * SGa * ((0.5 * fgA / fA) * (PiAa / Nprime) + (0.25 * fga / fa) * (PiaA / Nprime)) +
+                mGa * SGA**2 * ((0.25 * fgA / fA) * (2 * PiAA / Nprime)) + 
+                2 * mGa * SGA * SGa * ((0.25 * fgA / fA) * (PiAa / Nprime)) + 
+                mgA * SgA**2 * (((0.5 * fGA + fgA) / fA) * (2 * PiAA / Nprime)) + 
+                mgA * Sga**2 * (((0.25 * fGa + 0.5 * fga) / fa) * (2 * Piaa / Nprime)) + 
+                2 * mgA * SgA * Sga * (((0.5 * fGA + fgA) / fA) * (PiAa / Nprime) + ((0.25 * fGa + 0.5 * fga) / fa) * (PiaA / Nprime)) +
+                mga * SgA**2 * (((0.25 * fGA + 0.5 * fgA) / fA) * (2 * PiAA / Nprime)) +
+                2 * mga * SgA * Sga * (((0.25 * fGA + 0.5 * fgA) / fA) * (PiAa / Nprime)))
 
         return eqn7
 
@@ -331,6 +332,17 @@ class Model(HasPrivateTraits):
                             self._equation_7, self._equation_8])
         return system
 
+    def F(self, X):
+        """Equation of motion for population allele shares."""
+        out = self._numeric_simulation_system(*X, **self.params)
+        return np.array(out).flatten()
+
+    def F_jacobian(self, X):
+        """Jacobian for equation of motion."""
+        out = self._numeric_simulation_jacobian(*X, **self.params)
+        return np.array(out)
+
+
 if __name__ == '__main__':
     
     params = {'dA':0.25, 'da':0.75, 'eA':0.25, 'ea':0.5, 'PiaA':6.0, 'PiAA':5.0, 
@@ -338,5 +350,7 @@ if __name__ == '__main__':
 
     model = Model(params=params)
 
-    print model._numeric_simulation_jacobian(0.05, 0.05, 0.05, 0.85, 0.05, 0.05, 0.05, 0.85, **params)
-    print model._numeric_simulation_system(0.05, 0.05, 0.05, 0.85, 0.05, 0.05, 0.05, 0.85, **params)
+    initial_condition = np.array([0.05, 0.05, 0.05, 0.85, 0.05, 0.05, 0.05, 0.85])
+
+    print model._numeric_simulation_jacobian(*initial_condition, **params)
+    print model._numeric_simulation_system(*initial_condition, **params)
