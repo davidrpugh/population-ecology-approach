@@ -49,6 +49,10 @@ class Model(HasPrivateTraits):
 
     _symbolic_simulation_system = Property
 
+    _symbolic_steady_state_jacobian = Property(depends_on='_symbolic_steady_state_system')
+
+    _symbolic_steady_state_system = Property
+
     params = Dict(Str, Float)
 
     def _get__equation_1(self):
@@ -331,6 +335,26 @@ class Model(HasPrivateTraits):
                             self._equation_3, self._equation_4, 
                             self._equation_5, self._equation_6, 
                             self._equation_7, self._equation_8])
+        return system
+
+    @cached_property
+    def _get__symbolic_steady_state_jacobian(self):
+        """Symbolic Jacobian matrix for steady state solver."""
+        # extract variables
+        mGA, mGa, mgA, mga = self._male_allele_shares
+        fGA, fGa, fgA, fga = self._female_allele_shares
+        endog_vars = [mGA, mGa, mgA, fGA, fGa, fgA]
+
+        # compute the jacobian (this may take a while!)
+        jacobian = self._symbolic_steady_state_system.jacobian(endog_vars)
+
+        return jacobian
+
+    def _get__symbolic_steady_state_system(self):
+        """Symbolic system of equation for steady state solver."""
+        system = sp.Matrix([self._equation_1, self._equation_2, 
+                            self._equation_3, self._equation_5, 
+                            self._equation_6, self._equation_7])
         return system
 
     def F(self, X):
