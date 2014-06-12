@@ -380,16 +380,23 @@ class Model(HasPrivateTraits):
 
     def _get__symbolic_steady_state_system(self):
         """Symbolic system of equation for steady state solver."""
-        system = sp.Matrix([self._equation_1, self._equation_2, 
-                            self._equation_3, self._equation_5, 
-                            self._equation_6, self._equation_7])
-        return system
+        # extract variables
+        mGA, mGa, mgA, mga = self._male_allele_shares
+        fGA, fGa, fgA, fga = self._female_allele_shares
+        endog_vars = [mGA, mGa, mgA, fGA, fGa, fgA]
+
+        # construct the steady state system
+        tmp_system = sp.Matrix([self._equation_1, self._equation_2, 
+                                self._equation_3, self._equation_5, 
+                                self._equation_6, self._equation_7])
+        steady_state_system = tmp_system - sp.Matrix(endog_vars)
+
+        return steady_state_system
 
     @cached_property
     def _get_steady_state(self):
         """Return a steady state for the model."""
         result = optimize.root(self.steady_state_system, 
-                               args=(self.params,), 
                                x0=self.initial_guess, 
                                jac=self.steady_state_jacobian, 
                                method='hybr', 
@@ -419,7 +426,7 @@ class Model(HasPrivateTraits):
 
         return traj
 
-    def steady_state_system(self, X, params):
+    def steady_state_system(self, X):
         """System of equations for finding the steady state of the model."""
         # need to reassemble the vectors of endog variables
         mga = 1 - X[:3].sum()
@@ -429,7 +436,7 @@ class Model(HasPrivateTraits):
         out = self._numeric_steady_state_system(*endog_vars, **self.params)
         return np.array(out).flatten()
 
-    def steady_state_jacobian(self, X, params):
+    def steady_state_jacobian(self, X):
         """Jacobian matrix used for finding the steady state of the model."""
         # need to reassemble the vectors of endog variables
         mga = 1 - X[:3].sum()
@@ -465,13 +472,12 @@ if __name__ == '__main__':
 
     # solve the nonlinear system using root finding
     result = optimize.root(model.steady_state_system, 
-                           args=(params,), 
-                           x0=initial_guess, 
+                           x0=model.initial_guess, 
                            jac=model.steady_state_jacobian, 
                            method='hybr', 
                            tol=1e-12)
     print(result.x)
-    print model.steady_state
+    print model.steady_state.x
 
     # simulate the model
     initial_condition = np.array([0.05, 0.05, 0.05, 0.85, 0.05, 0.05, 0.05, 0.85])
