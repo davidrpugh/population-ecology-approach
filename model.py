@@ -41,6 +41,10 @@ class Model(HasPrivateTraits):
 
     _numeric_simulation_system = Property(depends_on='_symbolic_simulation_system')
 
+    _numeric_steady_state_jacobian = Property(depends_on='_symbolic_steady_state_jacobian')
+
+    _numeric_steady_state_system = Property(depends_on='_symbolic_steady_state_system')
+
     _payoffs = Property
 
     _phenotype_shares = Property
@@ -281,12 +285,12 @@ class Model(HasPrivateTraits):
 
     @cached_property
     def _get__numeric_simulation_jacobian(self):
-        """Wraps the symbolic system of equations for use in simulation."""
+        """Wraps the symbolic Jacobian for use in stability analysis."""
         tmp_args = (self._male_allele_shares + self._female_allele_shares + 
                     self._female_signaling_probs + self._male_screening_probs +
                     self._payoffs)
         tmp_jacobian = sp.lambdify(tmp_args, self._symbolic_simulation_jacobian, 
-                                 modules=['numpy'])
+                                   modules=['numpy'])
         return tmp_jacobian
 
     @cached_property
@@ -296,6 +300,26 @@ class Model(HasPrivateTraits):
                     self._female_signaling_probs + self._male_screening_probs +
                     self._payoffs)
         tmp_system = sp.lambdify(tmp_args, self._symbolic_simulation_system, 
+                                 modules=['numpy'])
+        return tmp_system
+
+    @cached_property
+    def _get__numeric_steady_state_jacobian(self):
+        """Wraps the symbolic Jacobian for use in finding steady state."""
+        tmp_args = (self._male_allele_shares + self._female_allele_shares + 
+                    self._female_signaling_probs + self._male_screening_probs +
+                    self._payoffs)
+        tmp_jacobian = sp.lambdify(tmp_args, self._symbolic_steady_state_jacobian, 
+                                   modules=['numpy'])
+        return tmp_jacobian
+
+    @cached_property
+    def _get__numeric_steady_state_system(self):
+        """Wraps the symbolic system of equations for finding steady state."""
+        tmp_args = (self._male_allele_shares + self._female_allele_shares + 
+                    self._female_signaling_probs + self._male_screening_probs +
+                    self._payoffs)
+        tmp_system = sp.lambdify(tmp_args, self._symbolic_steady_state_system, 
                                  modules=['numpy'])
         return tmp_system
 
@@ -380,9 +404,30 @@ class Model(HasPrivateTraits):
 
         return traj
 
+    def steady_state(self, X, params):
+        """System of equations for finding the steady state of the model."""
+
+        # need to reassemble the vectors of endog variables
+        mga = 1 - X[:3].sum()
+        fga = 1 - X[3:].sum()
+        endog_vars = np.hstack((X[:3], mga, X[3:], fga))
+        
+        out = self._numeric_steady_state_system(*endog_vars, **self.params)
+        return np.array(out).flatten()
+
+    def steady_state_jacobian(self, X, params):
+        """Jacobian matrix used for finding the steady state of the model."""
+        # need to reassemble the vectors of endog variables
+        mga = 1 - X[:3].sum()
+        fga = 1 - X[3:].sum()
+        endog_vars = np.hstack((X[:3], mga, X[3:], fga))
+        
+        out = self._numeric_steady_state_jacobian(*endog_vars, **self.params)
+        return np.array(out)
 
 
 if __name__ == '__main__':
+    from scipy import optimize
     import matplotlib.pyplot as plt
     
     params = {'dA':0.25, 'da':0.75, 'eA':0.25, 'ea':0.5, 'PiaA':6.0, 'PiAA':5.0, 
@@ -390,8 +435,33 @@ if __name__ == '__main__':
 
     model = Model(params=params)
 
+    # initial guess for the solver       
+    mGA0 = 0.05
+    mGa0 = 0.05
+    mgA0 = 0.05
+    mga0 = 1 - mGA0 - mGa0 - mgA0
+     
+    fGA0 = mGA0
+    fGa0 = mGa0
+    fgA0 = mgA0
+    fga0 = 1 - fGA0 - fGa0 - fgA0
+
+    initial_guess = np.array([mGA0, mGa0, mgA0, fGA0, fGa0, fgA0])
+
+    # solve the nonlinear system using root finding
+    result = optimize.root(model.steady_state, 
+                           args=(params,), 
+                           x0=initial_guess, 
+                           jac=model.steady_state_jacobian, 
+                           method='hybr', 
+                           tol=1e-12)
+    print(result.x)
+
     # simulate the model
     initial_condition = np.array([0.05, 0.05, 0.05, 0.85, 0.05, 0.05, 0.05, 0.85])
+    print model._numeric_steady_state_system(*initial_condition, **params)
+    print model._numeric_steady_state_jacobian(*initial_condition, **params)
+
     traj = model.simulate(initial_condition, T=100)
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 8))
