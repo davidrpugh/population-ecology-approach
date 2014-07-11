@@ -41,12 +41,12 @@ class Model(HasPrivateTraits):
 
     def _get__female_alleles_constraint(self):
         """Female allele population shares must sum to one."""
-        cons = lambda X: 1 - np.sum(X[3:])
+        cons = lambda X: 1 - np.sum(X[4:])
         return {'type': 'eq', 'fun': cons}
 
     def _get__male_alleles_constraint(self):
         """Male allele population shares must sum to one."""
-        cons = lambda X: 1 - np.sum(X[:3])
+        cons = lambda X: 1 - np.sum(X[:4])
         return {'type': 'eq', 'fun': cons}
 
     @cached_property
