@@ -1,5 +1,7 @@
-from __future__ import division
+"""
+Defines the model classes.
 
+"""
 import numpy as np
 from scipy import optimize
 import sympy as sp
