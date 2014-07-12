@@ -7,18 +7,22 @@ import sympy as sp
 import symbolics
 
 # define some new variables
-sp.var('mGA_tilde, mGa_tilde, mgA_tilde, mga_tilde')
-sp.var('fGA_tilde, fGa_tilde, fgA_tilde, fga_tilde')
+male_allele_shares = sp.var('mGA_tilde, mGa_tilde, mgA_tilde, mga_tilde')
+female_allele_shares = sp.var('fGA_tilde, fGa_tilde, fgA_tilde, fga_tilde')
 
 # define a transformation of variables using the logistic function
-logistic_transform = {'mGA':(1 / (1 + sp.exp(-mGA_tilde))),
-                      'mGa':(1 / (1 + sp.exp(-mGa_tilde))),
-                      'mgA':(1 / (1 + sp.exp(-mgA_tilde))),
-                      'mga':(1 / (1 + sp.exp(-mga_tilde))),
-                      'fGA':(1 / (1 + sp.exp(-fGA_tilde))),
-                      'fGa':(1 / (1 + sp.exp(-fGa_tilde))), 
-                      'fgA':(1 / (1 + sp.exp(-fgA_tilde))),
-                      'fga':(1 / (1 + sp.exp(-fga_tilde)))}
+logistic_transform = {'mGA': (1 / (1 + sp.exp(-mGA_tilde))),
+                      'mGa': (1 / (1 + sp.exp(-mGa_tilde))),
+                      'mgA': (1 / (1 + sp.exp(-mgA_tilde))),
+                      'mga': (1 / (1 + sp.exp(-mga_tilde))),
+                      'fGA': (1 / (1 + sp.exp(-fGA_tilde))),
+                      'fGa': (1 / (1 + sp.exp(-fGa_tilde))), 
+                      'fgA': (1 / (1 + sp.exp(-fgA_tilde))),
+                      'fga': (1 / (1 + sp.exp(-fga_tilde)))}
+
+# extract the important variables
+fGA_tilde, fGa_tilde, fgA_tilde, fga_tilde = female_allele_shares
+mGA_tilde, mGa_tilde, mgA_tilde, mga_tilde = male_allele_shares
 
 # symbolic system of equations for model simulation
 endog_vars = sp.Matrix([mGA_tilde, mGa_tilde, mgA_tilde, mga_tilde, 
