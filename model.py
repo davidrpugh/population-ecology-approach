@@ -4,13 +4,11 @@ Defines the model classes.
 """
 import numpy as np
 from scipy import optimize
-import sympy as sp
 
-from traits.api import (Array, cached_property, Dict, Float, HasPrivateTraits, 
+from traits.api import (Array, cached_property, Dict, Float, HasPrivateTraits,
                         Property, Str)
 
 import wrapped_symbolics
-import wrapped_transformed_symbolics
 
 
 class Model(HasPrivateTraits):
@@ -26,7 +24,7 @@ class Model(HasPrivateTraits):
 
     _male_alleles_constraint = Property
 
-    initial_guess = Property(Array) 
+    initial_guess = Property(Array)
 
     params = Dict(Str, Float)
 
@@ -60,9 +58,9 @@ class Model(HasPrivateTraits):
     @cached_property
     def _get_steady_state(self):
         """Compute the steady state for the model."""
-        result = optimize.minimize(self._objective, 
+        result = optimize.minimize(self._objective,
                                    x0=self._initial_guess,
-                                   method='SLSQP', 
+                                   method='SLSQP',
                                    jac=self._jacobian,
                                    bounds=self._bound_constraints,
                                    constraints=self._equality_constraints,
@@ -108,11 +106,10 @@ class Model(HasPrivateTraits):
 
         # set up the trajectory array
         traj = np.empty((8, T))
-        traj[:,0] = initial_condition
+        traj[:, 0] = initial_condition
 
         # run the simulation
-        for t in range(1,T):
-            traj[:,t] = self.F(traj[:,t-1])
+        for t in range(1, T):
+            traj[:, t] = self.F(traj[:, t-1])
 
         return traj
-    
