@@ -36,7 +36,8 @@ class Model(HasPrivateTraits):
 
     def _get__bound_constraints(self):
         """Population shares must be in [0,1]."""
-        raise NotImplementedError
+        eps = 1e-15
+        return [(eps, 1 - eps) for i in range(8)]
 
     def _get__equality_constraints(self):
         """Population shares of male and female alleles must sum to one."""
@@ -44,11 +45,13 @@ class Model(HasPrivateTraits):
 
     def _get__female_alleles_constraint(self):
         """Female allele population shares must sum to one."""
-        raise NotImplementedError
+        cons = lambda X: 1 - np.sum(X[4:])
+        return {'type': 'eq', 'fun': cons}
 
     def _get__male_alleles_constraint(self):
         """Male allele population shares must sum to one."""
-        raise NotImplementedError
+        cons = lambda X: 1 - np.sum(X[:4])
+        return {'type': 'eq', 'fun': cons}
 
     def _get_initial_guess(self):
         """Return initial guess of the equilibrium population shares."""
@@ -82,11 +85,13 @@ class Model(HasPrivateTraits):
 
     def _residual(self, X):
         """Model steady state is a root of this non-linear system."""
-        raise NotImplementedError
+        resid = wrapped_symbolics.residual(*X, **self.params)
+        return np.array(resid)
 
     def _residual_jacobian(self, X):
         """Returns the Jacobian of the model residual."""
-        raise NotImplementedError
+        jac = wrapped_symbolics.residual_jacobian(*X, **self.params)
+        return np.array(jac)
 
     def F(self, X):
         """Equation of motion for population allele shares."""
@@ -111,68 +116,3 @@ class Model(HasPrivateTraits):
 
         return traj
     
-
-class StandardModel(Model):
-    """Class representing the model of Pugh-Schaefer-Seabright."""
-
-    def _get__bound_constraints(self):
-        """Population shares must be in [0,1]."""
-        eps = 1e-15
-        return [(eps, 1 - eps) for i in range(8)]
-
-    def _get__female_alleles_constraint(self):
-        """Female allele population shares must sum to one."""
-        cons = lambda X: 1 - np.sum(X[4:])
-        return {'type': 'eq', 'fun': cons}
-
-    def _get__male_alleles_constraint(self):
-        """Male allele population shares must sum to one."""
-        cons = lambda X: 1 - np.sum(X[:4])
-        return {'type': 'eq', 'fun': cons}
-
-    def _residual(self, X):
-        """Model steady state is a root of this non-linear system."""
-        resid = wrapped_symbolics.residual(*X, **self.params)
-        return np.array(resid)
-
-    def _residual_jacobian(self, X):
-        """Returns the Jacobian of the model residual."""
-        jac = wrapped_symbolics.residual_jacobian(*X, **self.params)
-        return np.array(jac)
-
- 
-class TransformedModel(Model):
-    """Transformed version of the Pugh-Schaefer-Seabright model."""
-
-    def _get__bound_constraints(self):
-        """Population shares must be in [0,1]."""
-        return [(None, None) for i in range(8)]
-
-    def _get__equality_constraints(self):
-        """Population shares of male and female alleles must sum to one."""
-        return [self._male_alleles_constraint, self._female_alleles_constraint]
-
-    def _get__female_alleles_constraint(self):
-        """Female allele population shares must sum to one."""
-        cons = lambda X: 1 - np.sum((1 / (1 + np.exp(-X))[4:]))
-        return {'type': 'eq', 'fun': cons}
-
-    def _get__initial_guess(self):
-        """Apply logistic transformation of variables to initial guess."""
-        transform_initial_guess = np.log(initial_guess / (1 - initial_guess))
-        return transform_initial_guess
-
-    def _get__male_alleles_constraint(self):
-        """Male allele population shares must sum to one."""
-        cons = lambda X: 1 - np.sum((1 / (1 + np.exp(-X))[:4]))
-        return {'type': 'eq', 'fun': cons}
-
-    def _residual(self, X):
-        """Model steady state is a root of this non-linear system."""
-        resid = wrapped_transformed_symbolics.residual(*X, **self.params)
-        return np.array(resid)
-
-    def _residual_jacobian(self, X):
-        """Returns the Jacobian of the model residual."""
-        jac = wrapped_transformed_symbolics.residual_jacobian(*X, **self.params)
-        return np.array(jac)
