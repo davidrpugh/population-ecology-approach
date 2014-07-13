@@ -17,8 +17,8 @@ initial_females = initial_males
 initial_guesses = np.hstack((initial_males, initial_females)) 
 
 # create an instance of the model
-example = model.StandardModel(params=params,
-                              solver_kwargs={'tol': 1e-12})
+example = model.Model(params=params,
+                      solver_kwargs={'tol': 1e-12})
 
 # initialize a storage container
 steady_states = np.empty((N, 8))
