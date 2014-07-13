@@ -2,7 +2,7 @@
 Converts symbolic expressions defining the model into callable NumPy functions.
 
 """
-import sympy as sp 
+import sympy as sp
 
 import symbolics
 
@@ -21,4 +21,3 @@ model_jacobian = sp.lambdify(tmp_args, symbolics.model_jacobian, modules='numpy'
 # wraps the symbolic residual and its Jacobian for use in numerical analysis
 residual = sp.lambdify(tmp_args, symbolics.residual, modules='numpy')
 residual_jacobian = sp.lambdify(tmp_args, symbolics.residual_jacobian, modules='numpy')
-
