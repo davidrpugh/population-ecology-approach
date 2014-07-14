@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 import model
 
-# females send almost random signals, but males are screen with high precision
+# females send almost random signals, but males screen with high precision
 eps = 1e-3
 params = {'dA': 0.5 + eps, 'da': 0.5 + eps, 'eA': 1.0, 'ea': 1.0,
           'PiaA': 6.0, 'PiAA': 5.0, 'Piaa': 4.0, 'PiAa': 3.0}
