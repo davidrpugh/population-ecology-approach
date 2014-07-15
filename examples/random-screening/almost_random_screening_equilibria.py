@@ -57,5 +57,5 @@ ax.set_ylim(0, 1)
 ax.set_title('Putative equilibrium population shares', fontsize=20)
 
 # save and display the figure
-fig.savefig('../../images/random-signaling/almost_random_signaling_equilibria.png')
+fig.savefig('../../images/random-screening/almost_random_screening_equilibria.png')
 plt.show()
