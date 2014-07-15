@@ -8,7 +8,7 @@ params = {'dA': 0.5, 'da': 0.5, 'eA': 1.0, 'ea': 1.0, 'PiaA': 6.0, 'PiAA': 5.0,
           'Piaa': 4.0, 'PiAa': 3.0}
 
 # create an array of initial guesses for root finder
-N = 100
+N = 250
 prng = np.random.RandomState(42)
 initial_males = prng.dirichlet(np.ones(4), size=N)
 initial_females = initial_males
@@ -21,7 +21,7 @@ example = model.Model(params=params,
 # initialize a storage container
 steady_states = np.empty((N, 8))
 
-# create the plot
+# compute the steady state of the model for different initial guesses
 fig, ax = plt.subplots()
 ind = np.arange(-0.5, 7.5)
 
@@ -35,7 +35,7 @@ for i in range(N):
 
     if tmp_result.success and np.isclose(tmp_result.fun, 0):
         steady_states[i] = tmp_result.x
-        bar_list = ax.bar(left=ind, height=tmp_result.x, width=1.0, alpha=0.01)
+        bar_list = ax.bar(left=ind, height=tmp_result.x, width=1.0, alpha=0.05)
 
         # Set different color for Altruistic genotypes
         bar_list[0].set_color('r')
@@ -53,8 +53,8 @@ male_labels = ('$m_{GA}$', '$m_{Ga}$', '$m_{gA}$', '$m_{ga}$')
 female_labels = ('$f_{GA}$', '$f_{Ga}$', '$f_{gA}$', '$f_{ga}$')
 ax.set_xticklabels(male_labels + female_labels)
 ax.set_ylim(0, 1)
-ax.set_title('Equilibrium population shares', fontsize=20)
+ax.set_title('Putative equilibrium population shares', fontsize=20)
 
 # save and display the figure
-fig.savefig('images/random_signaling.png')
+fig.savefig('../../images/random-signaling/random_signaling_equilibria.png')
 plt.show()
