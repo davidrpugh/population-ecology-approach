@@ -1,7 +1,10 @@
+import sys
+sys.path.append('../../')
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-import model
+from package import model
 
 # females send precise signals, but males screen almost randomly
 eps = 1e-3

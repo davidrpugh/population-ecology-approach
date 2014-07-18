@@ -1,7 +1,10 @@
+import sys
+sys.path.append('../../')
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-import model
+from package import model
 
 # females send precise signals, but males screen randomly
 params = {'dA': 1.0, 'da': 1.0, 'eA': 0.0, 'ea': 0.0, 'PiaA': 6.0, 'PiAA': 5.0,

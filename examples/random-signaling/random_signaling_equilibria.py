@@ -1,7 +1,10 @@
+import sys
+sys.path.append('../../')
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-import model
+from package import model
 
 # females send random signals, but males screen with high precision
 params = {'dA': 0.5, 'da': 0.5, 'eA': 1.0, 'ea': 1.0, 'PiaA': 6.0, 'PiAA': 5.0,
@@ -56,5 +59,5 @@ ax.set_ylim(0, 1)
 ax.set_title('Putative equilibrium population shares', fontsize=20)
 
 # save and display the figure
-fig.savefig('../../images/random-signaling/random_signaling_equilibria.png')
+#fig.savefig('../../images/random-signaling/random_signaling_equilibria.png')
 plt.show()
