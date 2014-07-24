@@ -3,7 +3,7 @@ Defines the model classes.
 
 """
 import numpy as np
-from scipy import optimize
+from scipy import linalg, optimize
 
 from traits.api import (Array, cached_property, Dict, Float, HasPrivateTraits,
                         Property, Str)
@@ -23,6 +23,8 @@ class Model(HasPrivateTraits):
     _initial_guess = Array
 
     _male_alleles_constraint = Property
+
+    eigenvalues = Property
 
     initial_guess = Property(Array)
 
@@ -51,6 +53,12 @@ class Model(HasPrivateTraits):
         cons = lambda X: 1 - np.sum(X[:4])
         return {'type': 'eq', 'fun': cons}
 
+    def _get_eigenvalues(self):
+        """Return the eigenvalues of the Jacobian evaluated at equilibrium."""
+        evaluated_jac = self.F_jacobian(self.steady_state.x)
+        eigen_vals, eigen_vecs = linalg.eig(evaluated_jac)
+        return eigen_vals
+
     def _get_initial_guess(self):
         """Return initial guess of the equilibrium population shares."""
         return self._initial_guess
@@ -65,6 +73,7 @@ class Model(HasPrivateTraits):
                                    bounds=self._bound_constraints,
                                    constraints=self._equality_constraints,
                                    **self.solver_kwargs)
+
         return result
 
     def _set_initial_guess(self, value):
@@ -113,3 +122,21 @@ class Model(HasPrivateTraits):
             traj[:, t] = self.F(traj[:, t-1])
 
         return traj
+
+
+if __name__ == '__main__':
+    # females send precise signals, but males screen almost randomly
+    eps = 1e-3
+    params = {'dA': 1.0, 'da': 1.0, 'eA': eps, 'ea': eps, 'PiaA': 6.0, 'PiAA': 5.0,
+              'Piaa': 4.0, 'PiAa': 3.0}
+
+    # create an array of initial guesses for root finder
+    prng = np.random.RandomState(42)
+    initial_males = prng.dirichlet(np.ones(4), size=1)
+    initial_females = initial_males
+    initial_guess = np.hstack((initial_males, initial_females))
+
+    # create an instance of the model
+    example = Model(initial_guess=initial_guess,
+                    params=params,
+                    solver_kwargs={'tol': 1e-12})
