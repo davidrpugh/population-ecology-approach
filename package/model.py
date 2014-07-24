@@ -28,6 +28,8 @@ class Model(HasPrivateTraits):
 
     initial_guess = Property(Array)
 
+    isunstable = Property(Bool)
+
     isstable = Property(Bool)
 
     params = Dict(Str, Float)
@@ -64,6 +66,10 @@ class Model(HasPrivateTraits):
     def _get_initial_guess(self):
         """Return initial guess of the equilibrium population shares."""
         return self._initial_guess
+
+    def _get_isunstable(self):
+        """Return True if the steady state of the model is unstable."""
+        return np.any(np.greater(np.abs(self.eigenvalues), 1.0))
 
     def _get_isstable(self):
         """Return True if the steady state of the model is stable."""
