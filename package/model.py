@@ -5,8 +5,8 @@ Defines the model classes.
 import numpy as np
 from scipy import linalg, optimize
 
-from traits.api import (Array, Bool, cached_property, Dict, Float, HasPrivateTraits,
-                        Property, Str)
+from traits.api import (Array, Bool, cached_property, Dict, Float,
+                        HasPrivateTraits, Property, Str)
 
 import wrapped_symbolics
 
@@ -128,21 +128,3 @@ class Model(HasPrivateTraits):
             traj[:, t] = self.F(traj[:, t-1])
 
         return traj
-
-
-if __name__ == '__main__':
-    # females send precise signals, but males screen almost randomly
-    eps = 1e-3
-    params = {'dA': 1.0, 'da': 1.0, 'eA': eps, 'ea': eps, 'PiaA': 6.0, 'PiAA': 5.0,
-              'Piaa': 4.0, 'PiAa': 3.0}
-
-    # create an array of initial guesses for root finder
-    prng = np.random.RandomState(42)
-    initial_males = prng.dirichlet(np.ones(4), size=1)
-    initial_females = initial_males
-    initial_guess = np.hstack((initial_males, initial_females))
-
-    # create an instance of the model
-    example = Model(initial_guess=initial_guess,
-                    params=params,
-                    solver_kwargs={'tol': 1e-12})
