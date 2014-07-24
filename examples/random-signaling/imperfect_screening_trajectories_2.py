@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from package import model
 
-# females send random signals, but males screen imperfectly
+# females send random signals, and males screen imperfectly
 eps = 3e-1
 params = {'dA': 0.5, 'da': 0.5, 'eA': 1.0 - eps, 'ea': 1.0 - eps,
           'PiaA': 6.0, 'PiAA': 5.0, 'Piaa': 4.0, 'PiAa': 3.0}

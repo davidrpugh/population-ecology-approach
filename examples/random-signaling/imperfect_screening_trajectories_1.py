@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 
 from package import model
 
-# females send random signals, but males screen imperfectly
-#eps = 8.0e-1
-params = {'dA': 0.5, 'da': 0.5, 'eA': 0.41666667, 'ea': 0.5,
+# females send random signals, and males screen imperfectly
+eps = 8.0e-1
+params = {'dA': 0.5, 'da': 0.5, 'eA': 1 - eps, 'ea': 1 - eps,
           'PiaA': 6.0, 'PiAA': 5.0, 'Piaa': 4.0, 'PiAa': 3.0}
 
 # create an array of initial guesses for root finder
