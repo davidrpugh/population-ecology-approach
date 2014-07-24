@@ -5,7 +5,7 @@ Defines the model classes.
 import numpy as np
 from scipy import linalg, optimize
 
-from traits.api import (Array, cached_property, Dict, Float, HasPrivateTraits,
+from traits.api import (Array, Bool, cached_property, Dict, Float, HasPrivateTraits,
                         Property, Str)
 
 import wrapped_symbolics
@@ -27,6 +27,8 @@ class Model(HasPrivateTraits):
     eigenvalues = Property
 
     initial_guess = Property(Array)
+
+    isstable = Property(Bool)
 
     params = Dict(Str, Float)
 
@@ -62,6 +64,10 @@ class Model(HasPrivateTraits):
     def _get_initial_guess(self):
         """Return initial guess of the equilibrium population shares."""
         return self._initial_guess
+
+    def _get_isstable(self):
+        """Return True if the steady state of the model is stable."""
+        return np.all(np.less(np.abs(self.eigenvalues), 1.0))
 
     @cached_property
     def _get_steady_state(self):
