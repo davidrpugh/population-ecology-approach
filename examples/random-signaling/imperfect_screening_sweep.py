@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from package import model
 
 # fix the initial condition
-prng = np.random.RandomState(12345)
+prng = np.random.RandomState(56789)
 initial_males = prng.dirichlet(np.ones(4), size=1)
 initial_females = initial_males
 initial_condition = np.hstack((initial_males, initial_females))
@@ -31,7 +31,7 @@ for i, eA in enumerate(screening_probs):
 
         # simulate the model to find the equilibrium
         example.params = tmp_params
-        tmp_traj = example.simulate(initial_condition, T=1000)
+        tmp_traj = example.simulate(initial_condition, rtol=1e-4)
 
         # store the results
         results[i, j, :] = tmp_traj[:, -1]
