@@ -127,7 +127,7 @@ class Model(HasPrivateTraits):
     def _simulate_variable_trajectory(self, initial_condition, rtol):
         """Simulates a trajectory of variable length."""
         # set up the trajectory array
-        traj = initial_condition[:, np.newaxis]
+        traj = initial_condition.reshape((8, 1))
 
         # initialize delta
         delta = np.ones(8)
@@ -135,9 +135,11 @@ class Model(HasPrivateTraits):
         # run the simulation
         while np.any(np.greater(delta, rtol)):
             current_shares = traj[:, -1]
-            new_shares = self.F(current_shares)[:, np.newaxis]
-            traj = np.hstack((traj, new_shares))
+            new_shares = self.F(current_shares)
             delta = np.abs(new_shares - current_shares)
+
+            # update the trajectory
+            traj = np.hstack((traj, new_shares[:, np.newaxis]))
 
         return traj
 
@@ -156,7 +158,7 @@ class Model(HasPrivateTraits):
         if T is not None:
             traj = self._simulate_fixed_trajectory(initial_condition, T)
         elif rtol is not None:
-            traj = self._simulate_fixed_trajectory(initial_condition, rtol)
+            traj = self._simulate_variable_trajectory(initial_condition, rtol)
         else:
             raise ValueError("One of 'T' or 'rtol' must be specified.")
         return traj
