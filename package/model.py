@@ -112,6 +112,14 @@ class Model(HasPrivateTraits):
         jac = wrapped_symbolics.residual_jacobian(*X, **self.params)
         return np.array(jac)
 
+    def _simulate_fixed_trajectory(self):
+        """Simulates a trajectory of fixed length."""
+        pass
+
+    def _simulate_variable_trajectory(self):
+        """Simulates a trajectory of variable length."""
+        pass
+
     def F(self, X):
         """Equation of motion for population allele shares."""
         out = wrapped_symbolics.model_system(*X, **self.params)
