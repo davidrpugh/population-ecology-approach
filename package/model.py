@@ -126,7 +126,20 @@ class Model(HasPrivateTraits):
 
     def _simulate_variable_trajectory(self, initial_condition, rtol):
         """Simulates a trajectory of variable length."""
-        pass
+        # set up the trajectory array
+        traj = initial_condition[:, np.newaxis]
+
+        # initialize delta
+        delta = np.ones(8)
+
+        # run the simulation
+        while np.any(np.greater(delta, rtol)):
+            current_shares = traj[:, -1]
+            new_shares = self.F(current_shares)[:, np.newaxis]
+            traj = np.hstack((traj, new_shares))
+            delta = np.abs(new_shares - current_shares)
+
+        return traj
 
     def F(self, X):
         """Equation of motion for population allele shares."""
