@@ -112,11 +112,11 @@ class Model(HasPrivateTraits):
         jac = wrapped_symbolics.residual_jacobian(*X, **self.params)
         return np.array(jac)
 
-    def _simulate_fixed_trajectory(self):
+    def _simulate_fixed_trajectory(self, initial_condition, T):
         """Simulates a trajectory of fixed length."""
         pass
 
-    def _simulate_variable_trajectory(self):
+    def _simulate_variable_trajectory(self, initial_condition, rtol):
         """Simulates a trajectory of variable length."""
         pass
 
