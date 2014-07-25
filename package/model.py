@@ -138,7 +138,12 @@ class Model(HasPrivateTraits):
         jac = wrapped_symbolics.model_jacobian(*X, **self.params)
         return np.array(jac)
 
-    def simulate(self, initial_condition, T=10):
+    def simulate(self, initial_condition, T=None, rtol=None):
         """Simulates a run of the model given some initial_condition."""
-        pass
-        
+        if T is not None:
+            traj = self._simulate_fixed_trajectory(initial_condition, T)
+        elif rtol is not None:
+            traj = self._simulate_fixed_trajectory(initial_condition, rtol)
+        else:
+            raise ValueError("One of 'T' or 'rtol' must be specified.")
+        return traj
