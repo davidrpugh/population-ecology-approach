@@ -114,7 +114,15 @@ class Model(HasPrivateTraits):
 
     def _simulate_fixed_trajectory(self, initial_condition, T):
         """Simulates a trajectory of fixed length."""
-        pass
+        # set up the trajectory array
+        traj = np.empty((8, T))
+        traj[:, 0] = initial_condition
+
+        # run the simulation
+        for t in range(1, T):
+            traj[:, t] = self.F(traj[:, t-1])
+
+        return traj
 
     def _simulate_variable_trajectory(self, initial_condition, rtol):
         """Simulates a trajectory of variable length."""
@@ -132,13 +140,5 @@ class Model(HasPrivateTraits):
 
     def simulate(self, initial_condition, T=10):
         """Simulates a run of the model given some initial_condition."""
-
-        # set up the trajectory array
-        traj = np.empty((8, T))
-        traj[:, 0] = initial_condition
-
-        # run the simulation
-        for t in range(1, T):
-            traj[:, t] = self.F(traj[:, t-1])
-
-        return traj
+        pass
+        
