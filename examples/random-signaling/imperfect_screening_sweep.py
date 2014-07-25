@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from package import model
 
 # fix the initial condition
-prng = np.random.RandomState(42)
+prng = np.random.RandomState(12345)
 initial_males = prng.dirichlet(np.ones(4), size=1)
-initial_females = prng.dirichlet(np.ones(4), size=1)
+initial_females = initial_males
 initial_condition = np.hstack((initial_males, initial_females))
 
 # define an array of screening probabilities
@@ -59,14 +59,14 @@ axes[0, 1].imshow(results[:, :, 1], origin='lower', extent=[0, 1, 0, 1],
                   interpolation='gaussian', vmin=0, vmax=1)
 CS1 = axes[0, 1].contour(results[:, :, 1], levels=[initial_condition[0, 1]],
                          colors='white', origin='lower', extent=[0, 1, 0, 1])
-axes[0, 0].clabel(CS1, inline=1, fontsize=10)
+axes[0, 1].clabel(CS1, inline=1, fontsize=10)
 axes[0, 1].set_title('$m_{Ga}$', fontsize=20)
 
 axes[1, 0].imshow(results[:, :, 2], origin='lower', extent=[0, 1, 0, 1],
                   interpolation='gaussian', vmin=0, vmax=1)
 CS2 = axes[1, 0].contour(results[:, :, 2], levels=[initial_condition[0, 2]],
                          colors='white', origin='lower', extent=[0, 1, 0, 1])
-axes[0, 0].clabel(CS2, inline=1, fontsize=10)
+axes[1, 0].clabel(CS2, inline=1, fontsize=10)
 
 axes[1, 0].set_xlabel('$e_a$', fontsize=20, rotation='horizontal')
 axes[1, 0].set_ylabel('$e_A$', fontsize=20, rotation='horizontal')
@@ -76,7 +76,7 @@ axes[1, 1].imshow(results[:, :, 3], origin='lower', extent=[0, 1, 0, 1],
                   interpolation='gaussian', vmin=0, vmax=1)
 CS3 = axes[1, 1].contour(results[:, :, 3], levels=[initial_condition[0, 3]],
                          colors='white', origin='lower', extent=[0, 1, 0, 1])
-axes[0, 0].clabel(CS3, inline=1, fontsize=10)
+axes[1, 1].clabel(CS3, inline=1, fontsize=10)
 axes[1, 1].set_xlabel('$e_a$', fontsize=20, rotation='horizontal')
 axes[1, 1].set_title('$m_{ga}$', fontsize=20)
 
