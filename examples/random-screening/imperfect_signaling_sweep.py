@@ -208,6 +208,7 @@ CS0 = axes[0, 0].contour(results[:, :, 4:7:2].sum(axis=-1),
 axes[0, 0].clabel(CS0, inline=1, fontsize=10)
 
 # labels, title, etc
+axes[0, 0].set_xlabel('$d_a$', fontsize=20, rotation='horizontal')
 axes[0, 0].set_ylabel('$d_A$', fontsize=20, rotation='horizontal')
 axes[0, 0].set_title('$f_{A}$', fontsize=20)
 
@@ -219,6 +220,7 @@ CS1 = axes[0, 1].contour(results[:, :, 5:8:2].sum(axis=-1),
                          levels=[initial_condition[0, 1]],
                          colors='white', origin='lower', extent=[0, 1, 0, 1])
 axes[0, 1].clabel(CS1, inline=1, fontsize=10)
+axes[0, 1].set_xlabel('$d_a$', fontsize=20, rotation='horizontal')
 axes[0, 1].set_title('$f_{a}$', fontsize=20)
 
 # add a color bar
