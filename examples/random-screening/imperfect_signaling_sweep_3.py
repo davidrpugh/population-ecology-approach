@@ -76,8 +76,9 @@ mappable = ax.imshow(female_altruists, extent=[0, 1, 0, 1], origin='lower',
                      vmin=0, vmax=1)
 
 # labels, title, etc
-ax.set_xlabel('$d_A=d_a$', fontsize=20)
-ax.set_ylabel('$f_{GA}$', fontsize=20, rotation='horizontal')
+ax.set_xlabel('$f_{GA}$', fontsize=20)
+ax.set_ylabel('$d_A=d_a$', fontsize=20, rotation='horizontal')
+ax.yaxis.set_label_coords(-0.1, 0.5)
 fig_title = ("Equilibrium share of 'Altruistic' females, $f_{A}$,\n" +
              "for various initial conditions and signaling probs")
 ax.set_title(fig_title)
