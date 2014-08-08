@@ -1,6 +1,7 @@
 import sys
 sys.path.append('../../')
 
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import interpolate
@@ -13,8 +14,10 @@ params = {'dA': 0.25, 'da': 0.25, 'eA': 0.0, 'ea': 0.0, 'PiaA': 6.0,
 
 # define an array of initial conditions
 N = 500
-prng = np.random.RandomState(42)
-initial_males = prng.dirichlet(np.ones(4), size=N)
+prng = np.random.RandomState(2)
+pure_males = prng.dirichlet(np.ones(2), size=N)
+initial_males = np.zeros((N, 4))
+initial_males[:, 0:4:3] = pure_males
 initial_females = initial_males
 initial_conditions = np.hstack((initial_males, initial_females))
 
@@ -52,7 +55,6 @@ interpolated_shares = interpolate.griddata(points=(fga, fGA),
                                            fill_value=np.nan,
                                            )
 
-
 # plot the interpolated values
 mappable = ax.imshow(np.where(fgai + fGAi <= 1.0, interpolated_shares, np.nan),
                      extent=[0, 1, 0, 1], origin='lower', vmin=0, vmax=1)
@@ -70,5 +72,5 @@ fig.subplots_adjust(bottom=0.1, right=0.8, top=0.9)
 cax = fig.add_axes([0.85, 0.1, 0.075, 0.8])
 fig.colorbar(mappable, cax=cax)
 
-fig.savefig('../../images/random-screening/imperfect_signaling_sweep_5.png')
+fig.savefig('../../images/random-screening/imperfect_signaling_sweep_6.png')
 plt.show()
