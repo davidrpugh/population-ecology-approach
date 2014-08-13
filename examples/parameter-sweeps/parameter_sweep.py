@@ -1,6 +1,5 @@
 import sys
-sys.path.append('../')
-
+sys.path.append('../../')
 
 import numpy as np
 
@@ -11,7 +10,7 @@ mod = model.Model()
 
 # define an array of initial conditions S_A = mGA = fGA
 N_initial = 5
-eps = 1e-2
+eps = 1e-3
 mGA0 = np.linspace(eps, 1 - eps, N_initial)
 mga0 = 1 - mGA0
 
@@ -22,8 +21,8 @@ initial_females = initial_males
 initial_conditions = np.hstack((initial_males, initial_females))
 
 # define some signaling and screening params
-N_probs = 11
-signaling_probs = np.linspace(0, 1, N_probs)
+N_probs = 7
+signaling_probs = np.linspace(eps, 1 - eps, N_probs)
 screening_probs = signaling_probs
 
 # storage container for results
@@ -33,6 +32,7 @@ results = np.empty(tmp_shape)
 
 def main():
     """Runs the parameter sweep."""
+    counter = 0
     for i, dA in enumerate(signaling_probs):
         for j, da in enumerate(signaling_probs):
             for k, eA in enumerate(screening_probs):
@@ -41,8 +41,8 @@ def main():
 
                         # fix the model parameters
                         tmp_params = {'dA': dA, 'da': da, 'eA': eA, 'ea': ea,
-                                      'PiaA': 6.0, 'PiAA': 5.0, 'Piaa': 4.0, 
-                                      'PiAa': 3.0}
+                                      'PiaA': 10.0, 'PiAA': 3.0, 'Piaa': 2.0,
+                                      'PiAa': 0.0}
                         mod.params = tmp_params
 
                         # simulate the model to find the equilibrium
@@ -50,6 +50,11 @@ def main():
 
                         # store the results
                         results[i, j, k, l, m, :] = tmp_traj[:, -1]
+
+                        counter += 1
+
+                        if counter % 100 == 0:
+                            print('Done with {} out of {}'.format(counter, results.size / 8))
 
     np.save("parameter_sweep", results)
 

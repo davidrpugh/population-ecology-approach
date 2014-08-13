@@ -1,10 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from parameter_sweep import initial_conditions, signaling_probs
+import parameter_sweep
+reload(parameter_sweep)
 
+# load the results file
 results = np.load("parameter_sweep.npy")
 
+initial_conditions = parameter_sweep.initial_conditions
+signaling_probs = parameter_sweep.signaling_probs
 
 ### various screening probabilities and useless signaling
 fig = plt.figure(figsize=(18, 12))
@@ -36,7 +40,7 @@ fig.subplots_adjust(right=0.8)
 cax = fig.add_axes([0.85, 0.1, 0.075, 0.8])
 fig.colorbar(mappable, cax=cax)
 
-fig.savefig('../images/parameter-sweeps/screening/figure-0.png')
+fig.savefig('../../images/parameter-sweeps/screening/figure-0.png')
 plt.show()
 
 
@@ -45,7 +49,7 @@ fig = plt.figure(figsize=(18, 12))
 
 for i, initial_condition in enumerate(initial_conditions):
 
-    imperfect_signaling = results[2, 2, :, :, i]
+    imperfect_signaling = results[1, 1, :, :, i]
     female_altruists = imperfect_signaling[:, :, 4:7:2].sum(axis=-1)
 
     # plot the equilibrium proportion of female altruists
@@ -63,14 +67,14 @@ for i, initial_condition in enumerate(initial_conditions):
 
 fig_title = ("Equilibrium share of 'altruistic' females, $f_A$,\n" +
              "for various screening probabilities and imperfect signaling ($d_A=d_a={}$)")
-fig.suptitle(fig_title.format(signaling_probs[2]), fontsize=20, family='serif')
+fig.suptitle(fig_title.format(signaling_probs[1]), fontsize=20, family='serif')
 
 # add a color bar
 fig.subplots_adjust(right=0.8)
 cax = fig.add_axes([0.85, 0.1, 0.075, 0.8])
 fig.colorbar(mappable, cax=cax)
 
-fig.savefig('../images/parameter-sweeps/screening/figure-1.png')
+fig.savefig('../../images/parameter-sweeps/screening/figure-1.png')
 plt.show()
 
 
@@ -79,7 +83,8 @@ fig = plt.figure(figsize=(18, 12))
 
 for i, initial_condition in enumerate(initial_conditions):
 
-    random_signaling = results[5, 5, :, :, i]
+    idx = np.searchsorted(signaling_probs, 0.5)
+    random_signaling = results[idx, idx, :, :, i]
     female_altruists = random_signaling[:, :, 4:7:2].sum(axis=-1)
 
     # plot the equilibrium proportion of female altruists
@@ -97,14 +102,14 @@ for i, initial_condition in enumerate(initial_conditions):
 
 fig_title = ("Equilibrium share of 'altruistic' females, $f_A$,\n" +
              "for various screening probabilities and random signaling ($d_A=d_a={}$)")
-fig.suptitle(fig_title.format(signaling_probs[5]), fontsize=20, family='serif')
+fig.suptitle(fig_title.format(signaling_probs[idx]), fontsize=20, family='serif')
 
 # add a color bar
 fig.subplots_adjust(right=0.8)
 cax = fig.add_axes([0.85, 0.1, 0.075, 0.8])
 fig.colorbar(mappable, cax=cax)
 
-fig.savefig('../images/parameter-sweeps/screening/figure-2.png')
+fig.savefig('../../images/parameter-sweeps/screening/figure-2.png')
 plt.show()
 
 
@@ -113,7 +118,7 @@ fig = plt.figure(figsize=(18, 12))
 
 for i, initial_condition in enumerate(initial_conditions):
 
-    imperfect_signaling = results[8, 8, :, :, i]
+    imperfect_signaling = results[-2, -2, :, :, i]
     female_altruists = imperfect_signaling[:, :, 4:7:2].sum(axis=-1)
 
     # plot the equilibrium proportion of female altruists
@@ -131,14 +136,14 @@ for i, initial_condition in enumerate(initial_conditions):
 
 fig_title = ("Equilibrium share of 'altruistic' females, $f_A$,\n" +
              "for various screening probabilities and imperfect signaling ($d_A=d_a={}$)")
-fig.suptitle(fig_title.format(signaling_probs[8]), fontsize=20, family='serif')
+fig.suptitle(fig_title.format(signaling_probs[-2]), fontsize=20, family='serif')
 
 # add a color bar
 fig.subplots_adjust(right=0.8)
 cax = fig.add_axes([0.85, 0.1, 0.075, 0.8])
 fig.colorbar(mappable, cax=cax)
 
-fig.savefig('../images/parameter-sweeps/screening/figure-3.png')
+fig.savefig('../../images/parameter-sweeps/screening/figure-3.png')
 plt.show()
 
 
@@ -172,7 +177,7 @@ fig.subplots_adjust(right=0.8)
 cax = fig.add_axes([0.85, 0.1, 0.075, 0.8])
 fig.colorbar(mappable, cax=cax)
 
-fig.savefig('../images/parameter-sweeps/screening/figure-4.png')
+fig.savefig('../../images/parameter-sweeps/screening/figure-4.png')
 plt.show()
 
 
@@ -181,7 +186,7 @@ fig = plt.figure(figsize=(18, 12))
 
 for i, initial_condition in enumerate(initial_conditions):
 
-    asymmetric_signaling = results[8, 2, :, :, i]
+    asymmetric_signaling = results[-2, 1, :, :, i]
     female_altruists = asymmetric_signaling[:, :, 4:7:2].sum(axis=-1)
 
     # plot the equilibrium proportion of female altruists
@@ -199,7 +204,7 @@ for i, initial_condition in enumerate(initial_conditions):
 
 fig_title = ("Equilibrium share of 'altruistic' females, $f_A$,\n" +
              "for various screening probabilities and asymmetric signaling ($d_A={}, d_a={}$)")
-fig.suptitle(fig_title.format(signaling_probs[8], signaling_probs[2]),
+fig.suptitle(fig_title.format(signaling_probs[-2], signaling_probs[1]),
              fontsize=20, family='serif')
 
 # add a color bar
@@ -207,7 +212,7 @@ fig.subplots_adjust(right=0.8)
 cax = fig.add_axes([0.85, 0.1, 0.075, 0.8])
 fig.colorbar(mappable, cax=cax)
 
-fig.savefig('../images/parameter-sweeps/screening/figure-5.png')
+fig.savefig('../../images/parameter-sweeps/screening/figure-5.png')
 plt.show()
 
 
@@ -216,7 +221,7 @@ fig = plt.figure(figsize=(18, 12))
 
 for i, initial_condition in enumerate(initial_conditions):
 
-    asymmetric_signaling = results[2, 8, :, :, i]
+    asymmetric_signaling = results[1, -2, :, :, i]
     female_altruists = asymmetric_signaling[:, :, 4:7:2].sum(axis=-1)
 
     # plot the equilibrium proportion of female altruists
@@ -234,7 +239,7 @@ for i, initial_condition in enumerate(initial_conditions):
 
 fig_title = ("Equilibrium share of 'altruistic' females, $f_A$,\n" +
              "for various screening probabilities and asymmetric signaling ($d_A={}, d_a={}$)")
-fig.suptitle(fig_title.format(signaling_probs[2], signaling_probs[8]),
+fig.suptitle(fig_title.format(signaling_probs[1], signaling_probs[-2]),
              fontsize=20, family='serif')
 
 # add a color bar
@@ -242,5 +247,5 @@ fig.subplots_adjust(right=0.8)
 cax = fig.add_axes([0.85, 0.1, 0.075, 0.8])
 fig.colorbar(mappable, cax=cax)
 
-fig.savefig('../images/parameter-sweeps/screening/figure-6.png')
+fig.savefig('../../images/parameter-sweeps/screening/figure-6.png')
 plt.show()
