@@ -1,14 +1,17 @@
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
 import parameter_sweep
-reload(parameter_sweep)
 
 # load the results file
 results = np.load("parameter_sweep.npy")
 
 initial_conditions = parameter_sweep.initial_conditions
 signaling_probs = parameter_sweep.signaling_probs
+
+# define the desired color map
+cmap = mpl.cm.hot
 
 ### various screening probabilities and useless signaling
 fig = plt.figure(figsize=(18, 12))
@@ -21,7 +24,7 @@ for i, initial_condition in enumerate(initial_conditions):
     # plot the equilibrium proportion of female altruists
     ax = fig.add_subplot(2, 3, i+1)
     mappable = ax.imshow(female_altruists, extent=[0, 1, 0, 1], origin='lower',
-                         vmin=0, vmax=1)
+                         vmin=0, vmax=1, cmap=cmap)
     ax.set_xlabel('$e_a$', fontsize=20)
     ax.set_ylabel('$e_A$', fontsize=20, rotation='horizontal')
 
@@ -55,7 +58,7 @@ for i, initial_condition in enumerate(initial_conditions):
     # plot the equilibrium proportion of female altruists
     ax = fig.add_subplot(2, 3, i+1)
     mappable = ax.imshow(female_altruists, extent=[0, 1, 0, 1], origin='lower',
-                         vmin=0, vmax=1)
+                         vmin=0, vmax=1, cmap=cmap)
     ax.set_xlabel('$e_a$', fontsize=20)
     ax.set_ylabel('$e_A$', fontsize=20, rotation='horizontal')
 
@@ -90,7 +93,7 @@ for i, initial_condition in enumerate(initial_conditions):
     # plot the equilibrium proportion of female altruists
     ax = fig.add_subplot(2, 3, i+1)
     mappable = ax.imshow(female_altruists, extent=[0, 1, 0, 1], origin='lower',
-                         vmin=0, vmax=1)
+                         vmin=0, vmax=1, cmap=cmap)
     ax.set_xlabel('$e_a$', fontsize=20)
     ax.set_ylabel('$e_A$', fontsize=20, rotation='horizontal')
 
@@ -124,7 +127,7 @@ for i, initial_condition in enumerate(initial_conditions):
     # plot the equilibrium proportion of female altruists
     ax = fig.add_subplot(2, 3, i+1)
     mappable = ax.imshow(female_altruists, extent=[0, 1, 0, 1], origin='lower',
-                         vmin=0, vmax=1)
+                         vmin=0, vmax=1, cmap=cmap)
     ax.set_xlabel('$e_a$', fontsize=20)
     ax.set_ylabel('$e_A$', fontsize=20, rotation='horizontal')
 
@@ -158,7 +161,7 @@ for i, initial_condition in enumerate(initial_conditions):
     # plot the equilibrium proportion of female altruists
     ax = fig.add_subplot(2, 3, i+1)
     mappable = ax.imshow(female_altruists, extent=[0, 1, 0, 1], origin='lower',
-                         vmin=0, vmax=1)
+                         vmin=0, vmax=1, cmap=cmap)
     ax.set_xlabel('$e_a$', fontsize=20)
     ax.set_ylabel('$e_A$', fontsize=20, rotation='horizontal')
 
@@ -192,7 +195,7 @@ for i, initial_condition in enumerate(initial_conditions):
     # plot the equilibrium proportion of female altruists
     ax = fig.add_subplot(2, 3, i+1)
     mappable = ax.imshow(female_altruists, extent=[0, 1, 0, 1], origin='lower',
-                         vmin=0, vmax=1)
+                         vmin=0, vmax=1, cmap=cmap)
     ax.set_xlabel('$e_a$', fontsize=20)
     ax.set_ylabel('$e_A$', fontsize=20, rotation='horizontal')
 
@@ -227,7 +230,7 @@ for i, initial_condition in enumerate(initial_conditions):
     # plot the equilibrium proportion of female altruists
     ax = fig.add_subplot(2, 3, i+1)
     mappable = ax.imshow(female_altruists, extent=[0, 1, 0, 1], origin='lower',
-                         vmin=0, vmax=1)
+                         vmin=0, vmax=1, cmap=cmap)
     ax.set_xlabel('$e_a$', fontsize=20)
     ax.set_ylabel('$e_A$', fontsize=20, rotation='horizontal')
 
