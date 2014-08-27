@@ -36,7 +36,7 @@ for i, initial_condition in enumerate(initial_conditions):
     ax.set_title(sub_title % (mGA0, mga0))
 
 fig_title = ("Equilibrium share of 'altruistic' females, $f_A$,\n" +
-             "for various signaling probabilities and useless screening ($e_A=e_a={}$)")
+             "for various signaling probabilities and almost random screening ($e_A=e_a={}$)")
 fig.suptitle(fig_title.format(screening_probs[0]), fontsize=20, family='serif')
 
 # add a color bar
@@ -105,7 +105,7 @@ for i, initial_condition in enumerate(initial_conditions):
     ax.set_title(sub_title % (mGA0, mga0))
 
 fig_title = ("Equilibrium share of 'altruistic' females, $f_A$,\n" +
-             "for various signaling probabilities and random screening ($e_A=e_a={}$)")
+             "for various signaling probabilities and imperfect screening ($e_A=e_a={}$)")
 fig.suptitle(fig_title.format(screening_probs[idx]), fontsize=20, family='serif')
 
 # add a color bar
@@ -173,7 +173,7 @@ for i, initial_condition in enumerate(initial_conditions):
     ax.set_title(sub_title % (mGA0, mga0))
 
 fig_title = ("Equilibrium share of 'altruistic' females, $f_A$,\n" +
-             "for various signaling probabilities and perfect screening ($e_A=e_a={}$)")
+             "for various signaling probabilities and almost perfect screening ($e_A=e_a={}$)")
 fig.suptitle(fig_title.format(screening_probs[-1]), fontsize=20, family='serif')
 
 # add a color bar
