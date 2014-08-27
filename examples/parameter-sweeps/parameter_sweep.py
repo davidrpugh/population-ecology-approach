@@ -1,5 +1,6 @@
 import sys
 sys.path.append('../../')
+import time
 
 import numpy as np
 
@@ -21,7 +22,7 @@ initial_females = initial_males
 initial_conditions = np.hstack((initial_males, initial_females))
 
 # define some signaling and screening params
-N_probs = 7
+N_probs = 11
 signaling_probs = np.linspace(eps, 1 - eps, N_probs)
 screening_probs = signaling_probs
 
@@ -41,8 +42,8 @@ def main():
 
                         # fix the model parameters
                         tmp_params = {'dA': dA, 'da': da, 'eA': eA, 'ea': ea,
-                                      'PiaA': 10.0, 'PiAA': 3.0, 'Piaa': 2.0,
-                                      'PiAa': 0.0}
+                                      'PiaA': 16.0, 'PiAA': 4.0, 'Piaa': 2.0,
+                                      'PiAa': 1.0}
                         mod.params = tmp_params
 
                         # simulate the model to find the equilibrium
@@ -53,8 +54,9 @@ def main():
 
                         counter += 1
 
-                        if counter % 100 == 0:
+                        if counter % 1000 == 0:
                             print('Done with {} out of {}'.format(counter, results.size / 8))
+                            print(time.ctime())
 
     np.save("parameter_sweep", results)
 
