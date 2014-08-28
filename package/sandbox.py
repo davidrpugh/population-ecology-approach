@@ -76,9 +76,9 @@ def get_matching_probability(i, j):
                      iscarrier_G(i) * iscarrier_a(j) * SGa +
                      iscarrier_g(i) * iscarrier_A(j) * SgA +
                      iscarrier_g(i) * iscarrier_a(j) * Sga)
-    population_share = girls[j] / girls_with_same_allele(j)
+    girl_population_share = girls[j] / girls_with_same_allele(j)
 
-    return matching_prob * population_share
+    return matching_prob * girl_population_share
 
 
 def girls_with_same_allele(j):
