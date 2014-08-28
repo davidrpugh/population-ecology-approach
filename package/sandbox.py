@@ -1,7 +1,7 @@
 import sympy as sym
 
 # number of female children of particular genotype
-female_children = sym.DeferredVector('f')
+girls = sym.DeferredVector('f')
 
 # Female signaling probabilities
 dA, da = sym.var('dA, da')
@@ -13,13 +13,13 @@ eA, ea = sym.var('eA, ea')
 PiaA, PiAA, Piaa, PiAa = sym.var('PiaA, PiAA, Piaa, PiAa')
 
 # Female population by phenotype.
-altruistic_females = female_children[0] + female_children[2]
-selfish_females = female_children[1] + female_children[3]
+altruistic_girls = girls[0] + girls[2]
+selfish_girls = girls[1] + girls[3]
 
-# Probability of male with gene gamma matching with female carrying gene alpha.
-SGA = (dA * altruistic_females) / (dA * altruistic_females + (1 - eA) * (1 - da) * selfish_females)
+# Probability of man with gene gamma matching with girl carrying gene alpha.
+SGA = (dA * altruistic_girls) / (dA * altruistic_girls + (1 - eA) * (1 - da) * selfish_girls)
 SGa = 1 - SGA
-Sga = (da * selfish_females) / (da * selfish_females + (1 - ea) * (1 - dA) * altruistic_females)
+Sga = (da * selfish_girls) / (da * selfish_girls + (1 - ea) * (1 - dA) * altruistic_girls)
 SgA = 1 - Sga
 
 
@@ -64,6 +64,11 @@ def get_matching_probability(i, j):
                      iscarrier_G(i) * iscarrier_a(j) * SGa +
                      iscarrier_g(i) * iscarrier_A(j) * SgA +
                      iscarrier_g(i) * iscarrier_a(j) * Sga)
-    population_share = female_children[j] / (iscarrier_A(j) * (altruistic_females) + iscarrier_a(j) * (selfish_females))
+    population_share = girls[j] / girls_with_same_allele(j)
 
     return matching_prob * population_share
+
+
+def girls_with_same_allele(j):
+    """Number of girls who share same alpha with genotype j."""
+    return (iscarrier_A(j) * (altruistic_girls) + iscarrier_a(j) * (selfish_girls))
