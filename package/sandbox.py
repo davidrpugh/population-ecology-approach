@@ -49,8 +49,8 @@ def iscarrier_a(i):
     return 1 - iscarrier_A(i)
 
 
-def get_payoff(i, j):
-    """Payoff to female with genotype i, when matched to female with genotype j."""
+def get_individual_payoff(i, j):
+    """Payoff to girl with genotype i, when matched to girl with genotype j."""
     payoff = (iscarrier_a(i) * iscarrier_A(j) * PiaA +
               iscarrier_A(i) * iscarrier_A(j) * PiAA +
               iscarrier_a(i) * iscarrier_a(j) * Piaa +
@@ -58,8 +58,14 @@ def get_payoff(i, j):
     return payoff
 
 
+def get_family_payoff(i, j):
+    """Payoff to family with girls with genotype i and j."""
+    family_payoff = get_individual_payoff(i, j) + get_individual_payoff(j, i)
+    return family_payoff
+
+
 def get_matching_probability(i, j):
-    """Probability that male with genotype i is matched to female with genotype j."""
+    """Probability that man with genotype i is matched to girl with genotype j."""
     matching_prob = (iscarrier_G(i) * iscarrier_A(j) * SGA +
                      iscarrier_G(i) * iscarrier_a(j) * SGa +
                      iscarrier_g(i) * iscarrier_A(j) * SgA +
