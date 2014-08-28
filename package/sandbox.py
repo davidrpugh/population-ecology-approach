@@ -64,6 +64,12 @@ def get_family_payoff(i, j):
     return family_payoff
 
 
+def get_relative_payoff(i, j):
+    """Payoff to girl with genotype i, relative to total family payoff."""
+    relative_payoff = get_individual_payoff(i, j) / get_family_payoff(i, j)
+    return relative_payoff
+
+
 def get_matching_probability(i, j):
     """Probability that man with genotype i is matched to girl with genotype j."""
     matching_prob = (iscarrier_G(i) * iscarrier_A(j) * SGA +
