@@ -53,7 +53,8 @@ fig = plt.figure(figsize=(18, 12))
 
 for i, initial_condition in enumerate(initial_conditions):
 
-    imperfect_screening = results[:, :, 1, 1, i]
+    idx = np.searchsorted(screening_probs, 0.25)
+    imperfect_screening = results[:, :, idx, idx, i]
     female_altruists = imperfect_screening[:, :, 4:7:2].sum(axis=-1)
 
     # plot the equilibrium proportion of female altruists
@@ -71,7 +72,7 @@ for i, initial_condition in enumerate(initial_conditions):
 
 fig_title = ("Equilibrium share of 'altruistic' females, $f_A$,\n" +
              "for various signaling probabilities and imperfect screening ($e_A=e_a={}$)")
-fig.suptitle(fig_title.format(screening_probs[1]), fontsize=20, family='serif')
+fig.suptitle(fig_title.format(screening_probs[idx]), fontsize=20, family='serif')
 
 # add a color bar
 fig.subplots_adjust(right=0.8)
@@ -122,7 +123,8 @@ fig = plt.figure(figsize=(18, 12))
 
 for i, initial_condition in enumerate(initial_conditions):
 
-    imperfect_screening = results[:, :, -2, -2, i]
+    idx = np.searchsorted(screening_probs, 0.75)
+    imperfect_screening = results[:, :, idx, idx, i]
     female_altruists = imperfect_screening[:, :, 4:7:2].sum(axis=-1)
 
     # plot the equilibrium proportion of female altruists
@@ -140,7 +142,7 @@ for i, initial_condition in enumerate(initial_conditions):
 
 fig_title = ("Equilibrium share of 'altruistic' females, $f_A$,\n" +
              "for various signaling probabilities and imperfect screening ($e_A=e_a={}$)")
-fig.suptitle(fig_title.format(screening_probs[-2]), fontsize=20, family='serif')
+fig.suptitle(fig_title.format(screening_probs[idx]), fontsize=20, family='serif')
 
 # add a color bar
 fig.subplots_adjust(right=0.8)
@@ -190,7 +192,9 @@ fig = plt.figure(figsize=(18, 12))
 
 for i, initial_condition in enumerate(initial_conditions):
 
-    asymmetric_screening = results[:, :, -2, 1, i]
+    lower_idx = np.searchsorted(screening_probs, 0.25)
+    upper_idx = np.searchsorted(screening_probs, 0.75)
+    asymmetric_screening = results[:, :, upper_idx, lower_idx, i]
     female_altruists = asymmetric_screening[:, :, 4:7:2].sum(axis=-1)
 
     # plot the equilibrium proportion of female altruists
@@ -208,7 +212,7 @@ for i, initial_condition in enumerate(initial_conditions):
 
 fig_title = ("Equilibrium share of 'altruistic' females, $f_A$,\n" +
              "for various signaling probabilities and asymmetric screening ($e_A={}, e_a={}$)")
-fig.suptitle(fig_title.format(screening_probs[-2], screening_probs[1]),
+fig.suptitle(fig_title.format(screening_probs[upper_idx], screening_probs[lower_idx]),
              fontsize=20, family='serif')
 
 # add a color bar
@@ -225,7 +229,9 @@ fig = plt.figure(figsize=(18, 12))
 
 for i, initial_condition in enumerate(initial_conditions):
 
-    asymmetric_screening = results[:, :, 1, -2, i]
+    lower_idx = np.searchsorted(screening_probs, 0.25)
+    upper_idx = np.searchsorted(screening_probs, 0.75)
+    asymmetric_screening = results[:, :, lower_idx, upper_idx, i]
     female_altruists = asymmetric_screening[:, :, 4:7:2].sum(axis=-1)
 
     # plot the equilibrium proportion of female altruists
@@ -243,7 +249,7 @@ for i, initial_condition in enumerate(initial_conditions):
 
 fig_title = ("Equilibrium share of 'altruistic' females, $f_A$,\n" +
              "for various signaling probabilities and asymmetric screening ($e_A={}, e_a={}$)")
-fig.suptitle(fig_title.format(screening_probs[1], screening_probs[-2]),
+fig.suptitle(fig_title.format(screening_probs[lower_idx], screening_probs[upper_idx]),
              fontsize=20, family='serif')
 
 # add a color bar
