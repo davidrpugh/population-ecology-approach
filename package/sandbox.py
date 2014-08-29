@@ -3,6 +3,9 @@ import sympy as sym
 # number of female children of particular genotype
 girls = sym.DeferredVector('f')
 
+# number of male adults of particular genotype
+men = sym.DeferredVector('M')
+
 # Female signaling probabilities
 dA, da = sym.var('dA, da')
 
