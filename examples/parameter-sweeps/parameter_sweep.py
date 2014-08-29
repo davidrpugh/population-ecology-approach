@@ -42,8 +42,8 @@ def main():
 
                         # fix the model parameters
                         tmp_params = {'dA': dA, 'da': da, 'eA': eA, 'ea': ea,
-                                      'PiaA': 16.0, 'PiAA': 4.0, 'Piaa': 2.0,
-                                      'PiAa': 1.0}
+                                      'PiaA': 9.0, 'PiAA': 5.0, 'Piaa': 3.0,
+                                      'PiAa': 2.0}
                         mod.params = tmp_params
 
                         # simulate the model to find the equilibrium
