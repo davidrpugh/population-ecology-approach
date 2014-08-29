@@ -23,6 +23,20 @@ Sga = (da * selfish_girls) / (da * selfish_girls + (1 - ea) * (1 - dA) * altruis
 SgA = 1 - Sga
 
 
+def b(i):
+    """Return binary representation of the integer."""
+    if i == 0:
+        return (0, 0)
+    elif i == 1:
+        return (0, 1)
+    elif i == 2:
+        return (1, 0)
+    elif i == 3:
+        return (1, 1)
+    else:
+        raise ValueError
+
+
 def iscarrier_G(i):
     """Return True if adult carries the G allele."""
     if i in [0, 1]:
@@ -84,3 +98,48 @@ def get_matching_probability(i, j):
 def girls_with_same_allele(j):
     """Number of girls who share same allele with genotype j."""
     return (iscarrier_A(j) * (altruistic_girls) + iscarrier_a(j) * (selfish_girls))
+
+
+def get_inheritance_probability(child, parent1, parent2):
+    """Conditional probability of a child's genotype, given parents' genotypes."""
+    if has_same_genotype(parent1, parent2):
+        if has_same_genotype(child, parent1):
+            return 1.0
+        else:
+            return 0.0
+
+    elif has_common_allele(parent1, parent2):
+        if has_common_allele(child, parent1):
+            return 0.5
+        else:
+            return 0.0
+
+    elif not has_common_allele(parent1, parent2):
+        if has_same_genotype(child, parent1):
+            return 0.25
+        elif has_same_genotype(child, parent2):
+            return 0.25
+        elif has_common_allele(child, parent1) and has_common_allele(child, parent2):
+            return 0.25
+        else:
+            return 0.0
+
+    else:
+        assert False, "You should not be reading this!"
+
+
+def has_common_allele(genotype1, genotype2):
+    """Return True if two genotypes share a common allele."""
+    for allele1, allele2 in zip(genotype1, genotype2):
+        if allele1 == allele2:
+            return True
+    else:
+        return False
+
+
+def has_same_genotype(genotype1, genotype2):
+    """Return True if two genotypes are a perfect match."""
+    if genotype1 == genotype2:
+        return True
+    else:
+        return False
