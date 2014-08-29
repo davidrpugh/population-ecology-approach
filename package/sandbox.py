@@ -133,6 +133,8 @@ def has_common_allele(genotype1, genotype2):
     for allele1, allele2 in zip(genotype1, genotype2):
         if allele1 == allele2:
             return True
+        else:
+            pass
     else:
         return False
 
