@@ -37,7 +37,7 @@ def b(i):
     elif i == 3:
         return (1, 1)
     else:
-        raise ValueError
+        raise ValueError('Valid genotype indices are 0,1,2,3')
 
 
 def iscarrier_G(i):
@@ -67,24 +67,24 @@ def iscarrier_a(i):
 
 
 def get_individual_payoff(i, j):
-    """Payoff to woman with genotype i, when matched to woman with genotype j."""
-    payoff = (iscarrier_a(i) * iscarrier_A(j) * PiaA +
-              iscarrier_A(i) * iscarrier_A(j) * PiAA +
-              iscarrier_a(i) * iscarrier_a(j) * Piaa +
-              iscarrier_A(i) * iscarrier_a(j) * PiAa)
-    return payoff
+    """Number of children produced by woman with genotype i when to woman with genotype j"""
+    female_i_children = (iscarrier_a(i) * iscarrier_A(j) * PiaA +
+                         iscarrier_A(i) * iscarrier_A(j) * PiAA +
+                         iscarrier_a(i) * iscarrier_a(j) * Piaa +
+                         iscarrier_A(i) * iscarrier_a(j) * PiAa)
+    return female_i_children
 
 
 def get_family_payoff(i, j):
-    """Payoff to family of women with genotype i and j."""
-    family_payoff = get_individual_payoff(i, j) + get_individual_payoff(j, i)
-    return family_payoff
+    """Number of children from families where women have genotypes i and j."""
+    total_children = get_individual_payoff(i, j) + get_individual_payoff(j, i)
+    return total_children
 
 
 def get_relative_payoff(i, j):
-    """Payoff to woman with genotype i, relative to total family payoff."""
-    relative_payoff = get_individual_payoff(i, j) / get_family_payoff(i, j)
-    return relative_payoff
+    """Share of children produced by woman with genotype i when to woman with genotype j"""
+    share_female_i_children = get_individual_payoff(i, j) / get_family_payoff(i, j)
+    return share_female_i_children
 
 
 def get_matching_probability(i, j):
@@ -93,18 +93,20 @@ def get_matching_probability(i, j):
                      iscarrier_G(i) * iscarrier_a(j) * SGa +
                      iscarrier_g(i) * iscarrier_A(j) * SgA +
                      iscarrier_g(i) * iscarrier_a(j) * Sga)
-    girl_population_share = girls[j] / girls_with_same_allele(j)
+    girl_population_share = girls[j] / girls_with_common_allele(j)
 
     return matching_prob * girl_population_share
 
 
-def girls_with_same_allele(j):
-    """Number of girls who share same allele with genotype j."""
-    return (iscarrier_A(j) * (altruistic_girls) + iscarrier_a(j) * (selfish_girls))
+def girls_with_common_allele(j):
+    """Number of girls who share common allele with genotype j."""
+    count = (iscarrier_A(j) * (altruistic_girls) +
+             iscarrier_a(j) * (selfish_girls))
+    return count
 
 
 def get_inheritance_probability(child, parent1, parent2):
-    """Conditional probability of a child's genotype, given parents' genotypes."""
+    """Conditional probability of child's genotype given parents' genotypes."""
     if has_same_genotype(parent1, parent2):
         if has_same_genotype(child, parent1):
             return 1.0
@@ -122,7 +124,8 @@ def get_inheritance_probability(child, parent1, parent2):
             return 0.25
         elif has_same_genotype(child, parent2):
             return 0.25
-        elif has_common_allele(child, parent1) and has_common_allele(child, parent2):
+        elif (has_common_allele(child, parent1) and
+              has_common_allele(child, parent2)):
             return 0.25
         else:
             return 0.0
