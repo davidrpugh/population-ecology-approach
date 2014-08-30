@@ -19,11 +19,20 @@ PiaA, PiAA, Piaa, PiAa = sym.var('PiaA, PiAA, Piaa, PiAa')
 altruistic_girls = girls[0] + girls[2]
 selfish_girls = girls[1] + girls[3]
 
-# Probability of man with gene gamma matching with girl carrying gene alpha.
-# when re-writing S functions...refer to them as phenotype matching conditional probabilities
-SGA = (dA * altruistic_girls) / (dA * altruistic_girls + (1 - eA) * (1 - da) * selfish_girls)
+# Conditional phenotype matching probabilities
+true_altruistic_girls = dA * altruistic_girls
+false_altruistic_girls = (1 - da) * selfish_girls
+mistaken_for_altruistic_girls = (1 - eA) * false_altruistic_girls
+altruist_adoption_pool = true_altruistic_girls + mistaken_for_altruistic_girls
+
+true_selfish_girls = da * selfish_girls
+false_selfish_girls = (1 - dA) * altruistic_girls
+mistaken_for_selfish_girls = (1 - ea) * false_selfish_girls
+selfish_adpotion_pool = true_selfish_girls + mistaken_for_selfish_girls
+
+SGA = true_altruistic_girls / altruist_adoption_pool
 SGa = 1 - SGA
-Sga = (da * selfish_girls) / (da * selfish_girls + (1 - ea) * (1 - dA) * altruistic_girls)
+Sga = true_selfish_girls / selfish_adpotion_pool
 SgA = 1 - Sga
 
 
