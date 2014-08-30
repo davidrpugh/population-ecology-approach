@@ -152,3 +152,10 @@ def has_same_genotype(genotype1, genotype2):
         return True
     else:
         return False
+
+
+def get_family_unit(i, j, k):
+    """Family unit comprised of male with genoytpe i, and females with genotypes j and k."""
+    U_ijk = (men[i] * get_genotype_matching_probability(i, j) *
+             get_genotype_matching_probability(i, k))
+    return U_ijk
