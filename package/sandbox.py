@@ -101,7 +101,6 @@ def get_genotype_matching_probability(i, j):
     """Conditional probability that man with genotype i is matched to girl with genotype j."""
     phenotype_matching_prob = get_phenotype_matching_probability(i, j)
     girl_population_share = girls[j] / girls_with_common_allele(j)
-
     return phenotype_matching_prob * girl_population_share
 
 
