@@ -20,6 +20,7 @@ altruistic_girls = girls[0] + girls[2]
 selfish_girls = girls[1] + girls[3]
 
 # Probability of man with gene gamma matching with girl carrying gene alpha.
+# when re-writing S functions...refer to them as phenotype matching probabilities
 SGA = (dA * altruistic_girls) / (dA * altruistic_girls + (1 - eA) * (1 - da) * selfish_girls)
 SGa = 1 - SGA
 Sga = (da * selfish_girls) / (da * selfish_girls + (1 - ea) * (1 - dA) * altruistic_girls)
@@ -67,35 +68,41 @@ def iscarrier_a(i):
 
 
 def get_individual_payoff(i, j):
-    """Number of children produced by woman with genotype i when to woman with genotype j"""
-    female_i_children = (iscarrier_a(i) * iscarrier_A(j) * PiaA +
-                         iscarrier_A(i) * iscarrier_A(j) * PiAA +
-                         iscarrier_a(i) * iscarrier_a(j) * Piaa +
-                         iscarrier_A(i) * iscarrier_a(j) * PiAa)
-    return female_i_children
+    """Payoff produced by woman with genotype i when to woman with genotype j"""
+    payoff_i = (iscarrier_a(i) * iscarrier_A(j) * PiaA +
+                iscarrier_A(i) * iscarrier_A(j) * PiAA +
+                iscarrier_a(i) * iscarrier_a(j) * Piaa +
+                iscarrier_A(i) * iscarrier_a(j) * PiAa)
+    return payoff_i
 
 
 def get_family_payoff(i, j):
-    """Number of children from families where women have genotypes i and j."""
-    total_children = get_individual_payoff(i, j) + get_individual_payoff(j, i)
-    return total_children
+    """Payoff from families where women have genotypes i and j."""
+    total_payoff = get_individual_payoff(i, j) + get_individual_payoff(j, i)
+    return total_payoff
 
 
-def get_relative_payoff(i, j):
-    """Share of children produced by woman with genotype i when to woman with genotype j"""
-    share_female_i_children = get_individual_payoff(i, j) / get_family_payoff(i, j)
-    return share_female_i_children
+def get_payoff_share(i, j):
+    """Share of family payoff produced by woman with genotype i when matched to woman with genotype j"""
+    payoff_share = get_individual_payoff(i, j) / get_family_payoff(i, j)
+    return payoff_share
 
 
-def get_matching_probability(i, j):
+def get_genotype_matching_probability(i, j):
     """Probability that man with genotype i is matched to girl with genotype j."""
-    matching_prob = (iscarrier_G(i) * iscarrier_A(j) * SGA +
-                     iscarrier_G(i) * iscarrier_a(j) * SGa +
-                     iscarrier_g(i) * iscarrier_A(j) * SgA +
-                     iscarrier_g(i) * iscarrier_a(j) * Sga)
+    phenotype_matching_prob = get_phenotype_math_probability(i, j)
     girl_population_share = girls[j] / girls_with_common_allele(j)
 
-    return matching_prob * girl_population_share
+    return phenotype_matching_prob * girl_population_share
+
+
+def get_phenotype_math_probability(i, j):
+    """Probability that man with genotype i is matched to girl with genotype j."""
+    phenotype_matching_prob = (iscarrier_G(i) * iscarrier_A(j) * SGA +
+                               iscarrier_G(i) * iscarrier_a(j) * SGa +
+                               iscarrier_g(i) * iscarrier_A(j) * SgA +
+                               iscarrier_g(i) * iscarrier_a(j) * Sga)
+    return phenotype_matching_prob
 
 
 def girls_with_common_allele(j):
