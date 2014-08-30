@@ -114,7 +114,9 @@ def get_inheritance_probability(child, parent1, parent2):
             return 0.0
 
     elif has_common_allele(parent1, parent2):
-        if has_common_allele(child, parent1):
+        if has_same_genotype(child, parent1):
+            return 0.5
+        elif has_same_genotype(child, parent2):
             return 0.5
         else:
             return 0.0
