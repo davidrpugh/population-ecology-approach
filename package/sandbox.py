@@ -20,7 +20,7 @@ altruistic_girls = girls[0] + girls[2]
 selfish_girls = girls[1] + girls[3]
 
 # Probability of man with gene gamma matching with girl carrying gene alpha.
-# when re-writing S functions...refer to them as phenotype matching probabilities
+# when re-writing S functions...refer to them as phenotype matching conditional probabilities
 SGA = (dA * altruistic_girls) / (dA * altruistic_girls + (1 - eA) * (1 - da) * selfish_girls)
 SGa = 1 - SGA
 Sga = (da * selfish_girls) / (da * selfish_girls + (1 - ea) * (1 - dA) * altruistic_girls)
@@ -89,15 +89,15 @@ def get_payoff_share(i, j):
 
 
 def get_genotype_matching_probability(i, j):
-    """Probability that man with genotype i is matched to girl with genotype j."""
-    phenotype_matching_prob = get_phenotype_math_probability(i, j)
+    """Conditional probability that man with genotype i is matched to girl with genotype j."""
+    phenotype_matching_prob = get_phenotype_matching_probability(i, j)
     girl_population_share = girls[j] / girls_with_common_allele(j)
 
     return phenotype_matching_prob * girl_population_share
 
 
-def get_phenotype_math_probability(i, j):
-    """Probability that man with genotype i is matched to girl with genotype j."""
+def get_phenotype_matching_probability(i, j):
+    """Conditional probability that man with phenotype i is matched to girl with phenotype j."""
     phenotype_matching_prob = (iscarrier_G(i) * iscarrier_A(j) * SGA +
                                iscarrier_G(i) * iscarrier_a(j) * SGa +
                                iscarrier_g(i) * iscarrier_A(j) * SgA +
