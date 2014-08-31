@@ -3,7 +3,7 @@ import nose
 import sandbox
 
 
-def test_get_inheritance_probability():
+def test_get_inheritance_prob():
     """Test conditional probabilities."""
     valid_genotypes = [(0, 0), (0, 1), (1, 0), (1, 1)]
 
@@ -12,9 +12,9 @@ def test_get_inheritance_probability():
             for child in valid_genotypes:
 
                 # compute the inheritance probability
-                tmp_prob = sandbox.get_inheritance_probability(child,
-                                                               parent1,
-                                                               parent2)
+                tmp_prob = sandbox.get_inheritance_prob(child,
+                                                        parent1,
+                                                        parent2)
 
                 if sandbox.has_same_genotype(parent1, parent2):
                     if sandbox.has_same_genotype(child, parent1):

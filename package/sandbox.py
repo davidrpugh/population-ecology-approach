@@ -97,14 +97,14 @@ def get_payoff_share(i, j):
     return payoff_share
 
 
-def get_genotype_matching_probability(i, j):
+def get_genotype_matching_prob(i, j):
     """Conditional probability that man with genotype i is matched to girl with genotype j."""
-    phenotype_matching_prob = get_phenotype_matching_probability(i, j)
+    phenotype_matching_prob = get_phenotype_matching_prob(i, j)
     girl_population_share = girls[j] / girls_with_common_allele(j)
     return phenotype_matching_prob * girl_population_share
 
 
-def get_phenotype_matching_probability(i, j):
+def get_phenotype_matching_prob(i, j):
     """Conditional probability that man with phenotype i is matched to girl with phenotype j."""
     phenotype_matching_prob = (iscarrier_G(i) * iscarrier_A(j) * SGA +
                                iscarrier_G(i) * iscarrier_a(j) * SGa +
@@ -120,7 +120,7 @@ def girls_with_common_allele(j):
     return count
 
 
-def get_inheritance_probability(child, parent1, parent2):
+def get_inheritance_prob(child, parent1, parent2):
     """Conditional probability of child's genotype given parents' genotypes."""
     if has_same_genotype(parent1, parent2):
         if has_same_genotype(child, parent1):
@@ -164,8 +164,8 @@ def has_same_genotype(genotype1, genotype2):
 
 def get_family_unit(i, j, k):
     """Family unit comprised of male with genoytpe i, and females with genotypes j and k."""
-    U_ijk = (men[i] * get_genotype_matching_probability(i, j) *
-             get_genotype_matching_probability(i, k))
+    U_ijk = (men[i] * get_genotype_matching_prob(i, j) *
+             get_genotype_matching_prob(i, k))
     return U_ijk
 
 
@@ -177,8 +177,8 @@ def get_female_recurrence_relation(x):
             for k in range(4):
 
                 tmp_family_unit = get_family_unit(i, j, k)
-                tmp_daughters_ij = get_inheritance_probability(b(x), b(i), b(j)) * get_individual_payoff(j, k)
-                tmp_daughters_ik = get_inheritance_probability(b(x), b(i), b(k)) * get_individual_payoff(k, j)
+                tmp_daughters_ij = get_inheritance_prob(b(x), b(i), b(j)) * get_individual_payoff(j, k)
+                tmp_daughters_ik = get_inheritance_prob(b(x), b(i), b(k)) * get_individual_payoff(k, j)
                 tmp_term = tmp_family_unit * (tmp_daughters_ij + tmp_daughters_ik)
 
                 terms.append(tmp_term)
@@ -194,8 +194,8 @@ def get_male_recurrence_relation(x):
             for k in range(4):
 
                 tmp_family_unit = get_family_unit(i, j, k)
-                tmp_daughters_ij = get_inheritance_probability(b(x), b(i), b(j)) * get_payoff_share(j, k)
-                tmp_daughters_ik = get_inheritance_probability(b(x), b(i), b(k)) * get_payoff_share(k, j)
+                tmp_daughters_ij = get_inheritance_prob(b(x), b(i), b(j)) * get_payoff_share(j, k)
+                tmp_daughters_ik = get_inheritance_prob(b(x), b(i), b(k)) * get_payoff_share(k, j)
                 tmp_term = tmp_family_unit * (tmp_daughters_ij + tmp_daughters_ik)
 
                 terms.append(tmp_term)
