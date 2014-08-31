@@ -201,3 +201,21 @@ def get_male_recurrence_relation(x):
                 terms.append(tmp_term)
 
     return sum(terms)
+
+
+# symbolic system of equations for model simulation
+male_eqns = [get_male_recurrence_relation(x) for x in range(4)]
+female_eqns = [get_female_recurrence_relation(x) for x in range(4)]
+model_system = sym.Matrix(male_eqns + female_eqns)
+
+# symbolic model Jacobian for stability analysis
+adult_males = [men[i] for i in range(4)]
+female_children = [girls[j] for j in range(4)]
+endog_vars = adult_males + female_children
+model_jacobian = model_system.jacobian(endog_vars)
+
+# steady state of the model makes residual zero
+residual = model_system - sym.Matrix(endog_vars)
+
+# residual Jacobian is an input to steady state solver
+residual_jacobian = residual.jacobian(endog_vars)
