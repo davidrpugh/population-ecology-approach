@@ -146,7 +146,7 @@ class Model(HasPrivateTraits):
     def F(self, X):
         """Equation of motion for population allele shares."""
         out = wrapped_symbolics.model_system(*X, **self.params)
-        return np.array(out).flatten()
+        return np.array(out).ravel()
 
     def F_jacobian(self, X):
         """Jacobian for equation of motion."""
