@@ -167,3 +167,37 @@ def get_family_unit(i, j, k):
     U_ijk = (men[i] * get_genotype_matching_probability(i, j) *
              get_genotype_matching_probability(i, k))
     return U_ijk
+
+
+def get_female_recurrence_relation(x):
+    """Return recurrence relation for female children with genotype x."""
+    terms = []
+    for i in range(4):
+        for j in range(4):
+            for k in range(4):
+
+                tmp_family_unit = get_family_unit(i, j, k)
+                tmp_daughters_ij = get_inheritance_probability(b(x), b(i), b(j)) * get_individual_payoff(j, k)
+                tmp_daughters_ik = get_inheritance_probability(b(x), b(i), b(k)) * get_individual_payoff(k, j)
+                tmp_term = tmp_family_unit * (tmp_daughters_ij + tmp_daughters_ik)
+
+                terms.append(tmp_term)
+
+    return 0.5 * sum(terms)
+
+
+def get_male_recurrence_relation(x):
+    """Return recurrence relation for male adults with genotype x."""
+    terms = []
+    for i in range(4):
+        for j in range(4):
+            for k in range(4):
+
+                tmp_family_unit = get_family_unit(i, j, k)
+                tmp_daughters_ij = get_inheritance_probability(b(x), b(i), b(j)) * get_payoff_share(j, k)
+                tmp_daughters_ik = get_inheritance_probability(b(x), b(i), b(k)) * get_payoff_share(k, j)
+                tmp_term = tmp_family_unit * (tmp_daughters_ij + tmp_daughters_ik)
+
+                terms.append(tmp_term)
+
+    return sum(terms)
