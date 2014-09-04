@@ -104,12 +104,12 @@ class Model(HasPrivateTraits):
 
     def _residual(self, X):
         """Model steady state is a root of this non-linear system."""
-        resid = wrapped_symbolics.residual(*X, **self.params)
+        resid = wrapped_symbolics.residual(X[:4], X[4:], **self.params)
         return np.array(resid)
 
     def _residual_jacobian(self, X):
         """Returns the Jacobian of the model residual."""
-        jac = wrapped_symbolics.residual_jacobian(*X, **self.params)
+        jac = wrapped_symbolics.residual_jacobian(X[:4], X[4:], **self.params)
         return np.array(jac)
 
     def _simulate_fixed_trajectory(self, initial_condition, T):
@@ -145,12 +145,12 @@ class Model(HasPrivateTraits):
 
     def F(self, X):
         """Equation of motion for population allele shares."""
-        out = wrapped_symbolics.model_system(*X, **self.params)
+        out = wrapped_symbolics.model_system(X[:4], X[4:], **self.params)
         return np.array(out).ravel()
 
     def F_jacobian(self, X):
         """Jacobian for equation of motion."""
-        jac = wrapped_symbolics.model_jacobian(*X, **self.params)
+        jac = wrapped_symbolics.model_jacobian(X[:4], X[4:], **self.params)
         return np.array(jac)
 
     def simulate(self, initial_condition, T=None, rtol=None):
