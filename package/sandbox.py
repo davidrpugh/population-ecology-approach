@@ -7,13 +7,16 @@ girls = sym.DeferredVector('f')
 men = sym.DeferredVector('M')
 
 # Female signaling probabilities
-dA, da = sym.var('dA, da')
+female_signaling_probs = sym.var('dA, da')
+dA, da = female_signaling_probs
 
 # Male screening probabilities
-eA, ea = sym.var('eA, ea')
+male_screening_probs = sym.var('eA, ea')
+eA, ea = male_screening_probs
 
 # Payoff parameters (from a Prisoner's dilemma)
-PiaA, PiAA, Piaa, PiAa = sym.var('PiaA, PiAA, Piaa, PiAa')
+prisoners_dilemma_payoffs = sym.var('PiaA, PiAA, Piaa, PiAa')
+PiaA, PiAA, Piaa, PiAa = prisoners_dilemma_payoffs
 
 # Female population by phenotype.
 altruistic_girls = girls[0] + girls[2]
