@@ -4,21 +4,18 @@ Converts symbolic expressions defining the model into callable NumPy functions.
 """
 import sympy as sp
 
-import symbolics
+import sandbox
 
 # extract the important variables
-fGA, fGa, fgA, fga = symbolics.female_allele_shares
-mGA, mGa, mgA, mga = symbolics.male_allele_shares
-dA, da = symbolics.female_signaling_probs
-eA, ea = symbolics.male_screening_probs
-PiaA, PiAA, Piaa, PiAa = symbolics.matching_payoffs
+dA, da = sandbox.female_signaling_probs
+eA, ea = sandbox.male_screening_probs
+PiaA, PiAA, Piaa, PiAa = sandbox.prisoners_dilemma_payoffs
 
 # wraps the symbolic system and its Jacobian for use in numerical analysis
-tmp_args = (mGA, mGa, mgA, mga, fGA, fGa, fgA, fga,
-            dA, da, eA, ea, PiaA, PiAA, Piaa, PiAa)
-model_system = sp.lambdify(tmp_args, symbolics.model_system, 'numpy')
-model_jacobian = sp.lambdify(tmp_args, symbolics.model_jacobian, 'numpy')
+tmp_args = (sandbox.men, sandbox.girls, dA, da, eA, ea, PiaA, PiAA, Piaa, PiAa)
+model_system = sp.lambdify(tmp_args, sandbox.model_system, 'numpy')
+model_jacobian = sp.lambdify(tmp_args, sandbox.model_jacobian, 'numpy')
 
 # wraps the symbolic residual and its Jacobian for use in numerical analysis
-residual = sp.lambdify(tmp_args, symbolics.residual, 'numpy')
-residual_jacobian = sp.lambdify(tmp_args, symbolics.residual_jacobian, 'numpy')
+residual = sp.lambdify(tmp_args, sandbox.residual, 'numpy')
+residual_jacobian = sp.lambdify(tmp_args, sandbox.residual_jacobian, 'numpy')
