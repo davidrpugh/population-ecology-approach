@@ -26,6 +26,8 @@ class Model(HasPrivateTraits):
 
     eigenvalues = Property
 
+    initial_condition = Property(Float)
+
     initial_guess = Property(Array)
 
     isunstable = Property(Bool)
@@ -63,6 +65,20 @@ class Model(HasPrivateTraits):
         eigen_vals, eigen_vecs = linalg.eig(evaluated_jac)
         return eigen_vals
 
+    def _get_initial_condition(self):
+        """Return initial condition for a simulation."""
+        mGA0 = self._initial_condition
+        mga0 = 1 - mGA0
+
+        initial_males = np.array([mGA0, 0, 0, mga0])
+
+        # f_GA(0)=mGA0*Pi_AA and f_ga(0)=mga0*Pi_aa.
+        initial_females = np.array([self.params['PiAA'] * mGA0, 0.0,
+                                    0.0, self.params['Piaa'] * mga0])
+
+        initial_condition = np.hstack((initial_males, initial_females))
+        return initial_condition
+
     def _get_initial_guess(self):
         """Return initial guess of the equilibrium population shares."""
         return self._initial_guess
@@ -88,31 +104,39 @@ class Model(HasPrivateTraits):
 
         return result
 
+    def _set_initial_condition(self, value):
+        """Specify the initial condition for a simulation."""
+        self._initial_condition = value
+
     def _set_initial_guess(self, value):
         """Specify the initial guess of the equilibrium population shares."""
         self._initial_guess = value
+
+    def _check_depletion(self, X):
+        """Check that adoption pools are not depleted."""
+        excess_demand_altruists = self._excess_demand_altruistic_females(X)
+        excess_demand_selfish = self._excess_demand_selfish_females(X)
+
+        if excess_demand_altruists > 0.0:
+            raise DepletionError("Altruistic adoption pool is depleted!")
+        elif excess_demand_selfish > 0.0:
+            raise DepletionError("Selfish adoption pool is depleted!")
+        else:
+            pass
 
     def _excess_demand_altruistic_females(self, X):
         """Number of males with allele G less number of females in the altruistic adoption pool."""
         demand = X[:2].sum(axis=0)
         supply = self._size_altruistic_adoption_pool(X)
         excess_demand = demand - supply
-
-        if excess_demand > 0.0:
-            raise DepletionError
-        else:
-            return excess_demand
+        return excess_demand
 
     def _excess_demand_selfish_females(self, X):
         """Number of males with allele g less number of females in the selfish adoption pool."""
         demand = X[:2].sum(axis=0)
         supply = self._size_selfish_adoption_pool(X)
         excess_demand = demand - supply
-
-        if excess_demand > 0.0:
-            raise DepletionError
-        else:
-            return excess_demand
+        return excess_demand
 
     def _jacobian(self, X):
         """Jacobian of the objective function."""
@@ -142,7 +166,10 @@ class Model(HasPrivateTraits):
 
         # run the simulation
         for t in range(1, T):
-            traj[:, t] = self.F(traj[:, t-1])
+            current_shares = traj[:, t-1]
+            self._check_depletion(current_shares)
+            new_shares = self.F(current_shares)
+            traj[:, t] = new_shares
 
         return traj
 
@@ -157,6 +184,7 @@ class Model(HasPrivateTraits):
         # run the simulation
         while np.any(np.greater(delta, rtol)):
             current_shares = traj[:, -1]
+            self._check_depletion(current_shares)
             new_shares = self.F(current_shares)
             delta = np.abs(new_shares - current_shares)
 
@@ -185,12 +213,12 @@ class Model(HasPrivateTraits):
         jac = wrapped_symbolics.model_jacobian(X[:4], X[4:], **self.params)
         return np.array(jac)
 
-    def simulate(self, initial_condition, T=None, rtol=None):
+    def simulate(self, T=None, rtol=None):
         """Simulates a run of the model given some initial_condition."""
         if T is not None:
-            traj = self._simulate_fixed_trajectory(initial_condition, T)
+            traj = self._simulate_fixed_trajectory(self.initial_condition, T)
         elif rtol is not None:
-            traj = self._simulate_variable_trajectory(initial_condition, rtol)
+            traj = self._simulate_variable_trajectory(self.initial_condition, rtol)
         else:
             raise ValueError("One of 'T' or 'rtol' must be specified.")
         return traj
