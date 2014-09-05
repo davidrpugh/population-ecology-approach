@@ -96,13 +96,23 @@ class Model(HasPrivateTraits):
         """Number of males with allele G less number of females in the altruistic adoption pool."""
         demand = X[:2].sum(axis=0)
         supply = self._size_altruistic_adoption_pool(X)
-        return demand - supply
+        excess_demand = demand - supply
+
+        if excess_demand > 0.0:
+            raise DepletionError
+        else:
+            return excess_demand
 
     def _excess_demand_selfish_females(self, X):
         """Number of males with allele g less number of females in the selfish adoption pool."""
         demand = X[:2].sum(axis=0)
         supply = self._size_selfish_adoption_pool(X)
-        return demand - supply
+        excess_demand = demand - supply
+
+        if excess_demand > 0.0:
+            raise DepletionError
+        else:
+            return excess_demand
 
     def _jacobian(self, X):
         """Jacobian of the objective function."""
@@ -184,3 +194,7 @@ class Model(HasPrivateTraits):
         else:
             raise ValueError("One of 'T' or 'rtol' must be specified.")
         return traj
+
+
+class DepletionError(Exception):
+    pass
