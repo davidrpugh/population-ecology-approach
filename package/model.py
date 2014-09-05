@@ -92,6 +92,18 @@ class Model(HasPrivateTraits):
         """Specify the initial guess of the equilibrium population shares."""
         self._initial_guess = value
 
+    def _excess_demand_altruistic_females(self, X):
+        """Number of males with allele G less number of females in the altruistic adoption pool."""
+        demand = X[:2].sum(axis=0)
+        supply = self._size_altruistic_adoption_pool(X)
+        return demand - supply
+
+    def _excess_demand_selfish_females(self, X):
+        """Number of males with allele g less number of females in the selfish adoption pool."""
+        demand = X[:2].sum(axis=0)
+        supply = self._size_selfish_adoption_pool(X)
+        return demand - supply
+
     def _jacobian(self, X):
         """Jacobian of the objective function."""
         jac = np.sum(self._residual(X) * self._residual_jacobian(X), axis=0)
