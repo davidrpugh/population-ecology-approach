@@ -143,6 +143,16 @@ class Model(HasPrivateTraits):
 
         return traj
 
+    def _size_altruistic_adoption_pool(self, X):
+        """Number of females in the altruistic adoption pool."""
+        out = wrapped_symbolics.altruist_adoption_pool(X[4:], **self.params)
+        return out.ravel()
+
+    def _size_selfish_adoption_pool(self, X):
+        """Number of females in the selfish adoption pool."""
+        out = wrapped_symbolics.selfish_adoption_pool(X[4:], **self.params)
+        return out.ravel()
+
     def F(self, X):
         """Equation of motion for population allele shares."""
         out = wrapped_symbolics.model_system(X[:4], X[4:], **self.params)
