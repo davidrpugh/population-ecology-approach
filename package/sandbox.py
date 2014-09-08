@@ -31,11 +31,11 @@ altruist_adoption_pool = true_altruistic_girls + mistaken_for_altruistic_girls
 true_selfish_girls = da * selfish_girls
 false_selfish_girls = (1 - dA) * altruistic_girls
 mistaken_for_selfish_girls = (1 - ea) * false_selfish_girls
-selfish_adpotion_pool = true_selfish_girls + mistaken_for_selfish_girls
+selfish_adoption_pool = true_selfish_girls + mistaken_for_selfish_girls
 
 SGA = true_altruistic_girls / altruist_adoption_pool
 SGa = 1 - SGA
-Sga = true_selfish_girls / selfish_adpotion_pool
+Sga = true_selfish_girls / selfish_adoption_pool
 SgA = 1 - Sga
 
 
@@ -90,8 +90,8 @@ def get_individual_payoff(i, j):
 
 def get_family_payoff(i, j):
     """Payoff from families where women have genotypes i and j."""
-    total_payoff = get_individual_payoff(i, j) + get_individual_payoff(j, i)
-    return total_payoff
+    family_payoff = get_individual_payoff(i, j) + get_individual_payoff(j, i)
+    return family_payoff
 
 
 def get_payoff_share(i, j):
@@ -118,8 +118,7 @@ def get_phenotype_matching_prob(i, j):
 
 def girls_with_common_allele(j):
     """Number of girls who share common allele with genotype j."""
-    count = (iscarrier_A(j) * (altruistic_girls) +
-             iscarrier_a(j) * (selfish_girls))
+    count = iscarrier_A(j) * altruistic_girls + iscarrier_a(j) * selfish_girls
     return count
 
 
