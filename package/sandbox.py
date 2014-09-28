@@ -103,16 +103,38 @@ class Equations(object):
         """
         return 1 - self._Sga
 
-    def _validate_conditional_prob(self, value):
-        """Validate the expression for the conditional matching probability."""
-        if not isinstance(value, sym.Basic):
-            raise AttributeError
-        else:
-            return value
-
-    def compute_individual_offspring(self, i, j):
+    def _compute_genotype_matching_prob(self, i, j):
         """
-        Number of children produced by a woman with genotype i when matched in
+        Conditional probability that man with genotype i is matched to girl
+        with genotype j.
+
+        Parameters
+        ----------
+        i : int
+            Integer index of a valid genotype.
+        j : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        phenotype_matching_prob : sym.Basic
+            Symbolic expression for the conditional phenotype matching
+            probability.
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
+        phenotype_matching_prob = self._compute_phenotype_matching_prob(i, j)
+        girl_population_share = girls[j] / self._girls_with_common_allele(j)
+        return phenotype_matching_prob * girl_population_share
+
+    def _compute_individual_offspring(self, i, j):
+        """
+        Number of offspring produced by a woman with genotype i when matched in
         family unit with another woman with genotype j.
 
         Parameters
@@ -125,8 +147,8 @@ class Equations(object):
         Returns
         -------
         individual_offspring : sym.Basic
-            Symbolic expression for the total number of children produced by
-            female with genotype i.
+            Symbolic expression for the number of offspring produced by female
+            with genotype i.
 
         Notes
         -----
@@ -142,7 +164,36 @@ class Equations(object):
         individual_offspring = fecundity_factor * payoff
         return individual_offspring
 
-    def compute_total_offspring(self, i, j):
+    def _compute_offspring_share(self, i, j):
+        """
+        Share of total offspring produced by woman with genotype i when matched
+        in a family unit with a woman with genotype j.
+
+        Parameters
+        ----------
+        i : int
+            Integer index of a valid genotype.
+        j : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        offspring_share : sym.Basic
+            Symbolic expression for the share of total offspring in a family
+            unit produced by female with genotype i.
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
+        offspring_share = (self._compute_individual_offspring(i, j) /
+                           self._compute_total_offspring(i, j))
+        return offspring_share
+
+    def _compute_total_offspring(self, i, j):
         """
         Total number of children produced when a woman with genotype i is
         matched in a family unit with another woman with genotype j.
@@ -166,11 +217,11 @@ class Equations(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        total_offspring = (self.compute_individual_offspring(i, j) +
-                           self.compute_individual_offspring(j, i))
+        total_offspring = (self._compute_individual_offspring(i, j) +
+                           self._compute_individual_offspring(j, i))
         return total_offspring
 
-    def iscarrier_G(self, i):
+    def _iscarrier_G(self, i):
         """
         Indicates whether or not adult with genotype i carries the `G` allele.
 
@@ -195,7 +246,7 @@ class Equations(object):
         else:
             return 0
 
-    def iscarrier_g(self, i):
+    def _iscarrier_g(self, i):
         """
         Indicates whether or not adult with genotype i carries the `g` allele.
 
@@ -215,9 +266,9 @@ class Equations(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        return 1 - self.iscarrier_G(i)
+        return 1 - self._iscarrier_G(i)
 
-    def iscarrier_A(self, i):
+    def _iscarrier_A(self, i):
         """
         Indicates whether or not adult with genotype i carries the `A` allele.
 
@@ -242,7 +293,7 @@ class Equations(object):
         else:
             return 0
 
-    def iscarrier_a(self, i):
+    def _iscarrier_a(self, i):
         """
         Indicates whether or not adult with genotype i carries the `a` allele.
 
@@ -263,3 +314,10 @@ class Equations(object):
 
         """
         return 1 - self.iscarrier_A(i)
+
+    def _validate_conditional_prob(self, value):
+        """Validate the expression for the conditional matching probability."""
+        if not isinstance(value, sym.Basic):
+            raise AttributeError
+        else:
+            return value
