@@ -184,7 +184,3 @@ class Model(HasPrivateTraits):
         else:
             raise ValueError("One of 'T' or 'rtol' must be specified.")
         return traj
-
-
-class DepletionError(Exception):
-    pass
