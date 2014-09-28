@@ -39,7 +39,7 @@ Sga = true_selfish_girls / selfish_adoption_pool
 SgA = 1 - Sga
 
 
-def genotype_to_allele(i):
+def b(i):
     """
     Return allele pair for a given genotype i.
 
