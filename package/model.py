@@ -112,32 +112,6 @@ class Model(HasPrivateTraits):
         """Specify the initial guess of the equilibrium population shares."""
         self._initial_guess = value
 
-    def _check_depletion(self, X):
-        """Check that adoption pools are not depleted."""
-        excess_demand_altruists = self._excess_demand_altruistic_females(X)
-        excess_demand_selfish = self._excess_demand_selfish_females(X)
-
-        if excess_demand_altruists > 0.0:
-            raise DepletionError("Altruistic adoption pool is depleted!")
-        elif excess_demand_selfish > 0.0:
-            raise DepletionError("Selfish adoption pool is depleted!")
-        else:
-            pass
-
-    def _excess_demand_altruistic_females(self, X):
-        """Number of males with allele G less number of females in the altruistic adoption pool."""
-        demand = X[:2].sum(axis=0)
-        supply = self._size_altruistic_adoption_pool(X)
-        excess_demand = demand - supply
-        return excess_demand
-
-    def _excess_demand_selfish_females(self, X):
-        """Number of males with allele g less number of females in the selfish adoption pool."""
-        demand = X[:2].sum(axis=0)
-        supply = self._size_selfish_adoption_pool(X)
-        excess_demand = demand - supply
-        return excess_demand
-
     def _jacobian(self, X):
         """Jacobian of the objective function."""
         jac = np.sum(self._residual(X) * self._residual_jacobian(X), axis=0)
@@ -167,7 +141,6 @@ class Model(HasPrivateTraits):
         # run the simulation
         for t in range(1, T):
             current_shares = traj[:, t-1]
-            self._check_depletion(current_shares)
             new_shares = self.F(current_shares)
             traj[:, t] = new_shares
 
@@ -184,7 +157,6 @@ class Model(HasPrivateTraits):
         # run the simulation
         while np.any(np.greater(delta, rtol)):
             current_shares = traj[:, -1]
-            self._check_depletion(current_shares)
             new_shares = self.F(current_shares)
             delta = np.abs(new_shares - current_shares)
 
@@ -193,20 +165,10 @@ class Model(HasPrivateTraits):
 
         return traj
 
-    def _size_altruistic_adoption_pool(self, X):
-        """Number of females in the altruistic adoption pool."""
-        out = wrapped_symbolics.altruist_adoption_pool(X[4:], **self.params)
-        return out.ravel()
-
-    def _size_selfish_adoption_pool(self, X):
-        """Number of females in the selfish adoption pool."""
-        out = wrapped_symbolics.selfish_adoption_pool(X[4:], **self.params)
-        return out.ravel()
-
     def F(self, X):
         """Equation of motion for population allele shares."""
         out = wrapped_symbolics.model_system(X[:4], X[4:], **self.params)
-        return np.array(out).ravel()
+        return out.ravel()
 
     def F_jacobian(self, X):
         """Jacobian for equation of motion."""
