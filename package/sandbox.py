@@ -103,7 +103,7 @@ class Equations(object):
         """
         return 1 - self._Sga
 
-    def _compute_genotype_matching_prob(self, i, j):
+    def _genotype_matching_prob(self, i, j):
         """
         Conditional probability that man with genotype i is matched to girl
         with genotype j.
@@ -117,8 +117,8 @@ class Equations(object):
 
         Returns
         -------
-        phenotype_matching_prob : sym.Basic
-            Symbolic expression for the conditional phenotype matching
+        probability : sym.Basic
+            Symbolic expression for the conditional genotype matching
             probability.
 
         Notes
@@ -130,9 +130,10 @@ class Equations(object):
         """
         phenotype_matching_prob = self._compute_phenotype_matching_prob(i, j)
         girl_population_share = girls[j] / self._girls_with_common_allele(j)
-        return phenotype_matching_prob * girl_population_share
+        probability = phenotype_matching_prob * girl_population_share
+        return probability
 
-    def _compute_individual_offspring(self, i, j):
+    def _individual_offspring(self, i, j):
         """
         Number of offspring produced by a woman with genotype i when matched in
         family unit with another woman with genotype j.
@@ -164,23 +165,20 @@ class Equations(object):
         individual_offspring = fecundity_factor * payoff
         return individual_offspring
 
-    def _compute_offspring_share(self, i, j):
+    def _girls_with_common_allele(self, i):
         """
-        Share of total offspring produced by woman with genotype i when matched
-        in a family unit with a woman with genotype j.
+        Number of girls who share common allele with genotype i.
 
         Parameters
         ----------
         i : int
             Integer index of a valid genotype.
-        j : int
-            Integer index of a valid genotype.
 
         Returns
         -------
-        offspring_share : sym.Basic
-            Symbolic expression for the share of total offspring in a family
-            unit produced by female with genotype i.
+        number_girls : sym.Basic
+            Symbolic expression for the number of girls sharing a common allele
+            with genotype i.
 
         Notes
         -----
@@ -189,37 +187,9 @@ class Equations(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        offspring_share = (self._compute_individual_offspring(i, j) /
-                           self._compute_total_offspring(i, j))
-        return offspring_share
-
-    def _compute_total_offspring(self, i, j):
-        """
-        Total number of children produced when a woman with genotype i is
-        matched in a family unit with another woman with genotype j.
-
-        Parameters
-        ----------
-        i : int
-            Integer index of a valid genotype.
-        j : int
-            Integer index of a valid genotype.
-
-        Returns
-        -------
-        total_offspring : sym.Basic
-            Symbolic expression for the total number of children produced.
-
-        Notes
-        -----
-        We index genotypes by integers 0, 1, 2, 3 as follows:
-
-            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
-
-        """
-        total_offspring = (self._compute_individual_offspring(i, j) +
-                           self._compute_individual_offspring(j, i))
-        return total_offspring
+        number_girls = (self._iscarrier_A(i) * self._altruistic_girls +
+                        self._iscarrier_a(i) * self._selfish_girls)
+        return number_girls
 
     def _iscarrier_G(self, i):
         """
@@ -314,6 +284,94 @@ class Equations(object):
 
         """
         return 1 - self.iscarrier_A(i)
+
+    def _phenotype_matching_prob(self, i, j):
+        """
+        Conditional probability that male with phenotype i is matched to girl
+        with phenotype j.
+
+        Parameters
+        ----------
+        i : int
+            Integer index of a valid genotype.
+        j : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        probability : sym.Basic
+            Symbolic expression for the conditional phenotype matching
+            probability.
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
+        probability = (self._iscarrier_G(i) * self._iscarrier_A(j) * self.SGA +
+                       self._iscarrier_G(i) * self._iscarrier_a(j) * self.SGa +
+                       self._iscarrier_g(i) * self._iscarrier_A(j) * self.SgA +
+                       self._iscarrier_g(i) * self._iscarrier_a(j) * self.Sga)
+        return probability
+
+    def _offspring_share(self, i, j):
+        """
+        Share of total offspring produced by woman with genotype i when matched
+        in a family unit with a woman with genotype j.
+
+        Parameters
+        ----------
+        i : int
+            Integer index of a valid genotype.
+        j : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        offspring_share : sym.Basic
+            Symbolic expression for the share of total offspring in a family
+            unit produced by female with genotype i.
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
+        offspring_share = (self._compute_individual_offspring(i, j) /
+                           self._compute_total_offspring(i, j))
+        return offspring_share
+
+    def _total_offspring(self, i, j):
+        """
+        Total number of children produced when a woman with genotype i is
+        matched in a family unit with another woman with genotype j.
+
+        Parameters
+        ----------
+        i : int
+            Integer index of a valid genotype.
+        j : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        total_offspring : sym.Basic
+            Symbolic expression for the total number of children produced.
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
+        total_offspring = (self._compute_individual_offspring(i, j) +
+                           self._compute_individual_offspring(j, i))
+        return total_offspring
 
     def _validate_conditional_prob(self, value):
         """Validate the expression for the conditional matching probability."""
