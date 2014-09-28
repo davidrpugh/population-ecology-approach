@@ -1,3 +1,4 @@
+import numpy as np
 import sympy as sym
 
 # number of female children of particular genotype
@@ -16,6 +17,15 @@ fecundity_factor = sym.var('c')
 
 class Equations(object):
     """Class representing the model equations."""
+
+    def __init__(self, params, SGA, Sga):
+
+        self.__numeric_system = None
+        self.__numeric_jacobian = None
+
+        self.params = params
+        self.SGA = SGA
+        self.Sga = Sga
 
     @property
     def _altruistic_girls(self):
@@ -40,6 +50,40 @@ class Equations(object):
         return girls[1] + girls[3]
 
     @property
+    def _numeric_system(self):
+        if self.__numeric_system is None:
+            tmp_args = [men, girls] + list(self.params.keys())
+            self.__numeric_system = sym.lambdify(tmp_args,
+                                                 self._symbolic_system,
+                                                 [{'ImmutableMatrix': np.array}, "numpy"])
+        return self.__numeric_system
+
+    @property
+    def _numeric_jacobian(self):
+        if self.__numeric_jacobian is None:
+            tmp_args = [men, girls] + list(self.params.keys())
+            self.__numeric_jacobian = sym.lambdify(tmp_args,
+                                                   self._symbolic_jacobian,
+                                                   [{'ImmutableMatrix': np.array}, "numpy"])
+        return self.__numeric_system
+
+    @property
+    def _symbolic_jacobian(self):
+        """
+        Jacobian matrix of partial derivatives for the system of equations
+        defining the evolution of the numbers of male adults and female
+        children of various genotypes.
+
+        :getter: Return Jacobian matrix of partial derivatives.
+        :type: sym.Matrix
+
+        """
+        adult_males = [men[i] for i in range(4)]
+        female_children = [girls[j] for j in range(4)]
+        endog_vars = adult_males + female_children
+        return self._symbolic_system.jacobian(endog_vars)
+
+    @property
     def _symbolic_system(self):
         """
         Symbolic system of equations defining the evolution of the numbers of
@@ -52,6 +96,43 @@ class Equations(object):
         male_eqns = [self._recurrence_relations_males(x) for x in range(4)]
         female_eqns = [self._recurrence_relations_females(x) for x in range(4)]
         return sym.Matrix(male_eqns + female_eqns)
+
+    @property
+    def params(self):
+        """
+        Dictionary of model parameters.
+
+        :getter: Return the current dictionary of model parameters.
+        :setter: Set a new dictionary of model parameters.
+        :type: dict
+
+        Notes
+        -----
+        The following parameters are required:
+
+        c : float
+            Fecundity scaling factor (converts abstract payoffs to numbers of
+            offsping).
+        PiAA : float
+            Payoff for cooperating when opponent cooperates.
+        PiAa : float
+            Payoff for cooperating when opponent defects.
+        PiaA : float
+            Payoff for defecting when opponent cooperates.
+        Piaa : float
+            Payoff for defecting when opponent defects.
+
+        Although no restrictions are placed on the rates of technological
+        progress and population growth, the sum of `g`, `n`, and :math:`delta`
+        is assumed to be positive. The user must also specify any additional
+        model parameters specific to the chosen functional forms for SGA and Sga.
+
+        """
+        return self._params
+
+    @params.setter
+    def params(self, value):
+        self._params = self._validate_params(value)
 
     @property
     def SGA(self):
@@ -482,8 +563,28 @@ class Equations(object):
                            self._total_offspring(i, j))
         return offspring_share
 
-    def _recurrence_relations_females(self, x):
-        """Return recurrence relation for female children with genotype x."""
+    def _recurrence_relations_females(self, l):
+        """
+        Recurrence relation for the number of female offspring with genotype l.
+
+        Parameters
+        ----------
+        l : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        recurrence_relation : sym.Basic
+            Symbolic expression for the recurrence relation describing the
+            evolution of the number of female offspring with genotype i.
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
         terms = []
         for i in range(4):
             for j in range(4):
@@ -491,7 +592,7 @@ class Equations(object):
 
                     # configuration of family unit
                     tmp_family_unit = self._family_unit(i, j, k)
-                    tmp_child_allele_pair = self._genotype_to_allele_pair(x)
+                    tmp_child_allele_pair = self._genotype_to_allele_pair(l)
                     tmp_father_allele_pair = self._genotype_to_allele_pair(i)
 
                     # expected genotype of offspring of i and j
@@ -517,8 +618,28 @@ class Equations(object):
 
         return sum(terms)
 
-    def _recurrence_relations_males(self, x):
-        """Return recurrence relation for male adults with genotype x."""
+    def _recurrence_relations_males(self, l):
+        """
+        Recurrence relation for the number of male adults with genotype l.
+
+        Parameters
+        ----------
+        l : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        recurrence_relation : sym.Basic
+            Symbolic expression for the recurrence relation describing the
+            evolution of the number of adult males with genotype i.
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
         terms = []
         for i in range(4):
             for j in range(4):
@@ -526,7 +647,7 @@ class Equations(object):
 
                     # configuration of family unit
                     tmp_family_unit = self._family_unit(i, j, k)
-                    tmp_child_allele_pair = self._genotype_to_allele_pair(x)
+                    tmp_child_allele_pair = self._genotype_to_allele_pair(l)
                     tmp_father_allele_pair = self._genotype_to_allele_pair(i)
 
                     # expected genotype of offspring of i and j
@@ -547,7 +668,9 @@ class Equations(object):
 
                     terms.append(tmp_term)
 
-        return sum(terms)
+        recurrence_relation = sum(terms)
+
+        return recurrence_relation
 
     def _total_offspring(self, i, j):
         """
@@ -583,3 +706,18 @@ class Equations(object):
             raise AttributeError
         else:
             return value
+
+    def _validate_params(self, params):
+        """Validate the model parameters."""
+        required_params = ['c', 'PiAA', 'PiAa', 'PiaA', 'Piaa']
+        if not isinstance(params, dict):
+            mesg = "Equations.params must be a dict, not a {}."
+            raise AttributeError(mesg.format(params.__class__))
+        if not set(required_params) < set(params.keys()):
+            mesg = "Equations.params must contain the required parameters {}."
+            raise AttributeError(mesg.format(required_params))
+        if not params['PiaA'] > params['PiAA'] > params['Piaa'] > params['PiAa']:
+            mesg = "Prisoner's dilemma payoff structure not satisfied."
+            raise AttributeError(mesg)
+        else:
+            return params
