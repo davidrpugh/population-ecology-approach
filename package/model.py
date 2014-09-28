@@ -73,8 +73,9 @@ class Model(HasPrivateTraits):
         initial_males = np.array([mGA0, 0, 0, mga0])
 
         # f_GA(0)=mGA0*Pi_AA and f_ga(0)=mga0*Pi_aa.
-        initial_females = np.array([self.params['PiAA'] * mGA0, 0.0,
-                                    0.0, self.params['Piaa'] * mga0])
+        initial_females = np.array([self.params['c'] * self.params['PiAA'] * mGA0,
+                                    0.0, 0.0,
+                                    self.params['c'] * self.params['Piaa'] * mga0])
 
         initial_condition = np.hstack((initial_males, initial_females))
         return initial_condition
