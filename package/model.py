@@ -166,16 +166,6 @@ class Model(HasPrivateTraits):
 
         return traj
 
-    def F(self, X):
-        """Equation of motion for population allele shares."""
-        out = wrapped_symbolics.model_system(X[:4], X[4:], **self.params)
-        return out.ravel()
-
-    def F_jacobian(self, X):
-        """Jacobian for equation of motion."""
-        jac = wrapped_symbolics.model_jacobian(X[:4], X[4:], **self.params)
-        return np.array(jac)
-
     def simulate(self, T=None, rtol=None):
         """Simulates a run of the model given some initial_condition."""
         if T is not None:
