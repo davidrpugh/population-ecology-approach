@@ -35,24 +35,71 @@ class Equations(object):
 
     @property
     def SGA(self):
+        """
+        Conditional probability that a male carrying the `G` allele of the
+        gamma gene mates with a female carrying the `A` allele of the alpha
+        gene.
+
+        :getter: Return symbolic expression for the conditional probability.
+        :setter: Set a new symbolic expression for the conditional probability.
+        :type: sym.basic
+
+        """
         return self._SGA
 
     @SGA.setter
     def SGA(self, value):
-        self._SGA = value
+        """Set a new symbolic expression for the conditional probability."""
+        self._SGA = self._validate_conditional_prob(value)
 
     @property
     def SGa(self):
+        """
+        Conditional probability that a male carrying the `G` allele of the
+        gamma gene mates with a female carrying the `a` allele of the alpha
+        gene.
+
+        :getter: Return symbolic expression for the conditional probability.
+        :type: sym.basic
+
+        """
         return 1 - self._SGA
 
     @property
     def Sga(self):
+        """
+        Conditional probability that a male carrying the `g` allele of the
+        gamma gene mates with a female carrying the `a` allele of the alpha
+        gene.
+
+        :getter: Return symbolic expression for the conditional probability.
+        :setter: Set a new symbolic expression for the conditional probability.
+        :type: sym.basic
+
+        """
         return self._Sga
 
     @Sga.setter
     def Sga(self, value):
-        self._Sga = value
+        """Set a new symbolic expression for the conditional probability."""
+        self._Sga = self._validate_conditional_prob(value)
 
     @property
     def SgA(self):
+        """
+        Conditional probability that a male carrying the `g` allele of the
+        gamma gene mates with a female carrying the `A` allele of the alpha
+        gene.
+
+        :getter: Return symbolic expression for the conditional probability.
+        :type: sym.basic
+
+        """
         return 1 - self._Sga
+
+    def _validate_conditional_prob(self, value):
+        """Validate the expression for the conditional matching probability."""
+        if not isinstance(value, sym.basic):
+            raise AttributeError
+        else:
+            return value
