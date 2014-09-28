@@ -15,8 +15,8 @@ PiaA, PiAA, Piaa, PiAa = prisoners_dilemma_payoffs
 fecundity_factor = sym.var('c')
 
 
-class Equations(object):
-    """Class representing the model equations."""
+class Model(object):
+    """Base class representing the model of Pugh-Schaffer-Seabright."""
 
     def __init__(self, params, SGA, Sga):
 
@@ -98,8 +98,27 @@ class Equations(object):
         return sym.Matrix(male_eqns + female_eqns)
 
     @property
+    def initial_condition(self):
+        """Return initial condition for a simulation."""
+        mGA0 = self._initial_condition
+        mga0 = 1 - mGA0
+
+        initial_males = np.array([mGA0, 0, 0, mga0])
+
+        # f_GA(0)=mGA0*Pi_AA and f_ga(0)=mga0*Pi_aa.
+        initial_females = np.array([self.params['c'] * self.params['PiAA'] * mGA0,
+                                    0.0, 0.0,
+                                    self.params['c'] * self.params['Piaa'] * mga0])
+
+        return np.hstack((initial_males, initial_females))
+
+    @initial_condition.setter
+    def initial_condition(self, value):
+        self._initial_condition = value
+
+    @property
     def params(self):
-        """
+        r"""
         Dictionary of model parameters.
 
         :getter: Return the current dictionary of model parameters.
@@ -122,16 +141,22 @@ class Equations(object):
         Piaa : float
             Payoff for defecting when opponent defects.
 
-        Although no restrictions are placed on the rates of technological
-        progress and population growth, the sum of `g`, `n`, and :math:`delta`
-        is assumed to be positive. The user must also specify any additional
-        model parameters specific to the chosen functional forms for SGA and Sga.
+        The model assumes that the payoff structure satisfies the standard
+        Prisoner's dilemma conditions which require that
+
+        .. math::
+
+            \Pi_{aA} > \Pi_{AA} > \Pi_{aa} > \Pi_{Aa}
+
+        The user must also specify any additional model parameters specific to
+        the chosen functional forms for SGA and Sga.
 
         """
         return self._params
 
     @params.setter
     def params(self, value):
+        """Set a new dictionary of model parameters."""
         self._params = self._validate_params(value)
 
     @property
@@ -152,6 +177,10 @@ class Equations(object):
     def SGA(self, value):
         """Set a new symbolic expression for the conditional probability."""
         self._SGA = self._validate_conditional_prob(value)
+
+        # clear the cache
+        self.__numeric_jacobian = None
+        self.__numeric_system = None
 
     @property
     def SGa(self):
@@ -185,6 +214,10 @@ class Equations(object):
         """Set a new symbolic expression for the conditional probability."""
         self._Sga = self._validate_conditional_prob(value)
 
+        # clear the cache
+        self.__numeric_jacobian = None
+        self.__numeric_system = None
+
     @property
     def SgA(self):
         """
@@ -203,25 +236,8 @@ class Equations(object):
         Family unit comprised of male with genoytpe i, and females with
         genotypes j and k.
 
-        Parameters
-        ----------
-        i : int
-            Integer index of a valid genotype.
-        j : int
-            Integer index of a valid genotype.
-        k : int
-            Integer index of a valid genotype.
-
-        Returns
-        -------
-        U_ijk : sym.Basic
-            Symbolic expression for a family unit comprised of a male with
-            genoytpe i, and two females with genotypes j and k.
-
         """
-        U_ijk = (men[i] * self._genotype_matching_prob(i, j) *
-                 self._genotype_matching_prob(i, k))
-        return U_ijk
+        raise NotImplementedError
 
     def _genotype_matching_prob(self, i, j):
         """
@@ -564,6 +580,146 @@ class Equations(object):
         return offspring_share
 
     def _recurrence_relations_females(self, l):
+        """Recurrence relation for the number of female offspring with genotype l."""
+        raise NotImplementedError
+
+    def _recurrence_relations_males(self, l):
+        """Recurrence relation for the number of male adults with genotype l."""
+        raise NotImplementedError
+
+    def _simulate_fixed_trajectory(self, initial_condition, T):
+        """Simulates a trajectory of fixed length."""
+        # set up the trajectory array
+        traj = np.empty((8, T))
+        traj[:, 0] = initial_condition
+
+        # run the simulation
+        for t in range(1, T):
+            current_shares = traj[:, t-1]
+            new_shares = self.F(current_shares)
+            traj[:, t] = new_shares
+
+        return traj
+
+    def _simulate_variable_trajectory(self, initial_condition, rtol):
+        """Simulates a trajectory of variable length."""
+        # set up the trajectory array
+        traj = initial_condition.reshape((8, 1))
+
+        # initialize delta
+        delta = np.ones(8)
+
+        # run the simulation
+        while np.any(np.greater(delta, rtol)):
+            current_shares = traj[:, -1]
+            new_shares = self.F(current_shares)
+            delta = np.abs(new_shares - current_shares)
+
+            # update the trajectory
+            traj = np.hstack((traj, new_shares[:, np.newaxis]))
+
+        return traj
+
+    def _total_offspring(self, i, j):
+        """
+        Total number of children produced when a woman with genotype i is
+        matched in a family unit with another woman with genotype j.
+
+        Parameters
+        ----------
+        i : int
+            Integer index of a valid genotype.
+        j : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        total_offspring : sym.Basic
+            Symbolic expression for the total number of children produced.
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
+        total_offspring = (self._individual_offspring(i, j) +
+                           self._individual_offspring(j, i))
+        return total_offspring
+
+    def _validate_conditional_prob(self, value):
+        """Validate the expression for the conditional matching probability."""
+        if not isinstance(value, sym.Basic):
+            raise AttributeError
+        else:
+            return value
+
+    def _validate_params(self, params):
+        """Validate the model parameters."""
+        required_params = ['c', 'PiAA', 'PiAa', 'PiaA', 'Piaa']
+        if not isinstance(params, dict):
+            mesg = "Equations.params must be a dict, not a {}."
+            raise AttributeError(mesg.format(params.__class__))
+        if not set(required_params) < set(params.keys()):
+            mesg = "Equations.params must contain the required parameters {}."
+            raise AttributeError(mesg.format(required_params))
+        if not params['PiaA'] > params['PiAA'] > params['Piaa'] > params['PiAa']:
+            mesg = "Prisoner's dilemma payoff structure not satisfied."
+            raise AttributeError(mesg)
+        else:
+            return params
+
+    def F(self, X):
+        """Equation of motion for population allele shares."""
+        out = self._numeric_system(X[:4], X[4:], **self.params)
+        return out.ravel()
+
+    def F_jacobian(self, X):
+        """Jacobian for equation of motion."""
+        jac = self._numeric_jacobian(X[:4], X[4:], **self.params)
+        return jac
+
+    def simulate(self, T=None, rtol=None):
+        """Simulates a run of the model given some initial_condition."""
+        if T is not None:
+            traj = self._simulate_fixed_trajectory(self.initial_condition, T)
+        elif rtol is not None:
+            traj = self._simulate_variable_trajectory(self.initial_condition, rtol)
+        else:
+            raise ValueError("One of 'T' or 'rtol' must be specified.")
+        return traj
+
+
+class OneMaleTwoFemalesModel(Model):
+    """Base class representing the model of Pugh-Schaffer-Seabright."""
+
+    def _family_unit(self, i, j, k):
+        """
+        Family unit comprised of male with genoytpe i, and females with
+        genotypes j and k.
+
+        Parameters
+        ----------
+        i : int
+            Integer index of a valid genotype.
+        j : int
+            Integer index of a valid genotype.
+        k : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        U_ijk : sym.Basic
+            Symbolic expression for a family unit comprised of a male with
+            genoytpe i, and two females with genotypes j and k.
+
+        """
+        U_ijk = (men[i] * self._genotype_matching_prob(i, j) *
+                 self._genotype_matching_prob(i, k))
+        return U_ijk
+
+    def _recurrence_relations_females(self, l):
         """
         Recurrence relation for the number of female offspring with genotype l.
 
@@ -671,53 +827,3 @@ class Equations(object):
         recurrence_relation = sum(terms)
 
         return recurrence_relation
-
-    def _total_offspring(self, i, j):
-        """
-        Total number of children produced when a woman with genotype i is
-        matched in a family unit with another woman with genotype j.
-
-        Parameters
-        ----------
-        i : int
-            Integer index of a valid genotype.
-        j : int
-            Integer index of a valid genotype.
-
-        Returns
-        -------
-        total_offspring : sym.Basic
-            Symbolic expression for the total number of children produced.
-
-        Notes
-        -----
-        We index genotypes by integers 0, 1, 2, 3 as follows:
-
-            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
-
-        """
-        total_offspring = (self._individual_offspring(i, j) +
-                           self._individual_offspring(j, i))
-        return total_offspring
-
-    def _validate_conditional_prob(self, value):
-        """Validate the expression for the conditional matching probability."""
-        if not isinstance(value, sym.Basic):
-            raise AttributeError
-        else:
-            return value
-
-    def _validate_params(self, params):
-        """Validate the model parameters."""
-        required_params = ['c', 'PiAA', 'PiAa', 'PiaA', 'Piaa']
-        if not isinstance(params, dict):
-            mesg = "Equations.params must be a dict, not a {}."
-            raise AttributeError(mesg.format(params.__class__))
-        if not set(required_params) < set(params.keys()):
-            mesg = "Equations.params must contain the required parameters {}."
-            raise AttributeError(mesg.format(required_params))
-        if not params['PiaA'] > params['PiAA'] > params['Piaa'] > params['PiAa']:
-            mesg = "Prisoner's dilemma payoff structure not satisfied."
-            raise AttributeError(mesg)
-        else:
-            return params
