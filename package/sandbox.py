@@ -36,7 +36,6 @@ class Model(object):
             and a female carrying the `a` allele of the alpha gene.
 
         """
-        self.__numeric_family_unit = None
         self.__numeric_system = None
         self.__numeric_jacobian = None
 
@@ -67,13 +66,13 @@ class Model(object):
         return girls[1] + girls[3]
 
     @property
-    def _numeric_family_unit(self):
-        if self.__numeric_family_unit is None:
-            tmp_args = sym.var(['i', 'j', 'k']) + list(self.params.keys())
-            self.__numeric_family_unit = sym.lambdify(tmp_args,
-                                                      self._symbolic_system,
-                                                      [{'ImmutableMatrix': np.array}, "numpy"])
-        return self.__numeric_family_unit
+    def _numeric_jacobian(self):
+        if self.__numeric_jacobian is None:
+            tmp_args = [men, girls] + list(self.params.keys())
+            self.__numeric_jacobian = sym.lambdify(tmp_args,
+                                                   self._symbolic_jacobian,
+                                                   [{'ImmutableMatrix': np.array}, "numpy"])
+        return self.__numeric_system
 
     @property
     def _numeric_system(self):
@@ -82,15 +81,6 @@ class Model(object):
             self.__numeric_system = sym.lambdify(tmp_args,
                                                  self._symbolic_system,
                                                  [{'ImmutableMatrix': np.array}, "numpy"])
-        return self.__numeric_system
-
-    @property
-    def _numeric_jacobian(self):
-        if self.__numeric_jacobian is None:
-            tmp_args = [men, girls] + list(self.params.keys())
-            self.__numeric_jacobian = sym.lambdify(tmp_args,
-                                                   self._symbolic_jacobian,
-                                                   [{'ImmutableMatrix': np.array}, "numpy"])
         return self.__numeric_system
 
     @property
@@ -212,7 +202,6 @@ class Model(object):
         self._SGA = self._validate_conditional_prob(value)
 
         # clear the cache
-        self.__numeric_family_unit = None
         self.__numeric_jacobian = None
         self.__numeric_system = None
 
@@ -249,7 +238,6 @@ class Model(object):
         self._Sga = self._validate_conditional_prob(value)
 
         # clear the cache
-        self.__numeric_family_unit = None
         self.__numeric_jacobian = None
         self.__numeric_system = None
 
@@ -266,7 +254,7 @@ class Model(object):
         """
         return 1 - self._Sga
 
-    def _symbolic_family_unit(self, i, j, k):
+    def _family_unit(self, i, j, k):
         """
         Family unit comprised of male with genoytpe i, and females with
         genotypes j and k.
@@ -729,7 +717,7 @@ class Model(object):
 class OneMaleTwoFemalesModel(Model):
     """Class representing the 1M2F model of Pugh-Schaffer-Seabright."""
 
-    def _symbolic_family_unit(self, i, j, k):
+    def _family_unit(self, i, j, k):
         """
         Family unit comprised of male with genoytpe i, and females with
         genotypes j and k.
@@ -782,7 +770,7 @@ class OneMaleTwoFemalesModel(Model):
                 for k in range(4):
 
                     # configuration of family unit
-                    tmp_family_unit = self._symbolic_family_unit(i, j, k)
+                    tmp_family_unit = self._family_unit(i, j, k)
                     tmp_child_allele_pair = self._genotype_to_allele_pair(l)
                     tmp_father_allele_pair = self._genotype_to_allele_pair(i)
 
@@ -837,7 +825,7 @@ class OneMaleTwoFemalesModel(Model):
                 for k in range(4):
 
                     # configuration of family unit
-                    tmp_family_unit = self._symbolic_family_unit(i, j, k)
+                    tmp_family_unit = self._family_unit(i, j, k)
                     tmp_child_allele_pair = self._genotype_to_allele_pair(l)
                     tmp_father_allele_pair = self._genotype_to_allele_pair(i)
 
