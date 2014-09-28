@@ -19,7 +19,23 @@ class Model(object):
     """Base class representing the model of Pugh-Schaffer-Seabright."""
 
     def __init__(self, params, SGA, Sga):
+        """
+        Create and instance of the Model class.
 
+        Parameters
+        ----------
+        params : dict
+            Dictionary of model parameters.
+        SGA : sym.Basic
+            Symbolic expression for the conditional phenotype matching
+            probability for a male carrying the `G` allele of the gamma gene
+            and a female carrying the `A` allele of the alpha gene.
+        Sga : sym.Basic
+            Symbolic expression for the conditional phenotype matching
+            probability for a male carrying the `g` allele of the gamma gene
+            and a female carrying the `a` allele of the alpha gene.
+
+        """
         self.__numeric_system = None
         self.__numeric_jacobian = None
 
@@ -99,16 +115,23 @@ class Model(object):
 
     @property
     def initial_condition(self):
-        """Return initial condition for a simulation."""
+        """
+        Initial condition for a simulation.
+
+        :getter: Return an array defining the initial condition for the simulation.
+        :setter: Set new value for the initial number of males with genotype `GA`.
+        :type: float
+
+        """
         mGA0 = self._initial_condition
         mga0 = 1 - mGA0
 
         initial_males = np.array([mGA0, 0, 0, mga0])
 
         # f_GA(0)=mGA0*Pi_AA and f_ga(0)=mga0*Pi_aa.
-        initial_females = np.array([self.params['c'] * self.params['PiAA'] * mGA0,
-                                    0.0, 0.0,
-                                    self.params['c'] * self.params['Piaa'] * mga0])
+        fGA0 = self.params['c'] * self.params['PiAA'] * mGA0
+        fga0 = self.params['c'] * self.params['Piaa'] * mga0
+        initial_females = np.array([fGA0, 0.0, 0.0, fga0])
 
         return np.hstack((initial_males, initial_females))
 
@@ -659,10 +682,10 @@ class Model(object):
         """Validate the model parameters."""
         required_params = ['c', 'PiAA', 'PiAa', 'PiaA', 'Piaa']
         if not isinstance(params, dict):
-            mesg = "Equations.params must be a dict, not a {}."
+            mesg = "Model.params must be a dict, not a {}."
             raise AttributeError(mesg.format(params.__class__))
         if not set(required_params) < set(params.keys()):
-            mesg = "Equations.params must contain the required parameters {}."
+            mesg = "Model.params must contain the required parameters {}."
             raise AttributeError(mesg.format(required_params))
         if not params['PiaA'] > params['PiAA'] > params['Piaa'] > params['PiAa']:
             mesg = "Prisoner's dilemma payoff structure not satisfied."
