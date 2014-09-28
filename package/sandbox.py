@@ -40,6 +40,20 @@ class Equations(object):
         return girls[1] + girls[3]
 
     @property
+    def _symbolic_system(self):
+        """
+        Symbolic system of equations defining the evolution of the numbers of
+        male adults and female children of various genotypes.
+
+        :getter: Return the symbolic system of recurrence relations.
+        :type: sym.Matrix
+
+        """
+        male_eqns = [self._recurrence_relations_males(x) for x in range(4)]
+        female_eqns = [self._recurrence_relations_females(x) for x in range(4)]
+        return sym.Matrix(male_eqns + female_eqns)
+
+    @property
     def SGA(self):
         """
         Conditional probability that a male carrying the `G` allele of the
@@ -103,6 +117,31 @@ class Equations(object):
         """
         return 1 - self._Sga
 
+    def _family_unit(self, i, j, k):
+        """
+        Family unit comprised of male with genoytpe i, and females with
+        genotypes j and k.
+
+        Parameters
+        ----------
+        i : int
+            Integer index of a valid genotype.
+        j : int
+            Integer index of a valid genotype.
+        k : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        U_ijk : sym.Basic
+            Symbolic expression for a family unit comprised of a male with
+            genoytpe i, and two females with genotypes j and k.
+
+        """
+        U_ijk = (men[i] * self._genotype_matching_prob(i, j) *
+                 self._genotype_matching_prob(i, k))
+        return U_ijk
+
     def _genotype_matching_prob(self, i, j):
         """
         Conditional probability that man with genotype i is matched to girl
@@ -128,42 +167,47 @@ class Equations(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        phenotype_matching_prob = self._compute_phenotype_matching_prob(i, j)
+        phenotype_matching_prob = self._phenotype_matching_prob(i, j)
         girl_population_share = girls[j] / self._girls_with_common_allele(j)
         probability = phenotype_matching_prob * girl_population_share
         return probability
 
-    def _individual_offspring(self, i, j):
+    def _genotype_to_allele_pair(self, i):
         """
-        Number of offspring produced by a woman with genotype i when matched in
-        family unit with another woman with genotype j.
+        Return allele pair for a given genotype i.
 
         Parameters
         ----------
         i : int
-            Integer index of a valid genotype.
-        j : int
-            Integer index of a valid genotype.
+            Integer index of a valid genotype. Must take values 0,1,2,3.
 
         Returns
         -------
-        individual_offspring : sym.Basic
-            Symbolic expression for the number of offspring produced by female
-            with genotype i.
+        allele_pair : tuple (size=2)
+            Tuple of the form `(q, r)` where `q` indexes the gamma gene and `r`
+            indexes the alpha gene.
 
         Notes
         -----
-        We index genotypes by integers 0, 1, 2, 3 as follows:
+        Our allele index `(q, r)` where `q` indexes the gamma gene and `r`
+        indexes the alpha gene uses the following mapping:
 
-            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+            `q=0=G, q=1=g, r=0=A, r=1=a`.
+
+        For examples, an allele index of (0, 1) indicates that the host carrys
+        the `G` allele of the gamma gene and the `a` allele of the alpha gene.
 
         """
-        payoff = (self.iscarrier_a(i) * self.iscarrier_A(j) * PiaA +
-                  self.iscarrier_A(i) * self.iscarrier_A(j) * PiAA +
-                  self.iscarrier_a(i) * self.iscarrier_a(j) * Piaa +
-                  self.iscarrier_A(i) * self.iscarrier_a(j) * PiAa)
-        individual_offspring = fecundity_factor * payoff
-        return individual_offspring
+        if i == 0:
+            allele_pair = (0, 0)
+        elif i == 1:
+            allele_pair = (0, 1)
+        elif i == 2:
+            allele_pair = (1, 0)
+        else:
+            allele_pair = (1, 1)
+
+        return allele_pair
 
     def _girls_with_common_allele(self, i):
         """
@@ -190,6 +234,99 @@ class Equations(object):
         number_girls = (self._iscarrier_A(i) * self._altruistic_girls +
                         self._iscarrier_a(i) * self._selfish_girls)
         return number_girls
+
+    @staticmethod
+    def _has_common_allele(allele_pair1, allele_pair2):
+        """
+        Check if two allele pairs have a common allele.
+
+        Parameters
+        ----------
+        allele_pair1 : tuple (size=2)
+        allele_pair2 : tuple (size=2)
+
+        Returns
+        -------
+        True if two genotypes share a common allele; false otherwise.
+
+        """
+        for allele1, allele2 in zip(allele_pair1, allele_pair2):
+            if allele1 == allele2:
+                return True
+
+        else:
+            return False
+
+    @staticmethod
+    def _has_same_genotype(allele_pair1, allele_pair2):
+        """Return True if two genotypes are a perfect match."""
+        if allele_pair1 == allele_pair2:
+            return True
+        else:
+            return False
+
+    def _individual_offspring(self, i, j):
+        """
+        Number of offspring produced by a woman with genotype i when matched in
+        family unit with another woman with genotype j.
+
+        Parameters
+        ----------
+        i : int
+            Integer index of a valid genotype.
+        j : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        individual_offspring : sym.Basic
+            Symbolic expression for the number of offspring produced by female
+            with genotype i.
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
+        payoff = (self._iscarrier_a(i) * self._iscarrier_A(j) * PiaA +
+                  self._iscarrier_A(i) * self._iscarrier_A(j) * PiAA +
+                  self._iscarrier_a(i) * self._iscarrier_a(j) * Piaa +
+                  self._iscarrier_A(i) * self._iscarrier_a(j) * PiAa)
+        individual_offspring = fecundity_factor * payoff
+        return individual_offspring
+
+    def _inheritance_prob(self, child, parent1, parent2):
+        """
+        Conditional probability of child's allele pair given parents' allele
+        pairs.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
+        if self._has_same_genotype(parent1, parent2):
+            if self._has_same_genotype(child, parent1):
+                inheritance_prob = 1.0
+            else:
+                inheritance_prob = 0.0
+
+        elif self._has_common_allele(parent1, parent2):
+            if self._has_same_genotype(child, parent1):
+                inheritance_prob = 0.5
+            elif self._has_same_genotype(child, parent2):
+                inheritance_prob = 0.5
+            else:
+                inheritance_prob = 0.0
+
+        else:
+            inheritance_prob = 0.25
+
+        return inheritance_prob
 
     def _iscarrier_G(self, i):
         """
@@ -283,7 +420,7 @@ class Equations(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        return 1 - self.iscarrier_A(i)
+        return 1 - self._iscarrier_A(i)
 
     def _phenotype_matching_prob(self, i, j):
         """
@@ -341,9 +478,76 @@ class Equations(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        offspring_share = (self._compute_individual_offspring(i, j) /
-                           self._compute_total_offspring(i, j))
+        offspring_share = (self._individual_offspring(i, j) /
+                           self._total_offspring(i, j))
         return offspring_share
+
+    def _recurrence_relations_females(self, x):
+        """Return recurrence relation for female children with genotype x."""
+        terms = []
+        for i in range(4):
+            for j in range(4):
+                for k in range(4):
+
+                    # configuration of family unit
+                    tmp_family_unit = self._family_unit(i, j, k)
+                    tmp_child_allele_pair = self._genotype_to_allele_pair(x)
+                    tmp_father_allele_pair = self._genotype_to_allele_pair(i)
+
+                    # expected genotype of offspring of i and j
+                    tmp_mother_allele_pair = self._genotype_to_allele_pair(j)
+                    tmp_daughters_ij = 0.5 * self._individual_offspring(j, k)
+                    tmp_ij = (self._inheritance_prob(tmp_child_allele_pair,
+                                                     tmp_father_allele_pair,
+                                                     tmp_mother_allele_pair) *
+                              tmp_daughters_ij)
+
+                    # expected genotype of offspring of i and k
+                    tmp_mother_allele_pair = self._genotype_to_allele_pair(k)
+                    tmp_daughters_ik = 0.5 * self._individual_offspring(k, j)
+                    tmp_ik = (self._inheritance_prob(tmp_child_allele_pair,
+                                                     tmp_father_allele_pair,
+                                                     tmp_mother_allele_pair) *
+                              tmp_daughters_ik)
+
+                    # expected genotype of offspring of family unit
+                    tmp_term = tmp_family_unit * (tmp_ij + tmp_ik)
+
+                    terms.append(tmp_term)
+
+        return sum(terms)
+
+    def _recurrence_relations_males(self, x):
+        """Return recurrence relation for male adults with genotype x."""
+        terms = []
+        for i in range(4):
+            for j in range(4):
+                for k in range(4):
+
+                    # configuration of family unit
+                    tmp_family_unit = self._family_unit(i, j, k)
+                    tmp_child_allele_pair = self._genotype_to_allele_pair(x)
+                    tmp_father_allele_pair = self._genotype_to_allele_pair(i)
+
+                    # expected genotype of offspring of i and j
+                    tmp_mother_allele_pair = self._genotype_to_allele_pair(j)
+                    tmp_ij = (self._inheritance_prob(tmp_child_allele_pair,
+                                                     tmp_father_allele_pair,
+                                                     tmp_mother_allele_pair) *
+                              self._offspring_share(j, k))
+
+                    # expected genotype of offspring of i and k
+                    tmp_mother_allele_pair = self._genotype_to_allele_pair(k)
+                    tmp_ik = (self._inheritance_prob(tmp_child_allele_pair,
+                                                     tmp_father_allele_pair,
+                                                     tmp_mother_allele_pair) *
+                              self._offspring_share(k, j))
+
+                    tmp_term = tmp_family_unit * (tmp_ij + tmp_ik)
+
+                    terms.append(tmp_term)
+
+        return sum(terms)
 
     def _total_offspring(self, i, j):
         """
@@ -369,8 +573,8 @@ class Equations(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        total_offspring = (self._compute_individual_offspring(i, j) +
-                           self._compute_individual_offspring(j, i))
+        total_offspring = (self._individual_offspring(i, j) +
+                           self._individual_offspring(j, i))
         return total_offspring
 
     def _validate_conditional_prob(self, value):
