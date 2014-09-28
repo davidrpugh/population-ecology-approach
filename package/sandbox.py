@@ -110,6 +110,66 @@ class Equations(object):
         else:
             return value
 
+    def compute_individual_offspring(self, i, j):
+        """
+        Number of children produced by a woman with genotype i when matched in
+        family unit with another woman with genotype j.
+
+        Parameters
+        ----------
+        i : int
+            Integer index of a valid genotype.
+        j : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        individual_offspring : sym.Basic
+            Symbolic expression for the total number of children produced by
+            female with genotype i.
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
+        payoff = (self.iscarrier_a(i) * self.iscarrier_A(j) * PiaA +
+                  self.iscarrier_A(i) * self.iscarrier_A(j) * PiAA +
+                  self.iscarrier_a(i) * self.iscarrier_a(j) * Piaa +
+                  self.iscarrier_A(i) * self.iscarrier_a(j) * PiAa)
+        individual_offspring = fecundity_factor * payoff
+        return individual_offspring
+
+    def compute_total_offspring(self, i, j):
+        """
+        Total number of children produced when a woman with genotype i is
+        matched in a family unit with another woman with genotype j.
+
+        Parameters
+        ----------
+        i : int
+            Integer index of a valid genotype.
+        j : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        total_offspring : sym.Basic
+            Symbolic expression for the total number of children produced.
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
+        total_offspring = (self.compute_individual_offspring(i, j) +
+                           self.compute_individual_offspring(j, i))
+        return total_offspring
+
     def iscarrier_G(self, i):
         """
         Indicates whether or not adult with genotype i carries the `G` allele.
