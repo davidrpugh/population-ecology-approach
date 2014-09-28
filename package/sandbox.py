@@ -18,6 +18,9 @@ eG, eg = male_screening_probs
 prisoners_dilemma_payoffs = sym.var('PiaA, PiAA, Piaa, PiAa')
 PiaA, PiAA, Piaa, PiAa = prisoners_dilemma_payoffs
 
+# Female fecundity scaling factor
+fecundity_factor = sym.var('c')
+
 # Female population by phenotype.
 altruistic_girls = girls[0] + girls[2]
 selfish_girls = girls[1] + girls[3]
@@ -152,36 +155,66 @@ def iscarrier_a(i):
     return 1 - iscarrier_A(i)
 
 
-def get_individual_payoff(i, j):
-    """Payoff produced by woman with genotype i when to woman with genotype j"""
-    payoff_i = (iscarrier_a(i) * iscarrier_A(j) * PiaA +
-                iscarrier_A(i) * iscarrier_A(j) * PiAA +
-                iscarrier_a(i) * iscarrier_a(j) * Piaa +
-                iscarrier_A(i) * iscarrier_a(j) * PiAa)
-    return payoff_i
+def get_number_children(i, j):
+    """
+    Number of children produced by woman with genotype i when matched with a
+    woman with genotype j.
+
+    Parameters
+    ----------
+    i : int
+        Integer index of a valid genotype.
+    j : int
+        Integer index of a valid genotype.
+
+    Returns
+    -------
+    number_children : sym.basic
+        Symbolic expression for the total number of children produced by female
+        with genotype i.
+
+    """
+    payoff = (iscarrier_a(i) * iscarrier_A(j) * PiaA +
+              iscarrier_A(i) * iscarrier_A(j) * PiAA +
+              iscarrier_a(i) * iscarrier_a(j) * Piaa +
+              iscarrier_A(i) * iscarrier_a(j) * PiAa)
+    number_children = fecundity_factor * payoff
+    return number_children
 
 
-def get_family_payoff(i, j):
-    """Payoff from families where women have genotypes i and j."""
-    family_payoff = get_individual_payoff(i, j) + get_individual_payoff(j, i)
-    return family_payoff
+def get_total_offspring(i, j):
+    """Size of family where women have genotypes i and j."""
+    total_offspring = get_number_children(i, j) + get_number_children(j, i)
+    return total_offspring
 
 
 def get_payoff_share(i, j):
-    """Share of family payoff produced by woman with genotype i when matched to woman with genotype j"""
-    payoff_share = get_individual_payoff(i, j) / get_family_payoff(i, j)
-    return payoff_share
+    """
+    Share of total offspring produced by woman with genotype i when matched to
+    woman with genotype j.
+
+    """
+    offspring_share = get_number_children(i, j) / get_total_offspring(i, j)
+    return offspring_share
 
 
 def get_genotype_matching_prob(i, j):
-    """Conditional probability that man with genotype i is matched to girl with genotype j."""
+    """
+    Conditional probability that man with genotype i is matched to girl with
+    genotype j.
+
+    """
     phenotype_matching_prob = get_phenotype_matching_prob(i, j)
     girl_population_share = girls[j] / girls_with_common_allele(j)
     return phenotype_matching_prob * girl_population_share
 
 
 def get_phenotype_matching_prob(i, j):
-    """Conditional probability that man with phenotype i is matched to girl with phenotype j."""
+    """
+    Conditional probability that man with phenotype i is matched to girl with
+    phenotype j.
+
+    """
     phenotype_matching_prob = (iscarrier_G(i) * iscarrier_A(j) * SGA +
                                iscarrier_G(i) * iscarrier_a(j) * SGa +
                                iscarrier_g(i) * iscarrier_A(j) * SgA +
@@ -234,7 +267,11 @@ def has_same_genotype(genotype1, genotype2):
 
 
 def get_family_unit(i, j, k):
-    """Family unit comprised of male with genoytpe i, and females with genotypes j and k."""
+    """
+    Family unit comprised of male with genoytpe i, and females with genotypes
+    j and k.
+
+    """
     U_ijk = (men[i] * get_genotype_matching_prob(i, j) *
              get_genotype_matching_prob(i, k))
     return U_ijk
@@ -248,8 +285,8 @@ def get_female_recurrence_relation(x):
             for k in range(4):
 
                 tmp_family_unit = get_family_unit(i, j, k)
-                tmp_daughters_ij = get_inheritance_prob(b(x), b(i), b(j)) * get_individual_payoff(j, k)
-                tmp_daughters_ik = get_inheritance_prob(b(x), b(i), b(k)) * get_individual_payoff(k, j)
+                tmp_daughters_ij = get_inheritance_prob(b(x), b(i), b(j)) * get_number_children(j, k)
+                tmp_daughters_ik = get_inheritance_prob(b(x), b(i), b(k)) * get_number_children(k, j)
                 tmp_term = tmp_family_unit * (tmp_daughters_ij + tmp_daughters_ik)
 
                 terms.append(tmp_term)
