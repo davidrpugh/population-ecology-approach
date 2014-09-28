@@ -39,7 +39,7 @@ Sga = true_selfish_girls / selfish_adoption_pool
 SgA = 1 - Sga
 
 
-def b(i):
+def genotype_to_allele(i):
     """
     Return allele pair for a given genotype i.
 
@@ -79,7 +79,19 @@ def b(i):
 
 
 def iscarrier_G(i):
-    """Return True if adult carries the G allele."""
+    """
+    Indicates whether or not adult carries the G allele.
+
+    Parameters
+    ----------
+    i : int
+        Integer index of a valid genotype. Must take values 0,1,2,3.
+
+    Returns
+    -------
+    1 if adult carries the G allele, 0 otherwise.
+
+    """
     if i in [0, 1]:
         return 1
     else:
@@ -87,12 +99,36 @@ def iscarrier_G(i):
 
 
 def iscarrier_g(i):
-    """Return True if adult carries the g allele."""
+    """
+    Indicates whether or not adult carries the g allele.
+
+    Parameters
+    ----------
+    i : int
+        Integer index of a valid genotype. Must take values 0,1,2,3.
+
+    Returns
+    -------
+    1 if adult carries the g allele, 0 otherwise.
+
+    """
     return 1 - iscarrier_G(i)
 
 
 def iscarrier_A(i):
-    """Return True if adult carries the A allele."""
+    """
+    Indicates whether or not adult carries the A allele.
+
+    Parameters
+    ----------
+    i : int
+        Integer index of a valid genotype. Must take values 0,1,2,3.
+
+    Returns
+    -------
+    1 if adult carries the A allele, 0 otherwise.
+
+    """
     if i in [0, 2]:
         return 1
     else:
@@ -100,7 +136,19 @@ def iscarrier_A(i):
 
 
 def iscarrier_a(i):
-    """Return True if adult carries the A allele."""
+    """
+    Indicates whether or not adult carries the a allele.
+
+    Parameters
+    ----------
+    i : int
+        Integer index of a valid genotype. Must take values 0,1,2,3.
+
+    Returns
+    -------
+    1 if adult carries the a allele, 0 otherwise.
+
+    """
     return 1 - iscarrier_A(i)
 
 
