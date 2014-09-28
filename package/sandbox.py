@@ -285,13 +285,16 @@ def get_female_recurrence_relation(x):
             for k in range(4):
 
                 tmp_family_unit = get_family_unit(i, j, k)
-                tmp_daughters_ij = get_inheritance_prob(b(x), b(i), b(j)) * get_number_children(j, k)
-                tmp_daughters_ik = get_inheritance_prob(b(x), b(i), b(k)) * get_number_children(k, j)
-                tmp_term = tmp_family_unit * (tmp_daughters_ij + tmp_daughters_ik)
+                tmp_daughters_ij = 0.5 * get_number_children(j, k)
+                tmp_daughters_ik = 0.5 * get_number_children(k, j)
+
+                tmp_ij = get_inheritance_prob(b(x), b(i), b(j)) * tmp_daughters_ij
+                tmp_ik = get_inheritance_prob(b(x), b(i), b(k)) * tmp_daughters_ik
+                tmp_term = tmp_family_unit * (tmp_ij + tmp_ik)
 
                 terms.append(tmp_term)
 
-    return 0.5 * sum(terms)
+    return sum(terms)
 
 
 def get_male_recurrence_relation(x):
