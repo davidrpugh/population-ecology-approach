@@ -11,8 +11,8 @@ female_signaling_probs = sym.var('dA, da')
 dA, da = female_signaling_probs
 
 # Male screening probabilities
-male_screening_probs = sym.var('eA, ea')
-eA, ea = male_screening_probs
+male_screening_probs = sym.var('eG, eg')
+eG, eg = male_screening_probs
 
 # Payoff parameters (from a Prisoner's dilemma)
 prisoners_dilemma_payoffs = sym.var('PiaA, PiAA, Piaa, PiAa')
@@ -25,12 +25,12 @@ selfish_girls = girls[1] + girls[3]
 # Conditional phenotype matching probabilities
 true_altruistic_girls = dA * altruistic_girls
 false_altruistic_girls = (1 - da) * selfish_girls
-mistaken_for_altruistic_girls = (1 - eA) * false_altruistic_girls
+mistaken_for_altruistic_girls = (1 - eG) * false_altruistic_girls
 altruist_adoption_pool = true_altruistic_girls + mistaken_for_altruistic_girls
 
 true_selfish_girls = da * selfish_girls
 false_selfish_girls = (1 - dA) * altruistic_girls
-mistaken_for_selfish_girls = (1 - ea) * false_selfish_girls
+mistaken_for_selfish_girls = (1 - eg) * false_selfish_girls
 selfish_adoption_pool = true_selfish_girls + mistaken_for_selfish_girls
 
 SGA = true_altruistic_girls / altruist_adoption_pool
@@ -40,7 +40,32 @@ SgA = 1 - Sga
 
 
 def b(i):
-    """Return binary representation of the integer."""
+    """
+    Return allele pair for a given genotype i.
+
+    Parameters
+    ----------
+    i : int
+        Integer index of a valid genotype. Must take values 0,1,2,3.
+
+    Returns
+    -------
+    allele_pair : tuple (size=2)
+        Tuple of the form (q, r) where q indexes the gamma gene and r indexes
+        the alpha gene.
+
+    Notes
+    -----
+    Our allele index (q, r) where q indexes the gamma gene and r indexes
+    the alpha gene uses the following mapping:
+
+        q=0=G, q=1=g, r=0=A, r=1=a.
+
+    For examples, an allele index of (0, 1) indicates that the host carrys the
+    "G" allele of the gatekeeper gene and the "a" allele of the cooperation
+    gene. The allele index (0, 1) corresponds to the geneotype index 1.
+
+    """
     if i == 0:
         return (0, 0)
     elif i == 1:
@@ -138,11 +163,8 @@ def get_inheritance_prob(child, parent1, parent2):
         else:
             return 0.0
 
-    elif not has_common_allele(parent1, parent2):
-        return 0.25
-
     else:
-        assert False, "You should not be reading this!"
+        return 0.25  # if no common allele, each of 4 outcomes equally likely
 
 
 def has_common_allele(genotype1, genotype2):
@@ -150,8 +172,7 @@ def has_common_allele(genotype1, genotype2):
     for allele1, allele2 in zip(genotype1, genotype2):
         if allele1 == allele2:
             return True
-        else:
-            pass
+
     else:
         return False
 
