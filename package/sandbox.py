@@ -118,8 +118,8 @@ class Model(object):
         """
         Initial condition for a simulation.
 
-        :getter: Return an array defining the initial condition for the simulation.
-        :setter: Set new value for the initial number of males with genotype `GA`.
+        :getter: Return an array defining the initial condition.
+        :setter: Set the initial number of males with genotype `GA`.
         :type: float
 
         """
@@ -262,7 +262,8 @@ class Model(object):
         """
         raise NotImplementedError
 
-    def _genotype_matching_prob(self, i, j):
+    @classmethod
+    def _genotype_matching_prob(cls, i, j):
         """
         Conditional probability that man with genotype i is matched to girl
         with genotype j.
@@ -287,12 +288,13 @@ class Model(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        phenotype_matching_prob = self._phenotype_matching_prob(i, j)
-        girl_population_share = girls[j] / self._girls_with_common_allele(j)
+        phenotype_matching_prob = cls._phenotype_matching_prob(i, j)
+        girl_population_share = girls[j] / cls._girls_with_common_allele(j)
         probability = phenotype_matching_prob * girl_population_share
         return probability
 
-    def _genotype_to_allele_pair(self, i):
+    @staticmethod
+    def _genotype_to_allele_pair(i):
         """
         Return allele pair for a given genotype i.
 
@@ -329,7 +331,8 @@ class Model(object):
 
         return allele_pair
 
-    def _girls_with_common_allele(self, i):
+    @classmethod
+    def _girls_with_common_allele(cls, i):
         """
         Number of girls who share common allele with genotype i.
 
@@ -351,8 +354,8 @@ class Model(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        number_girls = (self._iscarrier_A(i) * self._altruistic_girls +
-                        self._iscarrier_a(i) * self._selfish_girls)
+        number_girls = (cls._iscarrier_A(i) * cls._altruistic_girls +
+                        cls._iscarrier_a(i) * cls._selfish_girls)
         return number_girls
 
     @staticmethod
@@ -379,13 +382,26 @@ class Model(object):
 
     @staticmethod
     def _has_same_genotype(allele_pair1, allele_pair2):
-        """Return True if two genotypes are a perfect match."""
+        """
+        Return true if two genotypes are a perfect match.
+
+        Parameters
+        ----------
+        allele_pair1 : tuple (size=2)
+        allele_pair1 : tuple (size=2)
+
+        Returns
+        -------
+        True if two genotypes are a perfect match; false otherwise.
+
+        """
         if allele_pair1 == allele_pair2:
             return True
         else:
             return False
 
-    def _individual_offspring(self, i, j):
+    @classmethod
+    def _individual_offspring(cls, i, j):
         """
         Number of offspring produced by a woman with genotype i when matched in
         family unit with another woman with genotype j.
@@ -410,35 +426,40 @@ class Model(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        payoff = (self._iscarrier_a(i) * self._iscarrier_A(j) * PiaA +
-                  self._iscarrier_A(i) * self._iscarrier_A(j) * PiAA +
-                  self._iscarrier_a(i) * self._iscarrier_a(j) * Piaa +
-                  self._iscarrier_A(i) * self._iscarrier_a(j) * PiAa)
+        payoff = (cls._iscarrier_a(i) * cls._iscarrier_A(j) * PiaA +
+                  cls._iscarrier_A(i) * cls._iscarrier_A(j) * PiAA +
+                  cls._iscarrier_a(i) * cls._iscarrier_a(j) * Piaa +
+                  cls._iscarrier_A(i) * cls._iscarrier_a(j) * PiAa)
         individual_offspring = fecundity_factor * payoff
         return individual_offspring
 
-    def _inheritance_prob(self, child, parent1, parent2):
+    @classmethod
+    def _inheritance_prob(cls, child, parent1, parent2):
         """
         Conditional probability of child's allele pair given parents' allele
         pairs.
 
         Parameters
         ----------
+        child : tuple (size=2)
+        parent1 : tuple (size=2)
+        parent2 : tuple (size=2)
 
         Returns
         -------
+        inheritance_prob : float
 
         """
-        if self._has_same_genotype(parent1, parent2):
-            if self._has_same_genotype(child, parent1):
+        if cls._has_same_genotype(parent1, parent2):
+            if cls._has_same_genotype(child, parent1):
                 inheritance_prob = 1.0
             else:
                 inheritance_prob = 0.0
 
-        elif self._has_common_allele(parent1, parent2):
-            if self._has_same_genotype(child, parent1):
+        elif cls._has_common_allele(parent1, parent2):
+            if cls._has_same_genotype(child, parent1):
                 inheritance_prob = 0.5
-            elif self._has_same_genotype(child, parent2):
+            elif cls._has_same_genotype(child, parent2):
                 inheritance_prob = 0.5
             else:
                 inheritance_prob = 0.0
@@ -448,7 +469,8 @@ class Model(object):
 
         return inheritance_prob
 
-    def _iscarrier_G(self, i):
+    @staticmethod
+    def _iscarrier_G(i):
         """
         Indicates whether or not adult with genotype i carries the `G` allele.
 
@@ -473,7 +495,8 @@ class Model(object):
         else:
             return 0
 
-    def _iscarrier_g(self, i):
+    @classmethod
+    def _iscarrier_g(cls, i):
         """
         Indicates whether or not adult with genotype i carries the `g` allele.
 
@@ -493,9 +516,10 @@ class Model(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        return 1 - self._iscarrier_G(i)
+        return 1 - cls._iscarrier_G(i)
 
-    def _iscarrier_A(self, i):
+    @staticmethod
+    def _iscarrier_A(i):
         """
         Indicates whether or not adult with genotype i carries the `A` allele.
 
@@ -520,7 +544,8 @@ class Model(object):
         else:
             return 0
 
-    def _iscarrier_a(self, i):
+    @classmethod
+    def _iscarrier_a(cls, i):
         """
         Indicates whether or not adult with genotype i carries the `a` allele.
 
@@ -540,7 +565,7 @@ class Model(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        return 1 - self._iscarrier_A(i)
+        return 1 - cls._iscarrier_A(i)
 
     def _phenotype_matching_prob(self, i, j):
         """
@@ -573,7 +598,8 @@ class Model(object):
                        self._iscarrier_g(i) * self._iscarrier_a(j) * self.Sga)
         return probability
 
-    def _offspring_share(self, i, j):
+    @classmethod
+    def _offspring_share(cls, i, j):
         """
         Share of total offspring produced by woman with genotype i when matched
         in a family unit with a woman with genotype j.
@@ -598,8 +624,8 @@ class Model(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        offspring_share = (self._individual_offspring(i, j) /
-                           self._total_offspring(i, j))
+        offspring_share = (cls._individual_offspring(i, j) /
+                           cls._total_offspring(i, j))
         return offspring_share
 
     def _recurrence_relations_females(self, l):
@@ -643,7 +669,8 @@ class Model(object):
 
         return traj
 
-    def _total_offspring(self, i, j):
+    @classmethod
+    def _total_offspring(cls, i, j):
         """
         Total number of children produced when a woman with genotype i is
         matched in a family unit with another woman with genotype j.
@@ -667,8 +694,8 @@ class Model(object):
             0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        total_offspring = (self._individual_offspring(i, j) +
-                           self._individual_offspring(j, i))
+        total_offspring = (cls._individual_offspring(i, j) +
+                           cls._individual_offspring(j, i))
         return total_offspring
 
     def _validate_conditional_prob(self, value):
@@ -795,7 +822,9 @@ class OneMaleTwoFemalesModel(Model):
 
                     terms.append(tmp_term)
 
-        return sum(terms)
+        recurrence_relation = sum(terms)
+
+        return recurrence_relation
 
     def _recurrence_relations_males(self, l):
         """
