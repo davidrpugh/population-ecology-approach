@@ -698,14 +698,16 @@ class Model(object):
                            cls._individual_offspring(j, i))
         return total_offspring
 
-    def _validate_conditional_prob(self, value):
+    @staticmethod
+    def _validate_conditional_prob(value):
         """Validate the expression for the conditional matching probability."""
         if not isinstance(value, sym.Basic):
             raise AttributeError
         else:
             return value
 
-    def _validate_params(self, params):
+    @staticmethod
+    def _validate_params(params):
         """Validate the model parameters."""
         required_params = ['c', 'PiAA', 'PiAa', 'PiaA', 'Piaa']
         if not isinstance(params, dict):
