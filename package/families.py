@@ -13,77 +13,77 @@ still allowing for easy switching between different configurations.
 """
 import sympy as sym
 
+# number of female children of particular genotype
+girls = sym.DeferredVector('f')
+
 # number of male adults of particular genotype
 men = sym.DeferredVector('M')
 
 
 class Family(object):
-    """Class representing a family in the 1M2F model."""
-
-    def __init__(self, model):
-        """
-        Creates an instance of the Family class.
-
-        Parameters
-        ----------
-        model : model.Model
-            Instance of the model.Model class representing the 1M2F model.
-
-        """
-        self.model = model
+    """Class representing a family unit."""
 
     @property
     def male_genotype(self):
+        """
+        Integer index for a valid male genotype.
+
+        :getter: Return the index of the male's genotype.
+        :setter: Set a new index for the male genotype.
+        :type: int
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
         return self._male_genotype
 
     @male_genotype.setter
     def male_genotype(self, genotype):
-        self._male_genotype = self._validate(genotype)
+        """Set a new index for the male genotype."""
+        self._male_genotype = self._validate_genotype(genotype)
 
     @property
-    def female_genotype_1(self):
-        return self._female_genotype_1
-
-    @female_genotype_1.setter
-    def female_genotype_1(self, genotype):
-        self._female_genotype_1 = self._validate(genotype)
-
-    @property
-    def female_genotype_2(self):
-        return self._female_genotype_2
-
-    @female_genotype_2.setter
-    def female_genotype_2(self, genotype):
-        self._female_genotype_2 = self._validate(genotype)
-
-    @property
-    def unit(self):
+    def female_genotypes(self):
         """
-        Family unit in the 1M2F model is comprised of male and two females.
 
-        :getter: Return a symbolic expression for the family unit.
-        :type: sym.Basic
+        Integer indices for valid female genotypes.
+
+        :getter: Retun indices for the females' genotypes.
+        :setter: Set a new indices for the females' genotypes.
+        :type: tuple
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
 
         """
-        i = self.male_genotype
-        j = self.female_genotype_1
-        k = self.female_genotype_2
+        return self._female_genotypes
 
-        # size of unit depends on number of males and matching probs
-        U_ijk = (men[i] * self._genotype_matching_prob(i, j) *
-                 self._genotype_matching_prob(i, k))
+    @female_genotypes.setter
+    def female_genotypes(self, genotypes):
+        """Set new indices for female genotypes."""
+        self._female_genotypes = self._validate_female_genotypes(genotypes)
 
-        return U_ijk
+    @classmethod
+    def _validate_female_genotypes(cls, genotypes):
+        """Validates the females_genotypes attribute."""
+        return (cls._validate_genotype(genotype) for genotype in genotypes)
 
     @staticmethod
-    def _validate(genotype):
-        """Validate the genotype."""
+    def _validate_genotype(genotype):
+        """Validates a genotype."""
         valid_genotypes = range(4)
         if not isinstance(genotype, int):
-            mesg = "FamilyUnit genotypes must be an int, not a {}."
+            mesg = "Genotype indices must have type int, not {}."
             raise AttributeError(mesg.format(genotype.__class__))
         if genotype not in valid_genotypes:
-            mesg = "FamilyUnit genotypes must be in {}."
+            mesg = "Valid genotype indices are {}."
             raise AttributeError(mesg.format(valid_genotypes))
         else:
             return genotype
