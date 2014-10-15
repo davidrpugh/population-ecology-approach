@@ -24,29 +24,6 @@ class Family(object):
     """Class representing a family unit."""
 
     @property
-    def male_genotype(self):
-        """
-        Integer index for a valid male genotype.
-
-        :getter: Return the index of the male's genotype.
-        :setter: Set a new index for the male genotype.
-        :type: int
-
-        Notes
-        -----
-        We index genotypes by integers 0, 1, 2, 3 as follows:
-
-            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
-
-        """
-        return self._male_genotype
-
-    @male_genotype.setter
-    def male_genotype(self, genotype):
-        """Set a new index for the male genotype."""
-        self._male_genotype = self._validate_genotype(genotype)
-
-    @property
     def female_genotypes(self):
         """
 
@@ -70,10 +47,33 @@ class Family(object):
         """Set new indices for female genotypes."""
         self._female_genotypes = self._validate_female_genotypes(genotypes)
 
+    @property
+    def male_genotype(self):
+        """
+        Integer index for a valid male genotype.
+
+        :getter: Return the index of the male's genotype.
+        :setter: Set a new index for the male genotype.
+        :type: int
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
+        return self._male_genotype
+
+    @male_genotype.setter
+    def male_genotype(self, genotype):
+        """Set a new index for the male genotype."""
+        self._male_genotype = self._validate_genotype(genotype)
+
     @classmethod
     def _validate_female_genotypes(cls, genotypes):
         """Validates the females_genotypes attribute."""
-        return (cls._validate_genotype(genotype) for genotype in genotypes)
+        return tuple(cls._validate_genotype(genotype) for genotype in genotypes)
 
     @staticmethod
     def _validate_genotype(genotype):

@@ -33,10 +33,9 @@ def test_validate_female_genotypes():
     with nose.tools.assert_raises(AttributeError):
         family = families.Family()
         family.female_genotypes = invalid_genotype
-        print family.female_genotypes
 
     # test valid female_genotypes
     valid_genotypes = tuple(np.random.randint(0, 4, 2))
     family = families.Family()
     family.female_genotypes = valid_genotypes
-    nose.tools.assert_equals(valid_genotypes, family.female_genotype)
+    nose.tools.assert_equals(valid_genotypes, family.female_genotypes)
