@@ -87,3 +87,27 @@ class Family(object):
             raise AttributeError(mesg.format(valid_genotypes))
         else:
             return genotype
+
+    def compute_size(self, X):
+        """
+        Recurrence relation for family size.
+
+        Parameters
+        ----------
+        X : numpy.ndarray (shape=(8,))
+            Array of adult males in period t+1 and female children in period t.
+
+        Returns
+        -------
+        size = numpy.ndarray (shape=(1,))
+            Size of the family unit with given male and female genotype(s) in
+            period t+1.
+
+        """
+        size = self._numeric_size(X[:4], X[4:], **self.params)
+        return size.ravel()
+
+
+class OneMaleTwoFemales(Family):
+
+    pass
