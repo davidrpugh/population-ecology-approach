@@ -11,6 +11,7 @@ This would allow a composition relation between Model and FamilyUnit, whilst
 still allowing for easy switching between different configurations.
 
 """
+import numpy as np
 import sympy as sym
 
 # number of female children of particular genotype
@@ -22,6 +23,37 @@ men = sym.DeferredVector('M')
 
 class Family(object):
     """Class representing a family unit."""
+
+    __numeric_size = None
+
+    modules = [{'ImmutableMatrix': np.array}, "numpy"]
+
+    @property
+    def _numeric_size(self):
+        """
+        Vectorized function for numerically evaluating family size.
+
+        :getter: Return the current function.
+        :type: function.
+
+        """
+        if self.__numeric_size is None:
+            tmp_args = [men, girls] + list(self.params.keys())
+            self.__numeric_size = sym.lambdify(tmp_args,
+                                               self._symbolic_size,
+                                               self.modules)
+        return self.__numeric_size
+
+    @property
+    def _symbolic_size(self):
+        """
+        Symbolic representation of the recurrence relation for family size.
+
+        :getter: Return the symbolic recurrence relation for family size.
+        :type: sym.Basic
+
+        """
+        return self._family_unit(self.male_genotype, self.female_genotypes)
 
     @property
     def female_genotypes(self):
@@ -70,6 +102,9 @@ class Family(object):
         """Set a new index for the male genotype."""
         self._male_genotype = self._validate_genotype(genotype)
 
+    def family_unit(self, male_genotype, *female_genotypes):
+        raise NotImplementedError
+
     @classmethod
     def _validate_female_genotypes(cls, genotypes):
         """Validates the females_genotypes attribute."""
@@ -95,13 +130,13 @@ class Family(object):
         Parameters
         ----------
         X : numpy.ndarray (shape=(8,))
-            Array of adult males in period t+1 and female children in period t.
+            Array of values for adult males in period t+1 and female children
+            in period t.
 
         Returns
         -------
         size = numpy.ndarray (shape=(1,))
-            Size of the family unit with given male and female genotype(s) in
-            period t+1.
+            Size of the family unit period t+1.
 
         """
         size = self._numeric_size(X[:4], X[4:], **self.params)
@@ -110,4 +145,29 @@ class Family(object):
 
 class OneMaleTwoFemales(Family):
 
-    pass
+    def family_unit(self, male_genotype, *female_genotypes):
+        """
+        A family unit in the 1M2F model is comprised of a single adult male and
+        two adult females.
+
+        Parameters
+        ----------
+        male_genotype : int
+            Integer index of a valid genotype.
+        female_genotypes : tuple
+            Integer indices of valid genotypes.
+
+        Returns
+        -------
+        U_ijk : sympy.Basic
+            Symbolic expression for a family unit in a 1M2F model.
+
+        """
+        i = male_genotype
+        j, k = female_genotypes
+
+        # size of unit depends on number of males and matching probs
+        U_ijk = (men[i] * self._genotype_matching_prob(i, j) *
+                 self._genotype_matching_prob(i, k))
+
+        return U_ijk
