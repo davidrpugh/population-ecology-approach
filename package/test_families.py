@@ -1,9 +1,14 @@
 import nose
 
 import numpy as np
+import sympy as sym
 
 import families
 
+# number of female children of particular genotype
+girls = sym.DeferredVector('f')
+
+# create an instance of the Family class
 valid_female_genotypes = tuple(np.random.randint(0, 4, 2))
 valid_male_genotype = np.random.randint(0, 4)
 valid_family = families.Family()
@@ -46,3 +51,18 @@ def test_family_unit():
     """Testing family_unit method."""
     with nose.tools.assert_raises(NotImplementedError):
         valid_family.family_unit(*np.random.randint(0, 4, 3))
+
+
+def test_share_girls_with_common_allele():
+    """Testing the share of girls with a common allele."""
+    # expected share of girls sharing a common allele with some genotype...
+    genotype = np.random.randint(0, 4)
+    if genotype in [0, 2]:
+        expected_share = girls[genotype] / (girls[0] + girls[2])
+    else:
+        expected_share = girls[genotype] / (girls[1] + girls[3])
+
+    # ...actual share from code
+    actual_share = valid_family._share_girls_with_common_allele(genotype)
+
+    nose.tools.assert_equals(expected_share, actual_share)
