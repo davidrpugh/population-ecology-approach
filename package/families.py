@@ -135,6 +135,49 @@ class Family(object):
         self._male_genotype = self._validate_genotype(genotype)
 
     @property
+    def params(self):
+        r"""
+        Dictionary of model parameters.
+
+        :getter: Return the current dictionary of model parameters.
+        :setter: Set a new dictionary of model parameters.
+        :type: dict
+
+        Notes
+        -----
+        The following parameters are required:
+
+        c : float
+            Fecundity scaling factor (converts abstract payoffs to numbers of
+            offsping).
+        PiAA : float
+            Payoff for cooperating when opponent cooperates.
+        PiAa : float
+            Payoff for cooperating when opponent defects.
+        PiaA : float
+            Payoff for defecting when opponent cooperates.
+        Piaa : float
+            Payoff for defecting when opponent defects.
+
+        The model assumes that the payoff structure satisfies the standard
+        Prisoner's dilemma conditions which require that
+
+        .. math::
+
+            \Pi_{aA} > \Pi_{AA} > \Pi_{aa} > \Pi_{Aa}
+
+        The user must also specify any additional model parameters specific to
+        the chosen functional forms for SGA and Sga.
+
+        """
+        return self._params
+
+    @params.setter
+    def params(self, value):
+        """Set a new dictionary of model parameters."""
+        self._params = self._validate_params(value)
+
+    @property
     def SGA(self):
         """
         Conditional probability that a male carrying the `G` allele of the
