@@ -135,6 +135,46 @@ class Family(object):
         self._male_genotype = self._validate_genotype(genotype)
 
     @property
+    def SGA(self):
+        """
+        Conditional probability that a male carrying the `G` allele of the
+        gamma gene mates with a female carrying the `A` allele of the alpha
+        gene.
+
+        :getter: Return symbolic expression for the conditional probability.
+        :setter: Set a new symbolic expression for the conditional probability.
+        :type: sym.basic
+
+        """
+        return self._SGA
+
+    @SGA.setter
+    def SGA(self, value):
+        """Set a new symbolic expression for the conditional probability."""
+        self._SGA = self._validate_matching_prob(value)
+        self._clear_cache()
+
+    @property
+    def Sga(self):
+        """
+        Conditional probability that a male carrying the `g` allele of the
+        gamma gene mates with a female carrying the `a` allele of the alpha
+        gene.
+
+        :getter: Return symbolic expression for the conditional probability.
+        :setter: Set a new symbolic expression for the conditional probability.
+        :type: sym.basic
+
+        """
+        return self._Sga
+
+    @Sga.setter
+    def Sga(self, value):
+        """Set a new symbolic expression for the conditional probability."""
+        self._Sga = self._validate_matching_prob(value)
+        self._clear_cache()
+
+    @property
     def SgA(self):
         """
         Conditional probability that a male carrying the `g` allele of the
@@ -159,6 +199,10 @@ class Family(object):
 
         """
         return 1 - self.SGA
+
+    def _clear_cache(self):
+        """Clear all cached values."""
+        self.__numeric_size = None
 
     def _family_unit(self, male_genotype, *female_genotypes):
         raise NotImplementedError
@@ -334,6 +378,16 @@ class Family(object):
         share = girls[genotype] / self._girls_with_common_allele(genotype)
         return share
 
+    @staticmethod
+    def _validate_matching_prob(probability):
+        """Validate a phenotype matching probability."""
+        if not isinstance(probability, sym.Basic):
+            mesg = ("Family matching probabilities must have type " +
+                    "sympy.Basic, not a {}.")
+            raise AttributeError(mesg.format(probability.__class__))
+        else:
+            return probability
+
     @classmethod
     def _validate_female_genotypes(cls, genotypes):
         """Validates the females_genotypes attribute."""
@@ -400,34 +454,3 @@ class OneMaleTwoFemales(Family):
                  self._genotype_matching_prob(i, k))
 
         return U_ijk
-
-
-if __name__ == '__main__':
-    # number of female children of particular genotype
-    girls = sym.DeferredVector('f')
-
-    # number of male adults of particular genotype
-    men = sym.DeferredVector('M')
-
-    # Male screening probabilities
-    e = sym.var('e')
-
-    # Female population by phenotype.
-    altruistic_girls = girls[0] + girls[2]
-    selfish_girls = girls[1] + girls[3]
-
-    # conditional phenotype matching probabilities (a la Wright/Bergstrom)
-    SGA = e + (1 - e) * altruistic_girls / (altruistic_girls + selfish_girls)
-    SGa = 1 - SGA
-    Sga = e + (1 - e) * selfish_girls / (altruistic_girls + selfish_girls)
-    SgA = 1 - Sga
-
-    # females send precise signals, but males screen almost randomly
-    eps = 0.5
-    params = {'c': 5.0, 'e': eps,
-              'PiaA': 9.0, 'PiAA': 5.0, 'Piaa': 3.0, 'PiAa': 2.0}
-
-    example = OneMaleTwoFemales(params=params,
-                                SGA=SGA,
-                                Sga=Sga)
-
