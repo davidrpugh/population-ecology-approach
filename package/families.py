@@ -109,6 +109,7 @@ class Family(object):
     def female_genotypes(self, genotypes):
         """Set new indices for female genotypes."""
         self._female_genotypes = self._validate_female_genotypes(genotypes)
+        self._clear_cache()
 
     @property
     def male_genotype(self):
@@ -126,6 +127,7 @@ class Family(object):
     def male_genotype(self, genotype):
         """Set a new index for the male genotype."""
         self._male_genotype = self._validate_genotype(genotype)
+        self._clear_cache()
 
     @property
     def params(self):
@@ -447,12 +449,12 @@ class Family(object):
         """Validate the model parameters."""
         required_params = ['c', 'PiAA', 'PiAa', 'PiaA', 'Piaa']
         if not isinstance(params, dict):
-            mesg = "Model.params must be a dict, not a {}."
+            mesg = "The params attribute must have type dict, not a {}."
             raise AttributeError(mesg.format(params.__class__))
-        if not set(required_params) < set(params.keys()):
-            mesg = "Model.params must contain the required parameters {}."
+        elif not (set(required_params) <= set(params.keys())):
+            mesg = "The params attribute must define the required parameters {}."
             raise AttributeError(mesg.format(required_params))
-        if not params['PiaA'] > params['PiAA'] > params['Piaa'] > params['PiAa']:
+        elif not (params['PiaA'] > params['PiAA'] > params['Piaa'] > params['PiAa']):
             mesg = "Prisoner's dilemma payoff structure not satisfied."
             raise AttributeError(mesg)
         else:
