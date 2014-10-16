@@ -1,14 +1,7 @@
 """
 
-Notes:
-
-In order to follow DRY, consider...
-
-1. passing model as only parameter to the FamilyUnit constructor.
-2. making i, j, k settable properties of the FamilyUnit class.
-
-This would allow a composition relation between Model and FamilyUnit, whilst
-still allowing for easy switching between different configurations.
+@author: David R. Pugh
+@date: 2014-10-14
 
 """
 import numpy as np
@@ -513,3 +506,32 @@ class OneMaleTwoFemales(Family):
                  self._genotype_matching_prob(i, k))
 
         return U_ijk
+
+
+class OneMaleOneFemale(Family):
+
+    def _family_unit(self, male_genotype, *female_genotypes):
+        """
+        A family unit in the 1M1F model is comprised of a single adult male and
+        a single adult female.
+
+        Parameters
+        ----------
+        male_genotype : int
+            Integer index of a valid genotype.
+        female_genotypes : tuple
+            Integer indices of valid genotypes.
+
+        Returns
+        -------
+        U_ij : sympy.Basic
+            Symbolic expression for a family unit in a 1M1F model.
+
+        """
+        i = male_genotype
+        j = female_genotypes,
+
+        # size of unit depends on number of males and matching probs
+        U_ij = men[i] * self._genotype_matching_prob(i, j)
+
+        return U_ij
