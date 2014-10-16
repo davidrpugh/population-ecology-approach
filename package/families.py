@@ -449,6 +449,22 @@ class Family(object):
         else:
             return genotype
 
+    @staticmethod
+    def _validate_params(params):
+        """Validate the model parameters."""
+        required_params = ['c', 'PiAA', 'PiAa', 'PiaA', 'Piaa']
+        if not isinstance(params, dict):
+            mesg = "Model.params must be a dict, not a {}."
+            raise AttributeError(mesg.format(params.__class__))
+        if not set(required_params) < set(params.keys()):
+            mesg = "Model.params must contain the required parameters {}."
+            raise AttributeError(mesg.format(required_params))
+        if not params['PiaA'] > params['PiAA'] > params['Piaa'] > params['PiAa']:
+            mesg = "Prisoner's dilemma payoff structure not satisfied."
+            raise AttributeError(mesg)
+        else:
+            return params
+
     def compute_size(self, X):
         """
         Recurrence relation for family size.
