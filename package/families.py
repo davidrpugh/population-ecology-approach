@@ -330,6 +330,56 @@ class Family(object):
                         self._iscarrier_a(genotype) * self._selfish_girls)
         return number_girls
 
+    @staticmethod
+    def _has_common_allele(allele_pair1, allele_pair2):
+        """
+        Check if two allele pairs have a common allele.
+
+        Parameters
+        ----------
+        allele_pair1 : tuple (size=2)
+            Tuple of the form `(q, r)` where `q` indexes the gamma gene and `r`
+            indexes the alpha gene.
+        allele_pair2 : tuple (size=2)
+            Tuple of the form `(q, r)` where `q` indexes the gamma gene and `r`
+            indexes the alpha gene.
+
+        Returns
+        -------
+        True if two genotypes share a common allele; false otherwise.
+
+        """
+        for allele1, allele2 in zip(allele_pair1, allele_pair2):
+            if allele1 == allele2:
+                return True
+
+        else:
+            return False
+
+    @staticmethod
+    def _has_same_genotype(allele_pair1, allele_pair2):
+        """
+        Return true if two genotypes are a perfect match.
+
+        Parameters
+        ----------
+        allele_pair1 : tuple (size=2)
+            Tuple of the form `(q, r)` where `q` indexes the gamma gene and `r`
+            indexes the alpha gene.
+        allele_pair2 : tuple (size=2)
+            Tuple of the form `(q, r)` where `q` indexes the gamma gene and `r`
+            indexes the alpha gene.
+
+        Returns
+        -------
+        True if two genotypes are a perfect match; false otherwise.
+
+        """
+        if allele_pair1 == allele_pair2:
+            return True
+        else:
+            return False
+
     @classmethod
     def _iscarrier_a(cls, genotype):
         """
