@@ -271,6 +271,44 @@ class Family(object):
                                   self._share_girls_with_common_allele(j))
         return genotype_matching_prob
 
+    @staticmethod
+    def _genotype_to_allele_pair(genotype):
+        """
+        Return allele pair for a given genotype.
+
+        Parameters
+        ----------
+        i : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        allele_pair : tuple (size=2)
+            Tuple of the form `(q, r)` where `q` indexes the gamma gene and `r`
+            indexes the alpha gene.
+
+        Notes
+        -----
+        Our allele index `(q, r)` where `q` indexes the gamma gene and `r`
+        indexes the alpha gene uses the following mapping:
+
+            `q=0=G, q=1=g, r=0=A, r=1=a`.
+
+        For examples, an allele index of (0, 1) indicates that the host carrys
+        the `G` allele of the gamma gene and the `a` allele of the alpha gene.
+
+        """
+        if genotype == 0:
+            allele_pair = (0, 0)
+        elif genotype == 1:
+            allele_pair = (0, 1)
+        elif genotype == 2:
+            allele_pair = (1, 0)
+        else:
+            allele_pair = (1, 1)
+
+        return allele_pair
+
     def _girls_with_common_allele(self, genotype):
         """
         Number of girls who share the same allele of the alpha gene with a
@@ -452,7 +490,7 @@ class Family(object):
             mesg = "The params attribute must have type dict, not a {}."
             raise AttributeError(mesg.format(params.__class__))
         elif not (set(required_params) <= set(params.keys())):
-            mesg = "The params attribute must define the required parameters {}."
+            mesg = "The params attribute must define the parameters {}."
             raise AttributeError(mesg.format(required_params))
         elif not (params['PiaA'] > params['PiAA'] > params['Piaa'] > params['PiAa']):
             mesg = "Prisoner's dilemma payoff structure not satisfied."

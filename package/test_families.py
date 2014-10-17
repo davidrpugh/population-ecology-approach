@@ -78,9 +78,10 @@ class BaseCase(unittest.TestCase):
             self.family.male_genotype = invalid_genotype
 
         # test valid male_genotype
-        valid_male_genotype = np.random.randint(0, 4)
-        self.family.male_genotype = valid_male_genotype
-        nose.tools.assert_equals(valid_male_genotype, self.family.male_genotype)
+        expected_genotype = np.random.randint(0, 4)
+        self.family.male_genotype = expected_genotype
+        actual_genotype = self.family.male_genotype
+        nose.tools.assert_equals(expected_genotype, actual_genotype)
 
     def test_validate_matching_probabilities(self):
         """Testing validation of the SGA and Sga attributes."""
@@ -101,10 +102,29 @@ class BaseCase(unittest.TestCase):
 
     def test_validate_params(self):
         """Testing validation of the params attribute."""
-        pass
+        # parameters fail prisoner's dilemma
+        invalid_params = {'c': 5.0, 'e': 1.0, 'PiaA': 2.0, 'PiAA': 3.0,
+                          'Piaa': 5.0, 'PiAa': 9.0}
+
+        with nose.tools.assert_raises(AttributeError):
+            self.family.params = invalid_params
 
 
 class WrightBergstromCase(unittest.TestCase):
+
+    def SGA(self, girls, e):
+        altruistic_girls = girls[0] + girls[2]
+        return e + (1 - e) * (altruistic_girls / girls.sum())
+
+    def SGa(self, girls, e):
+        return 1 - self.SGA(girls, e)
+
+    def Sga(self, girls, e):
+        selfish_girls = girls[1] + girls[3]
+        return e + (1 - e) * (selfish_girls / girls.sum())
+
+    def SgA(self, girls, e):
+        return 1 - self.Sga(girls, e)
 
     def setUp(self):
         """Set up code for Wright-Bergstrom test case."""
@@ -125,10 +145,8 @@ class WrightBergstromCase(unittest.TestCase):
                                                  SGA=SGA,
                                                  Sga=Sga)
 
-    def test_compute_size(self):
-        """Testing the computation of family size."""
-
-        # test case for perfect signaling
+    def test_perfect_signaling(self):
+        """Testing the computation of family size with perfect signaling."""
         self.family.params['e'] = 1.0
 
         for i in range(4):
@@ -146,7 +164,7 @@ class WrightBergstromCase(unittest.TestCase):
 
                     if (i in [0, 1]) and (j in [0, 2]) and (k in [0, 2]):
                         # wright-bergstrom SGA (with e = 1)
-                        SGA = 1.0
+                        SGA = self.SGA(girls, 1.0)
                         altruistic_girls = girls[0] + girls[2]
                         share_girls_1 = girls[j] / altruistic_girls
                         share_girls_2 = girls[k] / altruistic_girls
@@ -155,7 +173,7 @@ class WrightBergstromCase(unittest.TestCase):
 
                     elif (i in [2, 3]) and (j in [1, 3]) and (k in [1, 3]):
                         # wright-bergstrom Sga (with e = 1)
-                        Sga = 1.0
+                        Sga = self.Sga(girls, 1.0)
                         selfish_girls = girls[1] + girls[3]
                         share_girls_1 = girls[j] / selfish_girls
                         share_girls_2 = girls[k] / selfish_girls
@@ -163,6 +181,79 @@ class WrightBergstromCase(unittest.TestCase):
                                                 Sga * share_girls_2)
                     else:
                         genotype_match_probs = np.zeros(1)
+
+                    expected_size = men[i] * genotype_match_probs
+                    actual_size = self.family.compute_size(tmp_X)[0]
+                    np.testing.assert_almost_equal(expected_size, actual_size)
+
+    def test_useless_signaling(self):
+        """Testing the computation of family size with useless signaling."""
+        self.family.params['e'] = 0.0
+
+        for i in range(4):
+            for j in range(4):
+                for k in range(4):
+
+                    # specify the genotypes
+                    self.family.male_genotype = i
+                    self.family.female_genotypes = j, k
+
+                    # pick a random vector for endogenous variables
+                    men = np.random.dirichlet((1, 1, 1, 1))
+                    girls = np.random.lognormal(0, 1, 4)
+                    tmp_X = np.hstack((men, girls))
+
+                    altruistic_girls = girls[0] + girls[2]
+                    selfish_girls = girls[1] + girls[3]
+
+                    tmp_SGA = self.SGA(girls, 0.0)
+                    tmp_SGa = self.SGa(girls, 0.0)
+                    tmp_Sga = self.Sga(girls, 0.0)
+                    tmp_SgA = self.SgA(girls, 0.0)
+
+                    if (i in [0, 1]):
+                        if (j in [0, 2]) and (k in [0, 2]):
+                            share_girls_1 = girls[j] / altruistic_girls
+                            share_girls_2 = girls[k] / altruistic_girls
+                            genotype_match_probs = (tmp_SGA * share_girls_1 *
+                                                    tmp_SGA * share_girls_2)
+                        elif (j in [0, 2]) and (k in [1, 3]):
+                            share_girls_1 = girls[j] / altruistic_girls
+                            share_girls_2 = girls[k] / selfish_girls
+                            genotype_match_probs = (tmp_SGA * share_girls_1 *
+                                                    tmp_SGa * share_girls_2)
+                        elif (j in [1, 3]) and (k in [0, 2]):
+                            share_girls_1 = girls[j] / selfish_girls
+                            share_girls_2 = girls[k] / altruistic_girls
+                            genotype_match_probs = (tmp_SGa * share_girls_1 *
+                                                    tmp_SGA * share_girls_2)
+                        else:
+                            share_girls_1 = girls[j] / selfish_girls
+                            share_girls_2 = girls[k] / selfish_girls
+                            genotype_match_probs = (tmp_SGa * share_girls_1 *
+                                                    tmp_SGa * share_girls_2)
+
+                    else:
+                        if (j in [0, 2]) and (k in [0, 2]):
+                            share_girls_1 = girls[j] / altruistic_girls
+                            share_girls_2 = girls[k] / altruistic_girls
+                            genotype_match_probs = (tmp_SgA * share_girls_1 *
+                                                    tmp_SgA * share_girls_2)
+                        elif (j in [0, 2]) and (k in [1, 3]):
+                            share_girls_1 = girls[j] / altruistic_girls
+                            share_girls_2 = girls[k] / selfish_girls
+                            genotype_match_probs = (tmp_SgA * share_girls_1 *
+                                                    tmp_Sga * share_girls_2)
+                        elif (j in [1, 3]) and (k in [0, 2]):
+                            share_girls_1 = girls[j] / selfish_girls
+                            share_girls_2 = girls[k] / altruistic_girls
+                            genotype_match_probs = (tmp_Sga * share_girls_1 *
+                                                    tmp_SgA * share_girls_2)
+                        else:
+                            share_girls_1 = girls[j] / selfish_girls
+                            share_girls_2 = girls[k] / selfish_girls
+                            genotype_match_probs = (tmp_Sga * share_girls_1 *
+                                                    tmp_Sga * share_girls_2)
 
                     expected_size = men[i] * genotype_match_probs
                     actual_size = self.family.compute_size(tmp_X)[0]
