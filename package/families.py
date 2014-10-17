@@ -388,16 +388,16 @@ class Family(object):
             return False
 
     @classmethod
-    def _individual_offspring(cls, genotype1, genotype2):
+    def _individual_offspring(cls, female_genotype_1, female_genotype_2):
         """
         Number of offspring produced by a woman with genotype1 when matched in
         family unit with another woman with genotype2.
 
         Parameters
         ----------
-        genotype1 : int
+        female_genotype_1 : int
             Integer index of a valid genotype.
-        genotype2 : int
+        female_genotype_2 : int
             Integer index of a valid genotype.
 
         Returns
@@ -407,11 +407,11 @@ class Family(object):
             with genotype1.
 
         """
-        i, j = genotype1, genotype2
-        payoff = (cls._iscarrier_a(i) * cls._iscarrier_A(j) * PiaA +
-                  cls._iscarrier_A(i) * cls._iscarrier_A(j) * PiAA +
-                  cls._iscarrier_a(i) * cls._iscarrier_a(j) * Piaa +
-                  cls._iscarrier_A(i) * cls._iscarrier_a(j) * PiAa)
+        j, k = female_genotype_1, female_genotype_2
+        payoff = (cls._iscarrier_a(j) * cls._iscarrier_A(k) * PiaA +
+                  cls._iscarrier_A(j) * cls._iscarrier_A(k) * PiAA +
+                  cls._iscarrier_a(j) * cls._iscarrier_a(k) * Piaa +
+                  cls._iscarrier_A(j) * cls._iscarrier_a(k) * PiAa)
         individual_offspring = fecundity_factor * payoff
         return individual_offspring
 
@@ -522,7 +522,7 @@ class Family(object):
 
         Parameters
         ----------
-        i : int
+        genotype : int
             Integer index of a valid genotype.
 
         Returns
@@ -536,16 +536,16 @@ class Family(object):
             return 0
 
     @classmethod
-    def _offspring_share(cls, genotype1, genotype2):
+    def _offspring_share(cls, female_genotype_1, female_genotype_2):
         """
-        Share of total offspring produced by woman with genotype1 when matched
-        in a family unit with a woman with genotype2.
+        Share of total offspring produced by woman with genotype_1 when matched
+        in a family unit with a woman with genotype_2.
 
         Parameters
         ----------
-        genotype1 : int
+        female_genotype_1 : int
             Integer index of a valid genotype.
-        genotype2 : int
+        female_genotype_2 : int
             Integer index of a valid genotype.
 
         Returns
@@ -554,15 +554,10 @@ class Family(object):
             Symbolic expression for the share of total offspring in a family
             unit produced by female with genotype i.
 
-        Notes
-        -----
-        We index genotypes by integers 0, 1, 2, 3 as follows:
-
-            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
-
         """
-        offspring_share = (cls._individual_offspring(genotype1, genotype2) /
-                           cls._total_offspring(genotype1, genotype2))
+        j, k = female_genotype_1, female_genotype_2
+        offspring_share = (cls._individual_offspring(j, k) /
+                           cls._total_offspring(j, k))
         return offspring_share
 
     def _phenotype_matching_prob(self, male_genotype, female_genotype):
@@ -592,6 +587,40 @@ class Family(object):
                 self._iscarrier_g(i) * self._iscarrier_A(j) * self.SgA +
                 self._iscarrier_g(i) * self._iscarrier_a(j) * self.Sga)
         return prob
+
+    def _recurrence_relations_girls(self, genotype):
+        """
+        Recurrence relation for number of female childen with a given genotype.
+
+        Parameters
+        ----------
+        genotype : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        relation : sympy.basic
+            Symbolic expression for the recurrence relation.
+
+        """
+        raise NotImplementedError
+
+    def _recurrence_relations_men(self, genotype):
+        """
+        Recurrence relation for number of male adults with a given genotype.
+
+        Parameters
+        ----------
+        genotype : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        relation : sympy.basic
+            Symbolic expression for the recurrence relation.
+
+        """
+        raise NotImplementedError
 
     def _share_girls_with_common_allele(self, genotype):
         """
