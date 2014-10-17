@@ -13,6 +13,13 @@ girls = sym.DeferredVector('f')
 # number of male adults of particular genotype
 men = sym.DeferredVector('M')
 
+# Payoff parameters (from a Prisoner's dilemma)
+prisoners_dilemma_payoffs = sym.var('PiaA, PiAA, Piaa, PiAa')
+PiaA, PiAA, Piaa, PiAa = prisoners_dilemma_payoffs
+
+# Female fecundity scaling factor
+fecundity_factor = sym.var('c')
+
 
 class Family(object):
     """Class representing a family unit."""
@@ -381,6 +388,78 @@ class Family(object):
             return False
 
     @classmethod
+    def _individual_offspring(cls, genotype1, genotype2):
+        """
+        Number of offspring produced by a woman with genotype1 when matched in
+        family unit with another woman with genotype2.
+
+        Parameters
+        ----------
+        genotype1 : int
+            Integer index of a valid genotype.
+        genotype2 : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        individual_offspring : sym.Basic
+            Symbolic expression for the number of offspring produced by female
+            with genotype1.
+
+        """
+        i, j = genotype1, genotype2
+        payoff = (cls._iscarrier_a(i) * cls._iscarrier_A(j) * PiaA +
+                  cls._iscarrier_A(i) * cls._iscarrier_A(j) * PiAA +
+                  cls._iscarrier_a(i) * cls._iscarrier_a(j) * Piaa +
+                  cls._iscarrier_A(i) * cls._iscarrier_a(j) * PiAa)
+        individual_offspring = fecundity_factor * payoff
+        return individual_offspring
+
+    @classmethod
+    def _inheritance_prob(cls, child, parent1, parent2):
+        """
+        Conditional probability of child's allele pair given parents' allele
+        pairs.
+
+        Parameters
+        ----------
+        child : tuple (size=2)
+            Tuple of the form `(q, r)` where `q` indexes the gamma gene and `r`
+            indexes the alpha gene.
+        parent1 : tuple (size=2)
+            Tuple of the form `(q, r)` where `q` indexes the gamma gene and `r`
+            indexes the alpha gene.
+        parent2 : tuple (size=2)
+            Tuple of the form `(q, r)` where `q` indexes the gamma gene and `r`
+            indexes the alpha gene.
+
+        Returns
+        -------
+        inheritance_prob : float
+            Probability that the child inherits a certain pair of alleles from
+            its parents.
+
+        """
+        if cls._has_same_genotype(parent1, parent2):
+            if cls._has_same_genotype(child, parent1):
+                inheritance_prob = 1.0
+            else:
+                inheritance_prob = 0.0
+
+        elif cls._has_common_allele(parent1, parent2):
+            if cls._has_same_genotype(child, parent1):
+                inheritance_prob = 0.5
+            elif cls._has_same_genotype(child, parent2):
+                inheritance_prob = 0.5
+            else:
+                inheritance_prob = 0.0
+
+        else:
+            inheritance_prob = 0.25
+
+        return inheritance_prob
+
+    @classmethod
     def _iscarrier_a(cls, genotype):
         """
         Indicates whether or not adult with a given genotype carries the `a`
@@ -455,6 +534,36 @@ class Family(object):
             return 1
         else:
             return 0
+
+    @classmethod
+    def _offspring_share(cls, genotype1, genotype2):
+        """
+        Share of total offspring produced by woman with genotype1 when matched
+        in a family unit with a woman with genotype2.
+
+        Parameters
+        ----------
+        genotype1 : int
+            Integer index of a valid genotype.
+        genotype2 : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        offspring_share : sym.Basic
+            Symbolic expression for the share of total offspring in a family
+            unit produced by female with genotype i.
+
+        Notes
+        -----
+        We index genotypes by integers 0, 1, 2, 3 as follows:
+
+            0 = `GA`, 1 = `Ga`, 2 = `gA`, 3 = `ga`.
+
+        """
+        offspring_share = (cls._individual_offspring(genotype1, genotype2) /
+                           cls._total_offspring(genotype1, genotype2))
+        return offspring_share
 
     def _phenotype_matching_prob(self, male_genotype, female_genotype):
         """
