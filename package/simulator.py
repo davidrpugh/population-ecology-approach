@@ -6,6 +6,15 @@ class Simulator(object):
     """Class for simulating the Pugh-Schaffer-Seabright model."""
 
     def __init__(self, family):
+        """
+        Create an instance of the Simulator class.
+
+        Parameters
+        ----------
+        family : families.family
+            Instance of the families.Family class defining a family unit.
+
+        """
         self.family = family
 
     @property
