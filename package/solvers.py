@@ -128,7 +128,7 @@ class Solver(object):
         residual = self._numeric_system(X[:4], X[4:], **self.family.params)
         return residual.ravel()
 
-    def solve(self, X):
+    def solve(self, *args, **kwargs):
         raise NotImplementedError
 
 
@@ -139,14 +139,14 @@ class LeastSquaresSolver(Solver):
 class RootFinder(Solver):
     """Solve a system of non-linear equations by root finding."""
 
-    def solve(self, method, with_jacobian=True, **kwargs):
+    def solve(self, method, with_jacobian=False, **kwargs):
         """
         Solve the system of non-linear equations describing the equilibrium.
 
         Parameters
         ----------
-        initial_guess : numpy.ndarray
         method : str
+        with_jacobian : boolean (default=False)
 
         Returns
         -------
