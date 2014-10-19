@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import optimize
 import sympy as sym
 
 
@@ -75,6 +76,22 @@ class Solver(object):
         """
         return self._symbolic_residual.jacobian(self.family._symbolic_vars)
 
+    @property
+    def initial_guess(self):
+        """
+        Initial guess for the solver.
+
+        :getter: Return the current initial guess.
+        :setter: Set a new initial guess.
+        :type: numpy.ndarray
+
+        """
+        return self._initial_guess
+
+    @initial_guess.setter
+    def initial_guess(self, value):
+        self._initial_guess = value
+
     def jacobian(self, X):
         """
         Jacobian matrix of partial derivatives for the system of non-linear
@@ -111,7 +128,7 @@ class Solver(object):
         residual = self._numeric_system(X[:4], X[4:], **self.family.params)
         return residual.ravel()
 
-    def solver(self, X):
+    def solve(self, X):
         raise NotImplementedError
 
 
@@ -121,3 +138,29 @@ class LeastSquaresSolver(Solver):
 
 class RootFinder(Solver):
     """Solve a system of non-linear equations by root finding."""
+
+    def solve(self, method, with_jacobian=True, **kwargs):
+        """
+        Solve the system of non-linear equations describing the equilibrium.
+
+        Parameters
+        ----------
+        initial_guess : numpy.ndarray
+        method : str
+
+        Returns
+        -------
+        result :
+
+        """
+        if with_jacobian:
+            kwargs['jac'] = self.jacobian
+        else:
+            kwargs['jac'] = False
+
+        result = optimize.root(self.residual,
+                               x0=self.initial_guess,
+                               method=method,
+                               **kwargs
+                               )
+        return result
