@@ -24,8 +24,6 @@ fecundity_factor = sym.var('c')
 class Family(object):
     """Class representing a family unit."""
 
-    __numeric_size = None
-
     modules = [{'ImmutableMatrix': np.array}, "numpy"]
 
     def __init__(self, params, SGA, Sga):
@@ -62,6 +60,14 @@ class Family(object):
         return girls[0] + girls[2]
 
     @property
+    def _numeric_jacobian(self):
+        if self.__numeric_jacobian is None:
+            self.__numeric_jacobian = sym.lambdify(self._symbolic_args,
+                                                   self._symbolic_jacobian,
+                                                   self.modules)
+        return self.__numeric_jacobian
+
+    @property
     def _numeric_size(self):
         """
         Vectorized function for numerically evaluating family size.
@@ -71,11 +77,19 @@ class Family(object):
 
         """
         if self.__numeric_size is None:
-            tmp_args = [men, girls] + list(self.params.keys())
-            self.__numeric_size = sym.lambdify(tmp_args,
+            self.__numeric_size = sym.lambdify(self._symbolic_args,
                                                self._symbolic_size,
                                                self.modules)
         return self.__numeric_size
+
+    @property
+    def _numeric_system(self):
+        if self.__numeric_system is None:
+            tmp_args = [men, girls] + list(self.params.keys())
+            self.__numeric_system = sym.lambdify(tmp_args,
+                                                 self._symbolic_system,
+                                                 self.modules)
+        return self.__numeric_system
 
     @property
     def _selfish_girls(self):
@@ -83,10 +97,33 @@ class Family(object):
         Number of female children carrying the `a` allele of the alpha gene.
 
         :getter: Return number of female children carrying the `a` allele
-        :type: sym.Symbol
+        :type: sympy.Symbol
 
         """
         return girls[1] + girls[3]
+
+    @property
+    def _symbolic_args(self):
+        """
+        List of symbolic endogenous variables and parameters..
+
+        :getter: Return list of symbolic endogenous variables
+        :type: list
+
+        """
+        return [men, girls] + sym.var(list(self.params.keys()))
+
+    @property
+    def _symbolic_jacobian(self):
+        """
+        Symbolic representation of the Jacobian matrix of partial derivatives
+        for the system of recurrence relations.
+
+        :getter: Return Jacobian matrix of partial derivatives.
+        :type: sympy.Matrix
+
+        """
+        return self._symbolic_system.jacobian(self._symbolic_vars)
 
     @property
     def _symbolic_size(self):
@@ -98,6 +135,33 @@ class Family(object):
 
         """
         return self._family_unit(self.male_genotype, *self.female_genotypes)
+
+    @property
+    def _symbolic_system(self):
+        """
+        Symbolic representation of the system of recurrence relations for male
+        adults and female children of various genotypes.
+
+        :getter: Return the symbolic system of recurrence relations.
+        :type: sympy.Matrix
+
+        """
+        male_eqns = [self._recurrence_relation_men(x) for x in range(4)]
+        female_eqns = [self._recurrence_relation_girls(x) for x in range(4)]
+        return sym.Matrix(male_eqns + female_eqns)
+
+    @property
+    def _symbolic_vars(self):
+        """
+        List of symbolic endogenous variables.
+
+        :getter: Return list of symbolic endogenous variables
+        :type: list
+
+        """
+        adult_males = [men[i] for i in range(4)]
+        female_children = [girls[j] for j in range(4)]
+        return adult_males + female_children
 
     @property
     def female_genotypes(self):
@@ -247,7 +311,9 @@ class Family(object):
 
     def _clear_cache(self):
         """Clear all cached values."""
+        self.__numeric_jacobian = None
         self.__numeric_size = None
+        self.__numeric_system = None
 
     def _family_unit(self, male_genotype, *female_genotypes):
         raise NotImplementedError
@@ -588,7 +654,7 @@ class Family(object):
                 self._iscarrier_g(i) * self._iscarrier_a(j) * self.Sga)
         return prob
 
-    def _recurrence_relations_girls(self, genotype):
+    def _recurrence_relation_girls(self, genotype):
         """
         Recurrence relation for number of female childen with a given genotype.
 
@@ -599,13 +665,13 @@ class Family(object):
 
         Returns
         -------
-        relation : sympy.basic
+        reccurence_relation : sympy.basic
             Symbolic expression for the recurrence relation.
 
         """
         raise NotImplementedError
 
-    def _recurrence_relations_men(self, genotype):
+    def _recurrence_relation_men(self, genotype):
         """
         Recurrence relation for number of male adults with a given genotype.
 
@@ -641,6 +707,32 @@ class Family(object):
         """
         share = girls[genotype] / self._girls_with_common_allele(genotype)
         return share
+
+    @classmethod
+    def _total_offspring(cls, female_genotype_1, female_genotype_2):
+        """
+        Total number of children produced when a woman with genotype_1 is
+        matched in a family unit with another woman with genotype_2.
+
+        Parameters
+        ----------
+        Parameters
+        ----------
+        female_genotype_1 : int
+            Integer index of a valid genotype.
+        female_genotype_2 : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        total_offspring : sym.Basic
+            Symbolic expression for the total number of children produced.
+
+        """
+        j, k = female_genotype_1, female_genotype_2
+        total_offspring = (cls._individual_offspring(j, k) +
+                           cls._individual_offspring(k, j))
+        return total_offspring
 
     @staticmethod
     def _validate_matching_prob(probability):
@@ -735,31 +827,93 @@ class OneMaleTwoFemales(Family):
 
         return U_ijk
 
-
-class OneMaleOneFemale(Family):
-
-    def _family_unit(self, male_genotype, *female_genotypes):
+    def _recurrence_relation_girls(self, genotype):
         """
-        A family unit in the 1M1F model is comprised of a single adult male and
-        a single adult female.
+        Recurrence relation for number of female childen with a given genotype.
 
         Parameters
         ----------
-        male_genotype : int
+        genotype : int
             Integer index of a valid genotype.
-        female_genotypes : tuple
-            Integer indices of valid genotypes.
 
         Returns
         -------
-        U_ij : sympy.Basic
-            Symbolic expression for a family unit in a 1M1F model.
+        reccurence_relation : sympy.basic
+            Symbolic expression for the recurrence relation.
 
         """
-        i = male_genotype
-        j = female_genotypes,
+        terms = []
+        for i in range(4):
+            for j in range(4):
+                for k in range(4):
 
-        # size of unit depends on number of males and matching probs
-        U_ij = men[i] * self._genotype_matching_prob(i, j)
+                    # expected number of offspring of i and j
+                    tmp_child = self._genotype_to_allele_pair(genotype)
+                    tmp_father = self._genotype_to_allele_pair(i)
+                    tmp_mother = self._genotype_to_allele_pair(j)
+                    tmp_daughters_ij = 0.5 * self._individual_offspring(j, k)
+                    tmp_ij = (self._inheritance_prob(tmp_child,
+                                                     tmp_father,
+                                                     tmp_mother) *
+                              tmp_daughters_ij)
 
-        return U_ij
+                    # expected genotype of offspring of i and k
+                    tmp_mother = self._genotype_to_allele_pair(k)
+                    tmp_daughters_ik = 0.5 * self._individual_offspring(k, j)
+                    tmp_ik = (self._inheritance_prob(tmp_child,
+                                                     tmp_father,
+                                                     tmp_mother) *
+                              tmp_daughters_ik)
+
+                    # expected genotype of offspring of family unit
+                    tmp_term = self._family_unit(i, j, k) * (tmp_ij + tmp_ik)
+
+                    terms.append(tmp_term)
+
+        recurrence_relation = sum(terms)
+
+        return recurrence_relation
+
+    def _recurrence_relation_men(self, genotype):
+        """
+        Recurrence relation for number of male adults with a given genotype.
+
+        Parameters
+        ----------
+        genotype : int
+            Integer index of a valid genotype.
+
+        Returns
+        -------
+        relation : sympy.basic
+            Symbolic expression for the recurrence relation.
+
+        """
+        terms = []
+        for i in range(4):
+            for j in range(4):
+                for k in range(4):
+
+                    # expected genotype of offspring of i and j
+                    tmp_child = self._genotype_to_allele_pair(genotype)
+                    tmp_father = self._genotype_to_allele_pair(i)
+                    tmp_mother = self._genotype_to_allele_pair(j)
+                    tmp_ij = (self._inheritance_prob(tmp_child,
+                                                     tmp_father,
+                                                     tmp_mother) *
+                              self._offspring_share(j, k))
+
+                    # expected genotype of offspring of i and k
+                    tmp_mother = self._genotype_to_allele_pair(k)
+                    tmp_ik = (self._inheritance_prob(tmp_child,
+                                                     tmp_father,
+                                                     tmp_mother) *
+                              self._offspring_share(k, j))
+
+                    tmp_term = self._family_unit(i, j, k) * (tmp_ij + tmp_ik)
+
+                    terms.append(tmp_term)
+
+        recurrence_relation = sum(terms)
+
+        return recurrence_relation
