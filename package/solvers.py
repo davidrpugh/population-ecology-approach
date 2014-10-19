@@ -75,6 +75,45 @@ class Solver(object):
         """
         return self._symbolic_residual.jacobian(self.family._symbolic_vars)
 
+    def jacobian(self, X):
+        """
+        Jacobian matrix of partial derivatives for the system of non-linear
+        equations defining the steady state.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+
+        Returns
+        -------
+        jac : numpy.ndarray
+            Jacobian matrix of partial derivatives.
+
+        """
+        jac = self._numeric_jacobian(X[:4], X[4:], **self.family.params)
+        return jac
+
+    def residual(self, X):
+        """
+        System of non-linear equations defining the model steady state.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+
+        Returns
+        -------
+        residual : numpy.ndarray
+            Value of the model residual given current values of endogenous
+            variables and parameters.
+
+        """
+        residual = self._numeric_system(X[:4], X[4:], **self.family.params)
+        return residual.ravel()
+
+    def solver(self, X):
+        raise NotImplementedError
+
 
 class LeastSquaresSolver(Solver):
     """Solve a system of non-linear equations by minimization."""
