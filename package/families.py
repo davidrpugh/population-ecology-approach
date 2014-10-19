@@ -24,7 +24,7 @@ fecundity_factor = sym.var('c')
 class Family(object):
     """Class representing a family unit."""
 
-    modules = [{'ImmutableMatrix': np.array}, "numpy"]
+    _modules = [{'ImmutableMatrix': np.array}, "numpy"]
 
     def __init__(self, params, SGA, Sga):
         """
@@ -61,10 +61,18 @@ class Family(object):
 
     @property
     def _numeric_jacobian(self):
+        """
+        Vectorized function for numerically evaluating the Jacobian matrix of
+        partial derivatives.
+
+        :getter: Return the current function.
+        :type: function.
+
+        """
         if self.__numeric_jacobian is None:
             self.__numeric_jacobian = sym.lambdify(self._symbolic_args,
                                                    self._symbolic_jacobian,
-                                                   self.modules)
+                                                   self._modules)
         return self.__numeric_jacobian
 
     @property
@@ -79,16 +87,23 @@ class Family(object):
         if self.__numeric_size is None:
             self.__numeric_size = sym.lambdify(self._symbolic_args,
                                                self._symbolic_size,
-                                               self.modules)
+                                               self._modules)
         return self.__numeric_size
 
     @property
     def _numeric_system(self):
+        """
+        Vectorized function for numerically evaluating the system of recurrence
+        relations.
+
+        :getter: Return the current function.
+        :type: function.
+
+        """
         if self.__numeric_system is None:
-            tmp_args = [men, girls] + list(self.params.keys())
-            self.__numeric_system = sym.lambdify(tmp_args,
+            self.__numeric_system = sym.lambdify(self._symbolic_args,
                                                  self._symbolic_system,
-                                                 self.modules)
+                                                 self._modules)
         return self.__numeric_system
 
     @property
@@ -166,7 +181,6 @@ class Family(object):
     @property
     def female_genotypes(self):
         """
-
         Integer indices for valid female genotypes.
 
         :getter: Retun indices for the females' genotypes.
