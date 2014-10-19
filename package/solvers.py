@@ -74,3 +74,11 @@ class Solver(object):
 
         """
         return self._symbolic_residual.jacobian(self.family._symbolic_vars)
+
+
+class LeastSquaresSolver(Solver):
+    """Solve a system of non-linear equations by minimization."""
+
+
+class RootFinder(Solver):
+    """Solve a system of non-linear equations by root finding."""
