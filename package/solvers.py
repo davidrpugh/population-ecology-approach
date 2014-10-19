@@ -1,5 +1,11 @@
+import numpy as np
+import sympy as sym
+
+
 class Solver(object):
     """Base class for steady state solvers."""
+
+    _modules = [{'ImmutableMatrix': np.array}, "numpy"]
 
     def __init__(self, family):
         """
@@ -14,9 +20,43 @@ class Solver(object):
         self.family = family
 
     @property
+    def _numeric_jacobian(self):
+        """
+        Vectorized function for numerically evaluating the Jacobian matrix.
+
+        :getter: Return the current function.
+        :type: function
+
+        """
+        if self.__numeric_jacobian is None:
+            tmp_args = (self.family._symbolic_vars +
+                        list(self.family.params.keys()))
+            self.__numeric_jacobian = sym.lambdify(tmp_args,
+                                                   self._symbolic_jacobian,
+                                                   self._modules)
+        return self.__numeric_jacobian
+
+    @property
+    def _numeric_residual(self):
+        """
+        Vectorized function for numerically evaluating the model residual.
+
+        :getter: Return the current function.
+        :type: function
+
+        """
+        if self.__numeric_residual is None:
+            tmp_args = (self.family._symbolic_vars +
+                        list(self.family.params.keys()))
+            self.__numeric_residual = sym.lambdify(tmp_args,
+                                                   self._symbolic_residual,
+                                                   self._modules)
+        return self.__numeric_residual
+
+    @property
     def _symbolic_residual(self):
         """
-        Symbolic matrix representing the model residual.
+        Symbolic representation of the model residual.
 
         :getter: Return the model residual.
         :type: sympy.Matrix
@@ -27,7 +67,7 @@ class Solver(object):
     @property
     def _symbolic_jacobian(self):
         """
-        Jacobian matrix of partial derivatives.
+        Symbolic representation of the Jacobian matrix of partial derivatives.
 
         :getter: Return Jacobian matrix of partial derivatives.
         :type: sympy.Matrix
