@@ -1,164 +1,48 @@
-"""
-Defines the model classes.
+import sympy as sym
 
-"""
-import numpy as np
-from scipy import linalg, optimize
+import families
 
-from traits.api import (Array, Bool, cached_property, Dict, Float,
-                        HasPrivateTraits, Property, Str)
+# number of female children of particular genotype
+girls = sym.DeferredVector('f')
 
-import wrapped_symbolics
+# number of male adults of particular genotype
+men = sym.DeferredVector('M')
 
+# Female signaling probabilities
+female_signaling_probs = sym.var('d_A, d_a')
+d_A, d_a = female_signaling_probs
 
-class Model(HasPrivateTraits):
-    """Base class representing the model of Pugh-Schaefer-Seabright."""
+# Male screening probabilities
+male_screening_probs = sym.var('e_G, e_g')
+e_G, e_g = male_screening_probs
 
-    _bound_constraints = Property
+# Payoff parameters (from a Prisoner's dilemma)
+prisoners_dilemma_payoffs = sym.var('PiaA, PiAA, Piaa, PiAa')
+PiaA, PiAA, Piaa, PiAa = prisoners_dilemma_payoffs
 
-    _equality_constraints = Property
+# Female fecundity scaling factor
+fecundity_factor = sym.var('c')
 
-    _female_alleles_constraint = Property
+# Female population by phenotype.
+altruistic_girls = girls[0] + girls[2]
+selfish_girls = girls[1] + girls[3]
 
-    _initial_guess = Array
+# Conditional phenotype matching probabilities
+true_altruistic_girls = d_A * altruistic_girls
+false_altruistic_girls = (1 - d_a) * selfish_girls
+mistaken_for_altruistic_girls = (1 - e_G) * false_altruistic_girls
+altruist_adoption_pool = true_altruistic_girls + mistaken_for_altruistic_girls
 
-    _male_alleles_constraint = Property
+true_selfish_girls = d_a * selfish_girls
+false_selfish_girls = (1 - d_A) * altruistic_girls
+mistaken_for_selfish_girls = (1 - e_g) * false_selfish_girls
+selfish_adoption_pool = true_selfish_girls + mistaken_for_selfish_girls
 
-    eigenvalues = Property
+SGA = true_altruistic_girls / altruist_adoption_pool
+Sga = true_selfish_girls / selfish_adoption_pool
 
-    initial_guess = Property(Array)
+# define some parameters
+hierarchy_params = {'c': 2.0, 'eG': 0.5, 'eg': 0.5, 'dA': 0.5, 'da': 0.5,
+                    'PiaA': 9.0, 'PiAA': 5.0, 'Piaa': 3.0, 'PiAa': 2.0}
 
-    isunstable = Property(Bool)
-
-    isstable = Property(Bool)
-
-    params = Dict(Str, Float)
-
-    solver_kwargs = Dict(Str, Float)
-
-    steady_state = Property(depends_on=['_initial_guess, params'])
-
-    def _get__bound_constraints(self):
-        """Population shares must be in [0,1]."""
-        eps = 1e-15
-        return [(eps, 1 - eps) for i in range(8)]
-
-    def _get__equality_constraints(self):
-        """Population shares of male and female alleles must sum to one."""
-        return [self._male_alleles_constraint, self._female_alleles_constraint]
-
-    def _get__female_alleles_constraint(self):
-        """Female allele population shares must sum to one."""
-        cons = lambda X: 1 - np.sum(X[4:])
-        return {'type': 'eq', 'fun': cons}
-
-    def _get__male_alleles_constraint(self):
-        """Male allele population shares must sum to one."""
-        cons = lambda X: 1 - np.sum(X[:4])
-        return {'type': 'eq', 'fun': cons}
-
-    def _get_eigenvalues(self):
-        """Return the eigenvalues of the Jacobian evaluated at equilibrium."""
-        evaluated_jac = self.F_jacobian(self.steady_state.x)
-        eigen_vals, eigen_vecs = linalg.eig(evaluated_jac)
-        return eigen_vals
-
-    def _get_initial_guess(self):
-        """Return initial guess of the equilibrium population shares."""
-        return self._initial_guess
-
-    def _get_isunstable(self):
-        """Return True if the steady state of the model is unstable."""
-        return np.any(np.greater(np.abs(self.eigenvalues), 1.0))
-
-    def _get_isstable(self):
-        """Return True if the steady state of the model is stable."""
-        return np.all(np.less(np.abs(self.eigenvalues), 1.0))
-
-    @cached_property
-    def _get_steady_state(self):
-        """Compute the steady state for the model."""
-        result = optimize.minimize(self._objective,
-                                   x0=self._initial_guess,
-                                   method='SLSQP',
-                                   jac=self._jacobian,
-                                   bounds=self._bound_constraints,
-                                   constraints=self._equality_constraints,
-                                   **self.solver_kwargs)
-
-        return result
-
-    def _set_initial_guess(self, value):
-        """Specify the initial guess of the equilibrium population shares."""
-        self._initial_guess = value
-
-    def _jacobian(self, X):
-        """Jacobian of the objective function."""
-        jac = np.sum(self._residual(X) * self._residual_jacobian(X), axis=0)
-        return jac
-
-    def _objective(self, X):
-        """Objective function used to solve for the model steady state."""
-        obj = 0.5 * np.sum(self._residual(X)**2)
-        return obj
-
-    def _residual(self, X):
-        """Model steady state is a root of this non-linear system."""
-        resid = wrapped_symbolics.residual(*X, **self.params)
-        return np.array(resid)
-
-    def _residual_jacobian(self, X):
-        """Returns the Jacobian of the model residual."""
-        jac = wrapped_symbolics.residual_jacobian(*X, **self.params)
-        return np.array(jac)
-
-    def _simulate_fixed_trajectory(self, initial_condition, T):
-        """Simulates a trajectory of fixed length."""
-        # set up the trajectory array
-        traj = np.empty((8, T))
-        traj[:, 0] = initial_condition
-
-        # run the simulation
-        for t in range(1, T):
-            traj[:, t] = self.F(traj[:, t-1])
-
-        return traj
-
-    def _simulate_variable_trajectory(self, initial_condition, rtol):
-        """Simulates a trajectory of variable length."""
-        # set up the trajectory array
-        traj = initial_condition.reshape((8, 1))
-
-        # initialize delta
-        delta = np.ones(8)
-
-        # run the simulation
-        while np.any(np.greater(delta, rtol)):
-            current_shares = traj[:, -1]
-            new_shares = self.F(current_shares)
-            delta = np.abs(new_shares - current_shares)
-
-            # update the trajectory
-            traj = np.hstack((traj, new_shares[:, np.newaxis]))
-
-        return traj
-
-    def F(self, X):
-        """Equation of motion for population allele shares."""
-        out = wrapped_symbolics.model_system(*X, **self.params)
-        return np.array(out).flatten()
-
-    def F_jacobian(self, X):
-        """Jacobian for equation of motion."""
-        jac = wrapped_symbolics.model_jacobian(*X, **self.params)
-        return np.array(jac)
-
-    def simulate(self, initial_condition, T=None, rtol=None):
-        """Simulates a run of the model given some initial_condition."""
-        if T is not None:
-            traj = self._simulate_fixed_trajectory(initial_condition, T)
-        elif rtol is not None:
-            traj = self._simulate_variable_trajectory(initial_condition, rtol)
-        else:
-            raise ValueError("One of 'T' or 'rtol' must be specified.")
-        return traj
+family = families.OneMaleTwoFemales(params=hierarchy_params, SGA=SGA, Sga=Sga)
