@@ -22,9 +22,9 @@ class Simulator(object):
         """
         Initial condition for a simulation.
 
-        :getter: Return an array defining the initial condition.
-        :setter: Set the initial number of males with genotype `GA`.
-        :type: float
+        :getter: Return the current initial condition.
+        :setter: Set a new initial condtion.
+        :type: numpy.ndarray
 
         """
         mGA0 = self._initial_condition
@@ -41,6 +41,7 @@ class Simulator(object):
 
     @initial_condition.setter
     def initial_condition(self, value):
+        """Set a new initial condition."""
         self._initial_condition = value
 
     def _simulate_fixed_trajectory(self, initial_condition, T):
@@ -95,6 +96,33 @@ class Simulator(object):
         else:
             raise ValueError("One of 'T' or 'rtol' must be specified.")
         return traj
+
+
+def isolated_subpopulations_initial_condition(cls, mGA):
+    """
+    Initial condition assuming isolated sub-populations of individuals: one
+    sub-population carrying the GA genotype; the other sub-population carrying
+    the ga genotype.
+
+    Parameters
+    ----------
+    mGA : float
+        Share of men in the combined population carrying the GA genotype.
+
+    Returns
+    -------
+
+    """
+    # initial condition for male shares
+    mga = 1 - mGA
+    initial_male_shares = np.array([mGA, 0.0, 0.0, mga])
+
+    # f_GA(0)=mGA0*Pi_AA and f_ga(0)=mga0*Pi_aa.
+    fGA0 = cls.family.params['c'] * cls.family.params['PiAA'] * mGA
+    fga0 = cls.family.params['c'] * cls.family.params['Piaa'] * mga
+    initial_number_females = np.array([fGA0, 0.0, 0.0, fga0])
+
+    return np.hstack((initial_male_shares, initial_number_females))
 
 
 def plot_trajectory(family, mGA0, rtol=1e-4, **new_params):
