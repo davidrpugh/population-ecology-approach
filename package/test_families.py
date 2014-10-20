@@ -39,8 +39,17 @@ class OneMaleTwoFemalesCase(unittest.TestCase):
                                                  SGA=model.SGA,
                                                  Sga=model.Sga)
 
+    def test_numeric_jacobian_shape(self):
+        """Validate the shape of the numeric Jacobian matrix."""
+        X = np.repeat(0.25, 8)
+        tmp_jacobian = self.family._numeric_jacobian(X[:4], X[4:],
+                                                     **self.family.params)
+        actual_shape = tmp_jacobian.shape
+        expected_shape = (8, 8)
+        self.assertEquals(actual_shape, expected_shape)
+
     def test_symbolic_jacobian_shape(self):
-        """Validate the shape of the Jacobian matrix."""
+        """Validate the shape of the symbolic Jacobian matrix."""
         expected_shape = (8, 8)
         actual_shape = self.family._symbolic_jacobian.shape
         self.assertEquals(actual_shape, expected_shape)

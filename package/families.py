@@ -28,7 +28,7 @@ class Family(object):
 
     def __init__(self, params, SGA, Sga):
         """
-        Create an instance of the Model class.
+        Create an instance of the Family class.
 
         Parameters
         ----------
