@@ -26,23 +26,37 @@ class Simulator(object):
         :setter: Set a new initial condtion.
         :type: numpy.ndarray
 
+        Notes
+        -----
+        Currently, we assume that the initial condition consists of two
+        isolated sub-populations. One group consistst of males and females
+        carrying the GA genotype; the other group consists of males and females
+        carrying the ga genotype.
+
+        The setter method requires the user to specify a new value for the
+        initial share of males carrying the GA genotype in the combined (i.e.,
+        mixed) population. The getter method returns an initial condition
+        for all eight of endogenous variables.
+
         """
-        mGA0 = self._initial_condition
-        mga0 = 1 - mGA0
-
-        initial_males = np.array([mGA0, 0, 0, mga0])
-
-        # f_GA(0)=mGA0*Pi_AA and f_ga(0)=mga0*Pi_aa.
-        fGA0 = self.family.params['c'] * self.family.params['PiAA'] * mGA0
-        fga0 = self.family.params['c'] * self.family.params['Piaa'] * mga0
-        initial_females = np.array([fGA0, 0.0, 0.0, fga0])
-
-        return np.hstack((initial_males, initial_females))
+        return self._initial_condition
 
     @initial_condition.setter
-    def initial_condition(self, value):
+    def initial_condition(self, mGA):
         """Set a new initial condition."""
-        self._initial_condition = value
+        # initial condition for male shares
+        mga = 1 - mGA
+        initial_male_shares = np.array([mGA, 0.0, 0.0, mga])
+
+        # initial number female children
+        fGA0 = self.family.params['c'] * self.family.params['PiAA'] * mGA
+        fga0 = self.family.params['c'] * self.family.params['Piaa'] * mga
+        initial_number_females = np.array([fGA0, 0.0, 0.0, fga0])
+
+        initial_condition = np.hstack((initial_male_shares,
+                                       initial_number_females))
+
+        self._initial_condition = initial_condition
 
     def _simulate_fixed_trajectory(self, initial_condition, T):
         """Simulates a trajectory of fixed length."""
@@ -87,8 +101,24 @@ class Simulator(object):
         jac = self.family._numeric_jacobian(X[:4], X[4:], **self.family.params)
         return jac
 
-    def simulate(self, T=None, rtol=None):
-        """Simulates a run of the model given some initial_condition."""
+    def simulate(self, rtol=None, T=None):
+        """
+        Simulates the model for either fixed of variable number of time steps.
+
+        Parameters
+        ----------
+        T : int (default=None)
+            The number of time steps to simulate.
+        rtol : float (default=None)
+            Simulate the model until the relative difference between timesteps
+            is sufficiently small.
+
+        Returns
+        -------
+        traj : numpy.ndarray
+            Array representing a simulation of the model.
+
+        """
         if T is not None:
             traj = self._simulate_fixed_trajectory(self.initial_condition, T)
         elif rtol is not None:
@@ -98,45 +128,35 @@ class Simulator(object):
         return traj
 
 
-def isolated_subpopulations_initial_condition(cls, mGA):
+def plot_isolated_subpopulations_simulation(simulator, mGA0, T=None, rtol=None,
+                                            d_A=0.5, d_a=0.5, e_G=0.5, e_g=0.5,
+                                            c=1.0, PiaA=7.0, PiAA=5.0, Piaa=3.0, PiAa=2.0):
     """
-    Initial condition assuming isolated sub-populations of individuals: one
-    sub-population carrying the GA genotype; the other sub-population carrying
-    the ga genotype.
+    Plot a simulated trajectory given an initial condition consistent with the
+    isolated sub-populations assumption.
 
     Parameters
     ----------
-    mGA : float
-        Share of men in the combined population carrying the GA genotype.
+    simulator : simulators.Simulator
+    mGA0 : float
+    T : int (default=None)
+        The number of time steps to simulate.
+    rtol : float (default=None)
+        Simulate the model until the relative difference between timesteps
+        is sufficiently small.
 
     Returns
     -------
+    A list containing...
 
     """
-    # initial condition for male shares
-    mga = 1 - mGA
-    initial_male_shares = np.array([mGA, 0.0, 0.0, mga])
-
-    # f_GA(0)=mGA0*Pi_AA and f_ga(0)=mga0*Pi_aa.
-    fGA0 = cls.family.params['c'] * cls.family.params['PiAA'] * mGA
-    fga0 = cls.family.params['c'] * cls.family.params['Piaa'] * mga
-    initial_number_females = np.array([fGA0, 0.0, 0.0, fga0])
-
-    return np.hstack((initial_male_shares, initial_number_females))
-
-
-def plot_trajectory(family, mGA0, rtol=1e-4, **new_params):
-    """
-    Plot a trajectory given an initial condition.
-
-    """
-    model = Simulator(family)
-    model.initial_condition = mGA0
-    model.family.params = new_params
-
-    tmp_traj = model.simulate(rtol=rtol)
-
     fig, axes = plt.subplots(1, 2, figsize=(12, 8))
+
+    tmp_params = {'c': c, 'e_G': e_G, 'e_g': e_g, 'd_A': d_A, 'd_a': d_a,
+                  'PiaA': PiaA, 'PiAA': PiAA, 'Piaa': Piaa, 'PiAa': PiAa}
+    simulator.family.params = tmp_params
+    simulator.initial_condition = mGA0
+    tmp_traj = simulator.simulate(rtol, T)
 
     # male allele trajectories
     m_GA, = axes[0].plot(tmp_traj[0], color='b', linestyle='none', marker='.',
@@ -167,6 +187,7 @@ def plot_trajectory(family, mGA0, rtol=1e-4, **new_params):
     axes[0].grid('on')
     axes[1].grid('on')
     axes[1].legend(loc=0, frameon=False, bbox_to_anchor=(1.25, 1.0))
+
     fig.suptitle('Number of males and females by genotype', fontsize=25,
                  family='serif')
 

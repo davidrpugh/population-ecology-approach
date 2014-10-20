@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 
 import families
-import simulator
+import simulators
 
 import model
 import wright_bergstrom
@@ -137,7 +137,7 @@ class PughSchaeferSeabrightCase(unittest.TestCase):
         self.family.params = ipd_params
 
         # simulate the trajectory of the model
-        simulation = simulator.Simulator(self.family)
+        simulation = simulators.Simulator(self.family)
         simulation.initial_condition = 0.5
         traj = simulation.simulate(rtol=1e-12)
 
@@ -155,7 +155,7 @@ class PughSchaeferSeabrightCase(unittest.TestCase):
         self.family.params = ipd_params
 
         # simulate the trajectory of the model
-        simulation = simulator.Simulator(self.family)
+        simulation = simulators.Simulator(self.family)
         simulation.initial_condition = 0.5
         traj = simulation.simulate(rtol=1e-12)
 
