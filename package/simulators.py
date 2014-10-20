@@ -129,8 +129,7 @@ class Simulator(object):
 
 
 def plot_isolated_subpopulations_simulation(simulator, mGA0, T=None, rtol=None,
-                                            d_A=0.5, d_a=0.5, e_G=0.5, e_g=0.5,
-                                            c=1.0, PiaA=7.0, PiAA=5.0, Piaa=3.0, PiAa=2.0):
+                                            **params):
     """
     Plot a simulated trajectory given an initial condition consistent with the
     isolated sub-populations assumption.
@@ -152,9 +151,7 @@ def plot_isolated_subpopulations_simulation(simulator, mGA0, T=None, rtol=None,
     """
     fig, axes = plt.subplots(1, 2, figsize=(12, 8))
 
-    tmp_params = {'c': c, 'e_G': e_G, 'e_g': e_g, 'd_A': d_A, 'd_a': d_a,
-                  'PiaA': PiaA, 'PiAA': PiAA, 'Piaa': Piaa, 'PiAa': PiAa}
-    simulator.family.params = tmp_params
+    simulator.family.params = params
     simulator.initial_condition = mGA0
     tmp_traj = simulator.simulate(rtol, T)
 
