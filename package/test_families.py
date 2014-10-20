@@ -1,260 +1,82 @@
-import nose
 import unittest
 
 import numpy as np
-import sympy as sym
 
 import families
+import simulator
 
-# number of female children of particular genotype
-girls = sym.DeferredVector('f')
-
-# number of male adults of particular genotype
-men = sym.DeferredVector('M')
-
-# Male screening probabilities
-e = sym.var('e')
+import model
 
 
-class BaseCase(unittest.TestCase):
+class FamilyCase(unittest.TestCase):
 
     def setUp(self):
         """Set up code for test fixtures."""
-        # conditional phenotype matching probabilities
-        SGA = e
-        Sga = e
-
-        # specify some valid parameters
-        params = {'c': 5.0, 'e': 1.0, 'PiaA': 9.0, 'PiAA': 5.0, 'Piaa': 3.0,
-                  'PiAa': 2.0}
-
-        # create an instance of the Family class
+        params = {'c': 1.0, 'e_G': 0.5, 'e_g': 0.5, 'd_A': 0.5, 'd_a': 0.5,
+                  'PiaA': 7.0, 'PiAA': 5.0, 'Piaa': 3.0, 'PiAa': 2.0}
         self.family = families.Family(params=params,
-                                      SGA=SGA,
-                                      Sga=Sga)
+                                      SGA=model.SGA,
+                                      Sga=model.Sga)
 
-    def test_family_unit(self):
-        """Testing family_unit method for base class."""
-        with nose.tools.assert_raises(NotImplementedError):
-            self.family._family_unit(*np.random.randint(0, 4, 3))
+    def test_not_implemented_methods(self):
+        """Test that certain methods are not implemented."""
+        with self.assertRaises(NotImplementedError):
+            genotype = np.random.randint(0, 4)
+            self.family._recurrence_relation_girls(genotype)
 
-    def test_share_girls_with_common_allele(self):
-        """Testing the share of girls with a common allele."""
-        # expected share of girls sharing a common allele with some genotype...
-        genotype = np.random.randint(0, 4)
-        if genotype in [0, 2]:
-            expected_share = girls[genotype] / (girls[0] + girls[2])
-        else:
-            expected_share = girls[genotype] / (girls[1] + girls[3])
-
-        # ...actual share from code
-        actual_share = self.family._share_girls_with_common_allele(genotype)
-
-        nose.tools.assert_equals(expected_share, actual_share)
-
-    def test_validate_female_genotypes(self):
-        """Testing validation of female_genotype attribute."""
-        # ...each element of the tuple must be in 0,1,2,3
-        invalid_genotype = (0, 4)
-        with nose.tools.assert_raises(AttributeError):
-            self.family.female_genotypes = invalid_genotype
-
-        # test valid female_genotypes
-        valid_female_genotypes = tuple(np.random.randint(0, 4, 2))
-        self.family.female_genotypes = valid_female_genotypes
-        nose.tools.assert_equals(valid_female_genotypes,
-                                 self.family.female_genotypes)
-
-    def test_validate_male_genotypes(self):
-        """Testing validation of male_genotype attribute."""
-        # genotype must have type int...
-        invalid_genotype = 1.0
-        with nose.tools.assert_raises(AttributeError):
-            self.family.male_genotype = invalid_genotype
-
-        # ...and be in 0,1,2,3
-        invalid_genotype = 4
-        with nose.tools.assert_raises(AttributeError):
-            self.family.male_genotype = invalid_genotype
-
-        # test valid male_genotype
-        expected_genotype = np.random.randint(0, 4)
-        self.family.male_genotype = expected_genotype
-        actual_genotype = self.family.male_genotype
-        nose.tools.assert_equals(expected_genotype, actual_genotype)
-
-    def test_validate_matching_probabilities(self):
-        """Testing validation of the SGA and Sga attributes."""
-
-        def invalid_SGA(fa, fA, e):
-            """Matching probabilities should be sympy.Basic expressions."""
-            return e + (1 - e) * fA / (fA + fa)
-
-        with nose.tools.assert_raises(AttributeError):
-            self.family.SGA = invalid_SGA
-
-        def invalid_Sga(fa, fA, e):
-            """Matching probabilities should be sympy.Basic expressions."""
-            return e + (1 - e) * fa / (fA + fa)
-
-        with nose.tools.assert_raises(AttributeError):
-            self.family.Sga = invalid_Sga
-
-    def test_validate_params(self):
-        """Testing validation of the params attribute."""
-        # parameters fail prisoner's dilemma
-        invalid_params = {'c': 5.0, 'e': 1.0, 'PiaA': 2.0, 'PiAA': 3.0,
-                          'Piaa': 5.0, 'PiAa': 9.0}
-
-        with nose.tools.assert_raises(AttributeError):
-            self.family.params = invalid_params
+        with self.assertRaises(NotImplementedError):
+            genotype = np.random.randint(0, 4)
+            self.family._recurrence_relation_men(genotype)
 
 
-class WrightBergstromCase(unittest.TestCase):
-
-    def SGA(self, girls, e):
-        altruistic_girls = girls[0] + girls[2]
-        return e + (1 - e) * (altruistic_girls / girls.sum())
-
-    def SGa(self, girls, e):
-        return 1 - self.SGA(girls, e)
-
-    def Sga(self, girls, e):
-        selfish_girls = girls[1] + girls[3]
-        return e + (1 - e) * (selfish_girls / girls.sum())
-
-    def SgA(self, girls, e):
-        return 1 - self.Sga(girls, e)
+class OneMaleTwoFemalesCase(unittest.TestCase):
 
     def setUp(self):
-        """Set up code for Wright-Bergstrom test case."""
-        # Female population by phenotype.
-        altruistic_girls = girls[0] + girls[2]
-        selfish_girls = girls[1] + girls[3]
-
-        # conditional phenotype matching probabilities (a la Wright/Bergstrom)
-        SGA = e + (1 - e) * altruistic_girls / (altruistic_girls + selfish_girls)
-        Sga = e + (1 - e) * selfish_girls / (altruistic_girls + selfish_girls)
-
-        # females send precise signals, but males screen almost randomly
-        eps = 0.5
-        params = {'c': 5.0, 'e': eps,
-                  'PiaA': 9.0, 'PiAA': 5.0, 'Piaa': 3.0, 'PiAa': 2.0}
-
+        """Set up code for test fixtures."""
+        params = {'c': 1.0, 'e_G': 0.5, 'e_g': 0.5, 'd_A': 0.5, 'd_a': 0.5,
+                  'PiaA': 7.0, 'PiAA': 5.0, 'Piaa': 3.0, 'PiAa': 2.0}
         self.family = families.OneMaleTwoFemales(params=params,
-                                                 SGA=SGA,
-                                                 Sga=Sga)
+                                                 SGA=model.SGA,
+                                                 Sga=model.Sga)
 
-    def test_perfect_signaling(self):
-        """Testing the computation of family size with perfect signaling."""
-        self.family.params['e'] = 1.0
+    def test_symbolic_jacobian_shape(self):
+        """Validate the shape of the Jacobian matrix."""
+        expected_shape = (8, 8)
+        actual_shape = self.family._symbolic_jacobian.shape
+        self.assertEquals(actual_shape, expected_shape)
 
-        for i in range(4):
-            for j in range(4):
-                for k in range(4):
+    def test_selfish_equilibrium_female_children(self):
+        """Testing number of female children in a selfish equilibrium."""
+        # need ipd condition to hold for this to pass
+        ipd_params = {'c': 3.5, 'e_G': 0.5, 'e_g': 0.5, 'd_A': 0.5, 'd_a': 0.5,
+                      'PiaA': 7.0, 'PiAA': 5.0, 'Piaa': 3.0, 'PiAa': 2.0}
+        self.family.params = ipd_params
 
-                    # specify the genotypes
-                    self.family.male_genotype = i
-                    self.family.female_genotypes = j, k
+        # simulate the trajectory of the model
+        simulation = simulator.Simulator(self.family)
+        simulation.initial_condition = 0.5
+        traj = simulation.simulate(rtol=1e-12)
 
-                    # pick a random vector for endogenous variables
-                    men = np.random.dirichlet((1, 1, 1, 1))
-                    girls = np.array([5.0, 4.0, 3.2, 2.5])
-                    tmp_X = np.hstack((men, girls))
+        # equilibrium number of female children is propto payoff
+        actual_females = traj[5::2, -1].sum()
+        expected_females = self.family.params['c'] * self.family.params['Piaa']
 
-                    if (i in [0, 1]) and (j in [0, 2]) and (k in [0, 2]):
-                        # wright-bergstrom SGA (with e = 1)
-                        SGA = self.SGA(girls, 1.0)
-                        altruistic_girls = girls[0] + girls[2]
-                        share_girls_1 = girls[j] / altruistic_girls
-                        share_girls_2 = girls[k] / altruistic_girls
-                        genotype_match_probs = (SGA * share_girls_1 *
-                                                SGA * share_girls_2)
+        self.assertAlmostEqual(actual_females, expected_females)
 
-                    elif (i in [2, 3]) and (j in [1, 3]) and (k in [1, 3]):
-                        # wright-bergstrom Sga (with e = 1)
-                        Sga = self.Sga(girls, 1.0)
-                        selfish_girls = girls[1] + girls[3]
-                        share_girls_1 = girls[j] / selfish_girls
-                        share_girls_2 = girls[k] / selfish_girls
-                        genotype_match_probs = (Sga * share_girls_1 *
-                                                Sga * share_girls_2)
-                    else:
-                        genotype_match_probs = np.zeros(1)
+    def test_altruistic_equilibrium_female_children(self):
+        """Testing number of female children in an altruistic equilibrium."""
+        # need ipd condition to hold for this to pass
+        ipd_params = {'c': 1.5, 'e_G': 0.5, 'e_g': 0.5, 'd_A': 0.75, 'd_a': 0.5,
+                      'PiaA': 7.0, 'PiAA': 5.0, 'Piaa': 3.0, 'PiAa': 2.0}
+        self.family.params = ipd_params
 
-                    expected_size = men[i] * genotype_match_probs
-                    actual_size = self.family.compute_size(tmp_X)[0]
-                    np.testing.assert_almost_equal(expected_size, actual_size)
+        # simulate the trajectory of the model
+        simulation = simulator.Simulator(self.family)
+        simulation.initial_condition = 0.5
+        traj = simulation.simulate(rtol=1e-12)
 
-    def test_useless_signaling(self):
-        """Testing the computation of family size with useless signaling."""
-        self.family.params['e'] = 0.0
+        # equilibrium number of female children is propto payoff
+        actual_females = traj[4::2, -1].sum()
+        expected_females = self.family.params['c'] * self.family.params['PiAA']
 
-        for i in range(4):
-            for j in range(4):
-                for k in range(4):
-
-                    # specify the genotypes
-                    self.family.male_genotype = i
-                    self.family.female_genotypes = j, k
-
-                    # pick a random vector for endogenous variables
-                    men = np.random.dirichlet((1, 1, 1, 1))
-                    girls = np.random.lognormal(0, 1, 4)
-                    tmp_X = np.hstack((men, girls))
-
-                    altruistic_girls = girls[0] + girls[2]
-                    selfish_girls = girls[1] + girls[3]
-
-                    tmp_SGA = self.SGA(girls, 0.0)
-                    tmp_SGa = self.SGa(girls, 0.0)
-                    tmp_Sga = self.Sga(girls, 0.0)
-                    tmp_SgA = self.SgA(girls, 0.0)
-
-                    if (i in [0, 1]):
-                        if (j in [0, 2]) and (k in [0, 2]):
-                            share_girls_1 = girls[j] / altruistic_girls
-                            share_girls_2 = girls[k] / altruistic_girls
-                            genotype_match_probs = (tmp_SGA * share_girls_1 *
-                                                    tmp_SGA * share_girls_2)
-                        elif (j in [0, 2]) and (k in [1, 3]):
-                            share_girls_1 = girls[j] / altruistic_girls
-                            share_girls_2 = girls[k] / selfish_girls
-                            genotype_match_probs = (tmp_SGA * share_girls_1 *
-                                                    tmp_SGa * share_girls_2)
-                        elif (j in [1, 3]) and (k in [0, 2]):
-                            share_girls_1 = girls[j] / selfish_girls
-                            share_girls_2 = girls[k] / altruistic_girls
-                            genotype_match_probs = (tmp_SGa * share_girls_1 *
-                                                    tmp_SGA * share_girls_2)
-                        else:
-                            share_girls_1 = girls[j] / selfish_girls
-                            share_girls_2 = girls[k] / selfish_girls
-                            genotype_match_probs = (tmp_SGa * share_girls_1 *
-                                                    tmp_SGa * share_girls_2)
-
-                    else:
-                        if (j in [0, 2]) and (k in [0, 2]):
-                            share_girls_1 = girls[j] / altruistic_girls
-                            share_girls_2 = girls[k] / altruistic_girls
-                            genotype_match_probs = (tmp_SgA * share_girls_1 *
-                                                    tmp_SgA * share_girls_2)
-                        elif (j in [0, 2]) and (k in [1, 3]):
-                            share_girls_1 = girls[j] / altruistic_girls
-                            share_girls_2 = girls[k] / selfish_girls
-                            genotype_match_probs = (tmp_SgA * share_girls_1 *
-                                                    tmp_Sga * share_girls_2)
-                        elif (j in [1, 3]) and (k in [0, 2]):
-                            share_girls_1 = girls[j] / selfish_girls
-                            share_girls_2 = girls[k] / altruistic_girls
-                            genotype_match_probs = (tmp_Sga * share_girls_1 *
-                                                    tmp_SgA * share_girls_2)
-                        else:
-                            share_girls_1 = girls[j] / selfish_girls
-                            share_girls_2 = girls[k] / selfish_girls
-                            genotype_match_probs = (tmp_Sga * share_girls_1 *
-                                                    tmp_Sga * share_girls_2)
-
-                    expected_size = men[i] * genotype_match_probs
-                    actual_size = self.family.compute_size(tmp_X)[0]
-                    np.testing.assert_almost_equal(expected_size, actual_size)
+        self.assertAlmostEqual(actual_females, expected_females)
