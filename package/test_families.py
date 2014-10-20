@@ -33,6 +33,76 @@ class FamilyCase(unittest.TestCase):
             genotypes = np.random.randint(0, 4, 3)
             self.family._family_unit(*genotypes)
 
+    def test_validate_female_genotypes(self):
+        """Testing validation of female_genotype attribute."""
+        # ...each element of the tuple must be in 0,1,2,3
+        invalid_genotype = (0, 4)
+        with self.assertRaises(AttributeError):
+            self.family.female_genotypes = invalid_genotype
+
+        # test valid female_genotypes
+        valid_female_genotypes = tuple(np.random.randint(0, 4, 2))
+        self.family.female_genotypes = valid_female_genotypes
+        self.assertEquals(valid_female_genotypes,
+                          self.family.female_genotypes)
+
+    def test_validate_male_genotypes(self):
+        """Testing validation of male_genotype attribute."""
+        # genotype must have type int...
+        invalid_genotype = 1.0
+        with self.assertRaises(AttributeError):
+            self.family.male_genotype = invalid_genotype
+
+        # ...and be in 0,1,2,3
+        invalid_genotype = 4
+        with self.assertRaises(AttributeError):
+            self.family.male_genotype = invalid_genotype
+
+        # test valid male_genotype
+        expected_genotype = np.random.randint(0, 4)
+        self.family.male_genotype = expected_genotype
+        actual_genotype = self.family.male_genotype
+        self.assertEquals(expected_genotype, actual_genotype)
+
+    def test_validate_matching_probabilities(self):
+        """Testing validation of the SGA and Sga attributes."""
+
+        def invalid_SGA(fa, fA, e):
+            """Matching probabilities should be sympy.Basic expressions."""
+            return e + (1 - e) * fA / (fA + fa)
+
+        with self.assertRaises(AttributeError):
+            self.family.SGA = invalid_SGA
+
+        def invalid_Sga(fa, fA, e):
+            """Matching probabilities should be sympy.Basic expressions."""
+            return e + (1 - e) * fa / (fA + fa)
+
+        with self.assertRaises(AttributeError):
+            self.family.Sga = invalid_Sga
+
+    def test_validate_params(self):
+        """Testing validation of the params attribute."""
+        # parameters must be a dict
+        invalid_params = (5.0, 1.0, 2.0, 3.0, 5.0, 9.0)
+
+        with self.assertRaises(AttributeError):
+            self.family.params = invalid_params
+
+        # parameters must define all required params
+        invalid_params = {'e': 1.0, 'PiaA': 2.0, 'PiAA': 3.0, 'Piaa': 5.0,
+                          'PiAa': 9.0}
+
+        with self.assertRaises(AttributeError):
+            self.family.params = invalid_params
+
+        # parameters fail prisoner's dilemma
+        invalid_params = {'c': 5.0, 'e': 1.0, 'PiaA': 2.0, 'PiAA': 3.0,
+                          'Piaa': 5.0, 'PiAa': 9.0}
+
+        with self.assertRaises(AttributeError):
+            self.family.params = invalid_params
+
 
 class PughSchaeferSeabrightCase(unittest.TestCase):
 
