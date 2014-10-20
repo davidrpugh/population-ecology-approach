@@ -5,7 +5,7 @@ import numpy as np
 import families
 import simulators
 
-import model
+import pugh_schaffer_seabright
 import wright_bergstrom
 
 
@@ -16,8 +16,8 @@ class FamilyCase(unittest.TestCase):
         params = {'c': 1.0, 'e_G': 0.5, 'e_g': 0.5, 'd_A': 0.5, 'd_a': 0.5,
                   'PiaA': 7.0, 'PiAA': 5.0, 'Piaa': 3.0, 'PiAa': 2.0}
         self.family = families.Family(params=params,
-                                      SGA=model.SGA,
-                                      Sga=model.Sga)
+                                      SGA=pugh_schaffer_seabright.SGA,
+                                      Sga=pugh_schaffer_seabright.Sga)
 
     def test_not_implemented_methods(self):
         """Test that certain methods are not implemented."""
@@ -104,15 +104,15 @@ class FamilyCase(unittest.TestCase):
             self.family.params = invalid_params
 
 
-class PughSchaeferSeabrightCase(unittest.TestCase):
+class PughSchafferSeabrightCase(unittest.TestCase):
 
     def setUp(self):
         """Set up code for test fixtures."""
         params = {'c': 1.0, 'e_G': 0.5, 'e_g': 0.5, 'd_A': 0.5, 'd_a': 0.5,
                   'PiaA': 7.0, 'PiAA': 5.0, 'Piaa': 3.0, 'PiAa': 2.0}
         self.family = families.OneMaleTwoFemales(params=params,
-                                                 SGA=model.SGA,
-                                                 Sga=model.Sga)
+                                                 SGA=pugh_schaffer_seabright.SGA,
+                                                 Sga=pugh_schaffer_seabright.Sga)
 
     def test_numeric_jacobian_shape(self):
         """Validate the shape of the numeric Jacobian matrix."""
