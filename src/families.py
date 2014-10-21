@@ -1,7 +1,7 @@
 """
 
 @author: David R. Pugh
-@date: 2014-10-14
+@date: 2014-10-20
 
 """
 import numpy as np
@@ -931,3 +931,7 @@ class OneMaleTwoFemales(Family):
         recurrence_relation = sum(terms)
 
         return recurrence_relation
+
+
+class Distribution(object):
+    """Base class for representing the collections of Family objects."""
