@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 
 class Simulator(object):
@@ -126,6 +127,27 @@ class Simulator(object):
         else:
             raise ValueError("One of 'T' or 'rtol' must be specified.")
         return traj
+
+    def compute_family_distributions(self, trajectory):
+        """Compute the cross sectional distributions."""
+        family_dists = []
+        for config in self.family.configurations:
+            self.family.male_genotype = config[0]
+            self.family.female_genotypes = config[1:]
+
+            tmp_dist = [self.family.compute_size(X) for X in trajectory.T]
+            family_dists.append(np.array(tmp_dist))
+
+        size_distribution = np.hstack(family_dists)
+
+        # want to return a properly formated pandas df
+        idx = pd.Index(range(trajectory.shape[1]), name='Time')
+        df = pd.DataFrame(size_distribution,
+                          columns=self.family.configurations,
+                          index=idx,
+                          )
+
+        return df.T
 
 
 def _plot_female_genotypes(ax, trajectory):
