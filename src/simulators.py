@@ -140,26 +140,22 @@ class Simulator(object):
 
         return df
 
-    def compute_family_distributions(self, trajectory):
+    def compute_family_distributions(self, dataframe):
         """Compute the cross sectional distributions."""
-        family_dists = []
+        family_distributions = []
         for config in self.family.configurations:
             self.family.male_genotype = config[0]
             self.family.female_genotypes = config[1:]
 
-            tmp_dist = [self.family.compute_size(X) for X in trajectory.T]
-            family_dists.append(np.array(tmp_dist))
-
-        size_distribution = np.hstack(family_dists)
+            tmp_dist = dataframe.apply(self.family.compute_size, axis=1,
+                                       raw=True)
+            family_distributions.append(tmp_dist)
 
         # want to return a properly formated pandas df
-        idx = pd.Index(range(trajectory.shape[1]), name='Time')
-        df = pd.DataFrame(size_distribution,
-                          columns=self.family.configurations,
-                          index=idx,
-                          )
+        df = pd.concat(family_distributions, axis=1)
+        df.columns = self.family.configurations
 
-        return df
+        return df.T
 
 
 def _plot_female_genotypes(ax, trajectory):

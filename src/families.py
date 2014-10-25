@@ -821,7 +821,7 @@ class Family(object):
 
         """
         size = self._numeric_size(X[:4], X[4:], **self.params)
-        return size.ravel()
+        return size
 
 
 class OneMaleTwoFemales(Family):
