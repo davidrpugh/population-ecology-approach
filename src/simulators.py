@@ -158,99 +158,50 @@ class Simulator(object):
         return df.T
 
 
-def _plot_female_genotypes(ax, trajectory):
-    """Plot the timepaths of female genotypes (or alleles) depending."""
-    # female genotype trajectories
-    f_GA, = ax.plot(trajectory[4], color='b', linestyle='none', marker='.',
-                    markeredgecolor='b', alpha=0.5)
-    f_Ga, = ax.plot(trajectory[5], color='g', linestyle='none', marker='.',
-                    markeredgecolor='g', alpha=0.5)
-    f_gA, = ax.plot(trajectory[6], color='r', linestyle='none', marker='.',
-                    markeredgecolor='r', alpha=0.5)
-    f_ga, = ax.plot(trajectory[7], color='c', linestyle='none', marker='.',
-                    markeredgecolor='c', alpha=0.5)
-
-    return (f_GA, f_Ga, f_gA, f_ga)
+def _plot_genotypes(axis, dataframe):
+    """Plot the timepaths of individual genotypes."""
+    dataframe.plot(marker='.', linestyle='none', legend=False, ax=axis,
+                   alpha=0.5)
+    return axis
 
 
-def _plot_female_alpha_alleles(ax, trajectory):
-    """Plot the timepaths of female alpha alleles."""
-    f_A, = ax.plot(trajectory[[4, 6]].sum(axis=0), color='b', linestyle='none',
-                   marker='.', markeredgecolor='b', alpha=0.5)
-    f_a, = ax.plot(trajectory[[5, 7]].sum(axis=0), color='r', linestyle='none',
-                   marker='.', markeredgecolor='r', alpha=0.5)
+def _plot_alpha_alleles(axis, dataframe):
+    """Plot the timepaths of alpha alleles."""
+    altruistic_agents = dataframe[[0, 2]].sum(axis=1)
+    selfish_agents = dataframe[[1, 3]].sum(axis=1)
 
-    return (f_A, f_a)
+    altruistic_agents.plot(marker='.', linestyle='none', legend=False, ax=axis,
+                           alpha=0.5)
+    selfish_agents.plot(marker='.', linestyle='none', ax=axis, legend=False,
+                        alpha=0.5)
 
-
-def _plot_female_gamma_alleles(ax, trajectory):
-    """Plot the timepaths of female gamma alleles."""
-    f_G, = ax.plot(trajectory[[4, 5]].sum(axis=0), color='b', linestyle='none',
-                   marker='.', markeredgecolor='b', alpha=0.5)
-    f_g, = ax.plot(trajectory[[6, 7]].sum(axis=0), color='r', linestyle='none',
-                   marker='.', markeredgecolor='r', alpha=0.5)
-
-    return (f_G, f_g)
+    return axis
 
 
-def _plot_female_trajectories(ax, trajectory, kind='genotypes'):
-    """Plot the timepaths of female genotypes or alleles depending."""
+def _plot_gamma_alleles(axis, dataframe):
+    """Plot the timepaths of alpha alleles."""
+    Gatekeepers = dataframe[[0, 1]].sum(axis=1)
+    gatekeepers = dataframe[[2, 3]].sum(axis=1)
+
+    Gatekeepers.plot(marker='.', linestyle='none', ax=axis, alpha=0.5,
+                     legend=False)
+    gatekeepers.plot(marker='.', linestyle='none', ax=axis, alpha=0.5,
+                     legend=False)
+
+    return axis
+
+
+def _plot_trajectories(ax, dataframe, kind='genotypes'):
+    """Plot the timepaths of genotypes or alleles depending."""
     if kind == 'genotypes':
-        female_lines = _plot_female_genotypes(ax, trajectory)
+        female_lines = _plot_genotypes(ax, dataframe)
     elif kind == 'alpha_allele':
-        female_lines = _plot_female_alpha_alleles(ax, trajectory)
+        female_lines = _plot_alpha_alleles(ax, dataframe)
     elif kind == 'gamma_allele':
-        female_lines = _plot_female_gamma_alleles(ax, trajectory)
+        female_lines = _plot_gamma_alleles(ax, dataframe)
     else:
         raise ValueError
     return female_lines
-
-
-def _plot_male_genotypes(ax, trajectory):
-    """Plot the timepaths of male genotypes."""
-    m_GA, = ax.plot(trajectory[0], color='b', linestyle='none', marker='.',
-                    markeredgecolor='b', alpha=0.5)
-    m_Ga, = ax.plot(trajectory[1], color='g', linestyle='none', marker='.',
-                    markeredgecolor='g', alpha=0.5)
-    m_gA, = ax.plot(trajectory[2], color='r', linestyle='none', marker='.',
-                    markeredgecolor='r', alpha=0.5)
-    m_ga, = ax.plot(trajectory[3], color='c', linestyle='none', marker='.',
-                    markeredgecolor='c', alpha=0.5)
-
-    return (m_GA, m_Ga, m_gA, m_ga)
-
-
-def _plot_male_alpha_alleles(ax, trajectory):
-    """Plot the timepaths of male alpha allele."""
-    m_A, = ax.plot(trajectory[[0, 2]].sum(axis=0), color='b', linestyle='none',
-                   marker='.', markeredgecolor='b', alpha=0.5)
-    m_a, = ax.plot(trajectory[[1, 3]].sum(axis=0), color='r', linestyle='none',
-                   marker='.', markeredgecolor='r', alpha=0.5)
-
-    return (m_A, m_a)
-
-
-def _plot_male_gamma_alleles(ax, trajectory):
-    """Plot the timepaths of male gamma allele."""
-    m_G, = ax.plot(trajectory[[0, 1]].sum(axis=0), color='b', linestyle='none',
-                   marker='.', markeredgecolor='b', alpha=0.5)
-    m_g, = ax.plot(trajectory[[2, 3]].sum(axis=0), color='r', linestyle='none',
-                   marker='.', markeredgecolor='r', alpha=0.5)
-
-    return (m_G, m_g)
-
-
-def _plot_male_trajectories(ax, trajectory, kind='genotypes'):
-    """Plot the timepaths of male genotypes (or alleles) depending."""
-    if kind == 'genotypes':
-        male_lines = _plot_male_genotypes(ax, trajectory)
-    elif kind == 'alpha_allele':
-        male_lines = _plot_male_alpha_alleles(ax, trajectory)
-    elif kind == 'gamma_allele':
-        male_lines = _plot_male_gamma_alleles(ax, trajectory)
-    else:
-        raise ValueError
-    return male_lines
 
 
 def plot_isolated_subpopulations_simulation(simulator, mGA0, T=None, rtol=None,
@@ -279,11 +230,13 @@ def plot_isolated_subpopulations_simulation(simulator, mGA0, T=None, rtol=None,
 
     simulator.family.params = params
     simulator.initial_condition = mGA0
-    tmp_traj = simulator.simulate(rtol, T)
+    df = simulator.simulate(rtol, T)
 
     # draw the lines
-    male_lines = _plot_male_trajectories(axes[0], tmp_traj, kind=males)
-    female_lines = _plot_female_trajectories(axes[1], tmp_traj, kind=females)
+    male_lines = _plot_trajectories(axes[0], df['Male Adult Genotypes'],
+                                    kind=males)
+    female_lines = _plot_trajectories(axes[1], df['Female Children Genotypes'],
+                                      kind=females)
 
     # specify plot options
     axes[0].set_xlabel('Time', fontsize=15, family='serif')
