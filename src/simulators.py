@@ -92,6 +92,15 @@ class Simulator(object):
 
         return traj
 
+    def _trajectory_to_dataframe(self, trajectory):
+        """Converts a numpy array into a suitably formated pandas.DataFrame."""
+        idx = pd.Index(range(trajectory.shape[1]), name='Time')
+        headers = ["Male Adult Genotypes", "Female Children Genotypes"]
+        genotypes = range(4)
+        cols = pd.MultiIndex.from_product([headers, genotypes])
+        df = pd.DataFrame(trajectory.T, index=idx, columns=cols)
+        return df
+
     def F(self, X):
         """Equation of motion for population allele shares."""
         out = self.family._numeric_system(X[:4], X[4:], **self.family.params)
@@ -116,8 +125,8 @@ class Simulator(object):
 
         Returns
         -------
-        traj : numpy.ndarray
-            Array representing a simulation of the model.
+        df : pandas.DataFrame
+            Hierarchical dataframe representing a simulation of the model.
 
         """
         if T is not None:
@@ -126,7 +135,10 @@ class Simulator(object):
             traj = self._simulate_variable_trajectory(self.initial_condition, rtol)
         else:
             raise ValueError("One of 'T' or 'rtol' must be specified.")
-        return traj
+
+        df = self._trajectory_to_dataframe(traj)
+
+        return df
 
     def compute_family_distributions(self, trajectory):
         """Compute the cross sectional distributions."""
@@ -147,7 +159,7 @@ class Simulator(object):
                           index=idx,
                           )
 
-        return df.T
+        return df
 
 
 def _plot_female_genotypes(ax, trajectory):
