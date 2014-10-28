@@ -342,16 +342,32 @@ class Distribution(object):
         return 0.5 * self.number_GA_female_adults
 
     @property
+    def share_GA_female_children(self):
+        return self.number_GA_female_children / self.number_female_children
+
+    @property
     def share_Ga_female_adults(self):
         return 0.5 * self.number_Ga_female_adults
+
+    @property
+    def share_Ga_female_children(self):
+        return self.number_Ga_female_children / self.number_female_children
 
     @property
     def share_gA_female_adults(self):
         return 0.5 * self.number_gA_female_adults
 
     @property
+    def share_gA_female_children(self):
+        return self.number_gA_female_children / self.number_female_children
+
+    @property
     def share_ga_female_adults(self):
         return 0.5 * self.number_ga_female_adults
+
+    @property
+    def share_ga_female_children(self):
+        return self.number_ga_female_children / self.number_female_children
 
     def compute_distribution(self, dataframe):
         family_distributions = []
