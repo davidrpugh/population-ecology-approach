@@ -140,8 +140,168 @@ class Simulator(object):
 
         return df
 
-    def compute_family_distributions(self, dataframe):
-        """Compute the cross sectional distributions."""
+
+class Distribution(object):
+
+    __distribution = None
+
+    def __init__(self, family, simulation):
+        self.family = family
+        self.simulation = simulation
+
+    @property
+    def distribution(self):
+        if self.__distribution is None:
+            self.__distribution = self.compute_distribution(self.simulation)
+        return self.__distribution
+
+    @property
+    def female_natural_selection_pressure(self):
+        average_A_female_children = (self.number_A_female_children /
+                                     self.number_A_female_adults)
+        average_a_female_children = (self.number_a_female_children /
+                                     self.number_a_female_adults)
+        return np.log(average_A_female_children) - np.log(average_a_female_children)
+
+    @property
+    def female_sexual_selection_pressure(self):
+        altruism_ratio = (self.number_A_female_adults.shift(-1) /
+                          self.number_A_female_children)
+        selfish_ratio = (self.number_a_female_adults.shift(-1) /
+                         self.number_a_female_children)
+        return np.log(altruism_ratio) - np.log(selfish_ratio)
+
+    @property
+    def number_A_female_adults(self):
+        A_female_adults = (self.distribution.xs(0, level='female1_genotype') +
+                           self.distribution.xs(2, level='female1_genotype') +
+                           self.distribution.xs(0, level='female2_genotype') +
+                           self.distribution.xs(2, level='female2_genotype'))
+        return A_female_adults.sum(axis=0)
+
+    @property
+    def number_A_female_children(self):
+        A_female_children = self.simulation['Female Children Genotypes'][[0, 2]]
+        return A_female_children.sum(axis=1)
+
+    @property
+    def number_a_female_adults(self):
+        a_female_adults = (self.distribution.xs(1, level='female1_genotype') +
+                           self.distribution.xs(3, level='female1_genotype') +
+                           self.distribution.xs(1, level='female2_genotype') +
+                           self.distribution.xs(3, level='female2_genotype'))
+        return a_female_adults.sum(axis=0)
+
+    @property
+    def number_a_female_children(self):
+        a_female_children = self.simulation['Female Children Genotypes'][[1, 3]]
+        return a_female_children.sum(axis=1)
+
+    @property
+    def number_female_children(self):
+        number_children = (self.number_A_female_children +
+                           self.number_a_female_children)
+        return number_children
+
+    @property
+    def number_G_female_adults(self):
+        G_female_adults = (self.distribution.xs(0, level='female1_genotype') +
+                           self.distribution.xs(1, level='female1_genotype') +
+                           self.distribution.xs(0, level='female2_genotype') +
+                           self.distribution.xs(1, level='female2_genotype'))
+        return G_female_adults.sum(axis=0)
+
+    @property
+    def number_G_female_children(self):
+        G_female_children = self.simulation['Female Children Genotypes'][[0, 1]]
+        return G_female_children.sum(axis=1)
+
+    @property
+    def number_g_female_adults(self):
+        g_female_adults = (self.distribution.xs(2, level='female1_genotype') +
+                           self.distribution.xs(3, level='female1_genotype') +
+                           self.distribution.xs(2, level='female2_genotype') +
+                           self.distribution.xs(3, level='female2_genotype'))
+        return g_female_adults.sum(axis=0)
+
+    @property
+    def number_g_female_children(self):
+        g_female_children = self.simulation['Female Children Genotypes'][[2, 3]]
+        return g_female_children.sum(axis=1)
+
+    @property
+    def number_GA_female_adults(self):
+        GA_female_adults = (self.distribution.xs(0, level='female1_genotype') +
+                            self.distribution.xs(0, level='female2_genotype'))
+        return GA_female_adults.sum(axis=0)
+
+    @property
+    def number_Ga_female_adults(self):
+        Ga_female_adults = (self.distribution.xs(1, level='female1_genotype') +
+                            self.distribution.xs(1, level='female2_genotype'))
+        return Ga_female_adults.sum(axis=0)
+
+    @property
+    def number_gA_female_adults(self):
+        gA_female_adults = (self.distribution.xs(2, level='female1_genotype') +
+                            self.distribution.xs(2, level='female2_genotype'))
+        return gA_female_adults.sum(axis=0)
+
+    @property
+    def number_ga_female_adults(self):
+        ga_female_adults = (self.distribution.xs(3, level='female1_genotype') +
+                            self.distribution.xs(3, level='female2_genotype'))
+        return ga_female_adults.sum(axis=0)
+
+    @property
+    def share_A_female_adults(self):
+        return 0.5 * self.number_A_female_adults
+
+    @property
+    def share_A_female_children(self):
+        return self.number_A_female_children / self.number_female_children
+
+    @property
+    def share_a_female_adults(self):
+        return 0.5 * self.number_a_female_adults
+
+    @property
+    def share_a_female_children(self):
+        return self.number_a_female_children / self.number_female_children
+
+    @property
+    def share_G_female_adults(self):
+        return 0.5 * self.number_G_female_adults
+
+    @property
+    def share_G_female_children(self):
+        return self.number_G_female_children / self.number_female_children
+
+    @property
+    def share_g_female_adults(self):
+        return 0.5 * self.number_g_female_adults
+
+    @property
+    def share_g_female_children(self):
+        return self.number_g_female_children / self.number_female_children
+
+    @property
+    def share_GA_female_adults(self):
+        return 0.5 * self.number_GA_female_adults
+
+    @property
+    def share_Ga_female_adults(self):
+        return 0.5 * self.number_Ga_female_adults
+
+    @property
+    def share_gA_female_adults(self):
+        return 0.5 * self.number_gA_female_adults
+
+    @property
+    def share_ga_female_adults(self):
+        return 0.5 * self.number_ga_female_adults
+
+    def compute_distribution(self, dataframe):
         family_distributions = []
         for config in self.family.configurations:
             self.family.male_genotype = config[0]
