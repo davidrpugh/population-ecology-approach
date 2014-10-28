@@ -236,10 +236,18 @@ class Distribution(object):
         return GA_female_adults.sum(axis=0)
 
     @property
+    def number_GA_female_children(self):
+        return self.simulation['Female Children Genotypes'][0]
+
+    @property
     def number_Ga_female_adults(self):
         Ga_female_adults = (self.distribution.xs(1, level='female1_genotype') +
                             self.distribution.xs(1, level='female2_genotype'))
         return Ga_female_adults.sum(axis=0)
+
+    @property
+    def number_Ga_female_children(self):
+        return self.simulation['Female Children Genotypes'][1]
 
     @property
     def number_gA_female_adults(self):
@@ -248,10 +256,54 @@ class Distribution(object):
         return gA_female_adults.sum(axis=0)
 
     @property
+    def number_gA_female_children(self):
+        return self.simulation['Female Children Genotypes'][2]
+
+    @property
     def number_ga_female_adults(self):
         ga_female_adults = (self.distribution.xs(3, level='female1_genotype') +
                             self.distribution.xs(3, level='female2_genotype'))
         return ga_female_adults.sum(axis=0)
+
+    @property
+    def number_ga_female_children(self):
+        return self.simulation['Female Children Genotypes'][3]
+
+    @property
+    def number_A_male_adults(self):
+        A_male_adults = self.simulation['Male Adult Genotypes'][[0, 2]]
+        return A_male_adults.sum(axis=1)
+
+    @property
+    def number_a_male_adults(self):
+        a_male_adults = self.simulation['Male Adult Genotypes'][[1, 3]]
+        return a_male_adults.sum(axis=1)
+
+    @property
+    def number_G_male_adults(self):
+        G_male_adults = self.simulation['Male Adult Genotypes'][[0, 1]]
+        return G_male_adults.sum(axis=1)
+
+    @property
+    def number_g_male_adults(self):
+        g_male_adults = self.simulation['Male Adult Genotypes'][[2, 3]]
+        return g_male_adults.sum(axis=1)
+
+    @property
+    def number_GA_male_adults(self):
+        return self.simulation['Male Adult Genotypes'][0]
+
+    @property
+    def number_Ga_male_adults(self):
+        return self.simulation['Male Adult Genotypes'][1]
+
+    @property
+    def number_gA_male_adults(self):
+        return self.simulation['Male Adult Genotypes'][2]
+
+    @property
+    def number_ga_male_adults(self):
+        return self.simulation['Male Adult Genotypes'][3]
 
     @property
     def share_A_female_adults(self):
