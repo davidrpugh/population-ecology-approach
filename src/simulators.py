@@ -386,8 +386,21 @@ class Distribution(object):
         return self.number_a_female_children
 
     @property
-    def number_female_children(self):
-        return self.simulation['Female Children Genotypes'][[0, 1, 2, 3]]
+    def number_children(self):
+        """
+        Total number of children produced in a generation.
+
+        :getter: Return the toal number of children.
+        :type: pandas.Series
+
+        Notes
+        -----
+        By construction, the sex ratio at birth for male and females is 1:1 the
+        total number of children produced in each generation is twice the total
+        number of female children.
+
+        """
+        return 2 * self.simulation['Female Children Genotypes'][[0, 1, 2, 3]]
 
     @property
     def number_G_female_adults(self):
@@ -513,123 +526,375 @@ class Distribution(object):
 
     @property
     def number_GA_female_adults(self):
+        r"""
+        Number of female adults carrying the `GA` genotype.
+
+        :getter: Return the number of female adults carrying the `GA` genotype.
+        :type: pandas.Series
+
+        """
         GA_female_adults = (self.distribution.xs(0, level='female1_genotype') +
                             self.distribution.xs(0, level='female2_genotype'))
         return GA_female_adults.sum(axis=0)
 
     @property
     def number_GA_female_children(self):
+        r"""
+        Number of female children carrying the `GA` genotype.
+
+        :getter: Return the number of female children carrying the `GA` genotype.
+        :type: pandas.Series
+
+        """
         return self.simulation['Female Children Genotypes'][0]
 
     @property
     def number_Ga_female_adults(self):
+        r"""
+        Number of female adults carrying the `Ga` genotype.
+
+        :getter: Return the number of female adults carrying the `Ga` genotype.
+        :type: pandas.Series
+
+        """
         Ga_female_adults = (self.distribution.xs(1, level='female1_genotype') +
                             self.distribution.xs(1, level='female2_genotype'))
         return Ga_female_adults.sum(axis=0)
 
     @property
     def number_Ga_female_children(self):
+        r"""
+        Number of female children carrying the `Ga` genotype.
+
+        :getter: Return the number of female children carrying the `Ga` genotype.
+        :type: pandas.Series
+
+        """
         return self.simulation['Female Children Genotypes'][1]
 
     @property
     def number_gA_female_adults(self):
+        r"""
+        Number of female adults carrying the `gA` genotype.
+
+        :getter: Return the number of female adults carrying the `gA` genotype.
+        :type: pandas.Series
+
+        """
         gA_female_adults = (self.distribution.xs(2, level='female1_genotype') +
                             self.distribution.xs(2, level='female2_genotype'))
         return gA_female_adults.sum(axis=0)
 
     @property
     def number_gA_female_children(self):
+        r"""
+        Number of female children carrying the `gA` genotype.
+
+        :getter: Return the number of female children carrying the `gA` genotype.
+        :type: pandas.Series
+
+        """
         return self.simulation['Female Children Genotypes'][2]
 
     @property
     def number_ga_female_adults(self):
+        r"""
+        Number of female adults carrying the `ga` genotype.
+
+        :getter: Return the number of female adults carrying the `ga` genotype.
+        :type: pandas.Series
+
+        """
         ga_female_adults = (self.distribution.xs(3, level='female1_genotype') +
                             self.distribution.xs(3, level='female2_genotype'))
         return ga_female_adults.sum(axis=0)
 
     @property
     def number_ga_female_children(self):
+        r"""
+        Number of female children carrying the `ga` genotype.
+
+        :getter: Return the number of female children carrying the `ga` genotype.
+        :type: pandas.Series
+
+        """
         return self.simulation['Female Children Genotypes'][3]
 
     @property
     def number_GA_male_adults(self):
+        r"""
+        Number of male adults carrying the `GA` genotype.
+
+        :getter: Return the number of male adults carrying the `GA` genotype.
+        :type: pandas.Series
+
+        """
         return self.simulation['Male Adult Genotypes'][0]
 
     @property
     def number_Ga_male_adults(self):
+        r"""
+        Number of male adults carrying the `Ga` genotype.
+
+        :getter: Return the number of male adults carrying the `Ga` genotype.
+        :type: pandas.Series
+
+        """
         return self.simulation['Male Adult Genotypes'][1]
 
     @property
     def number_gA_male_adults(self):
+        r"""
+        Number of male adults carrying the `gA` genotype.
+
+        :getter: Return the number of male adults carrying the `gA` genotype.
+        :type: pandas.Series
+
+        """
         return self.simulation['Male Adult Genotypes'][2]
 
     @property
     def number_ga_male_adults(self):
+        r"""
+        Number of male adults carrying the `ga` genotype.
+
+        :getter: Return the number of male adults carrying the `ga` genotype.
+        :type: pandas.Series
+
+        """
         return self.simulation['Male Adult Genotypes'][3]
 
     @property
     def share_A_female_adults(self):
+        r"""
+        Share of female adults carrying the `A` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the share of female children carrying the `A` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
         return 0.5 * self.number_A_female_adults
 
     @property
     def share_A_female_children(self):
-        return self.number_A_female_children / self.number_female_children
+        r"""
+        Share of female children carrying the `A` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the share of female children carrying the `A` allele.
+        :type: pandas.Series
+
+        """
+        return self.number_A_female_children / self.number_children
 
     @property
     def share_a_female_adults(self):
+        r"""
+        Share of female adults carrying the `a` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the share of female children carrying the `a` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
         return 0.5 * self.number_a_female_adults
 
     @property
     def share_a_female_children(self):
-        return self.number_a_female_children / self.number_female_children
+        r"""
+        Share of female children carrying the `a` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the share of female children carrying the `a` allele.
+        :type: pandas.Series
+
+        """
+        return self.number_a_female_children / self.number_children
 
     @property
     def share_G_female_adults(self):
+        r"""
+        Share of female adults carrying the `G` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the share of female children carrying the `G` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
         return 0.5 * self.number_G_female_adults
 
     @property
     def share_G_female_children(self):
-        return self.number_G_female_children / self.number_female_children
+        r"""
+        Share of female children carrying the `G` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the share of female children carrying the `G` allele.
+        :type: pandas.Series
+
+        """
+        return self.number_G_female_children / self.number_children
 
     @property
     def share_g_female_adults(self):
+        r"""
+        Share of female adults carrying the `g` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the share of female children carrying the `g` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
         return 0.5 * self.number_g_female_adults
 
     @property
     def share_g_female_children(self):
-        return self.number_g_female_children / self.number_female_children
+        r"""
+        Share of female children carrying the `g` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the share of female children carrying the `g` allele.
+        :type: pandas.Series
+
+        """
+        return self.number_g_female_children / self.number_children
 
     @property
     def share_GA_female_adults(self):
+        r"""
+        Share of female adults carrying the `GA` genotype.
+
+        :getter: Return the share of female adults carrying the `GA` genotype.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
         return 0.5 * self.number_GA_female_adults
 
     @property
     def share_GA_female_children(self):
-        return self.number_GA_female_children / self.number_female_children
+        r"""
+        Share of female children carrying the `GA` genotype.
+
+        :getter: Return the share of female children carrying the `GA` genotype.
+        :type: pandas.Series
+
+        """
+        return self.number_GA_female_children / self.number_children
 
     @property
     def share_Ga_female_adults(self):
+        r"""
+        Share of female adults carrying the `Ga` genotype.
+
+        :getter: Return the share of female adults carrying the `Ga` genotype.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
         return 0.5 * self.number_Ga_female_adults
 
     @property
     def share_Ga_female_children(self):
-        return self.number_Ga_female_children / self.number_female_children
+        r"""
+        Share of female children carrying the `Ga` genotype.
+
+        :getter: Return the share of female children carrying the `Ga` genotype.
+        :type: pandas.Series
+
+        """
+        return self.number_Ga_female_children / self.number_children
 
     @property
     def share_gA_female_adults(self):
+        r"""
+        Share of female adults carrying the `gA` genotype.
+
+        :getter: Return the share of female adults carrying the `gA` genotype.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
         return 0.5 * self.number_gA_female_adults
 
     @property
     def share_gA_female_children(self):
-        return self.number_gA_female_children / self.number_female_children
+        r"""
+        Share of female children carrying the `gA` genotype.
+
+        :getter: Return the share of female children carrying the `gA` genotype.
+        :type: pandas.Series
+
+        """
+        return self.number_gA_female_children / self.number_children
 
     @property
     def share_ga_female_adults(self):
+        r"""
+        Share of female adults carrying the `ga` genotype.
+
+        :getter: Return the share of female adults carrying the `ga` genotype.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
         return 0.5 * self.number_ga_female_adults
 
     @property
     def share_ga_female_children(self):
-        return self.number_ga_female_children / self.number_female_children
+        r"""
+        Share of female children carrying the `ga` genotype.
+
+        :getter: Return the share of female children carrying the `ga` genotype.
+        :type: pandas.Series
+
+        """
+        return self.number_ga_female_children / self.number_children
 
     def compute_distribution(self, dataframe):
         family_distributions = []
