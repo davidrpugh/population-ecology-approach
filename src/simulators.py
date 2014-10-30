@@ -156,20 +156,112 @@ class Distribution(object):
         return self.__distribution
 
     @property
-    def female_natural_selection_pressure(self):
-        average_A_female_children = (self.number_A_female_children /
-                                     self.number_A_female_adults)
-        average_a_female_children = (self.number_a_female_children /
-                                     self.number_a_female_adults)
-        return np.log(average_A_female_children) - np.log(average_a_female_children)
+    def alpha_natural_selection_pressure(self):
+        pressure = (self.alpha_natural_selection_pressure_females +
+                    self.alpha_natural_selection_pressure_males)
+        return pressure
 
     @property
-    def female_sexual_selection_pressure(self):
-        altruism_ratio = (self.number_A_female_adults.shift(-1) /
-                          self.number_A_female_children)
-        selfish_ratio = (self.number_a_female_adults.shift(-1) /
-                         self.number_a_female_children)
-        return np.log(altruism_ratio) - np.log(selfish_ratio)
+    def alpha_natural_selection_pressure_females(self):
+        avg_A_female_children = (self.number_A_female_children /
+                                 self.number_A_female_adults)
+        avg_a_female_children = (self.number_a_female_children /
+                                 self.number_a_female_adults)
+        return np.log(avg_A_female_children) - np.log(avg_a_female_children)
+
+    @property
+    def alpha_natural_selection_pressure_males(self):
+        A_ratio = (self.number_A_male_adults.shift(-1) /
+                   self.number_A_male_children)
+        a_ratio = (self.number_a_male_adults.shift(-1) /
+                   self.number_a_male_children)
+        return np.log(A_ratio) - np.log(a_ratio)
+
+    @property
+    def alpha_sexual_selection_pressure(self):
+        pressure = (self.alpha_sexual_selection_pressure_females +
+                    self.alpha_sexual_selection_pressure_males)
+        return pressure
+
+    @property
+    def alpha_sexual_selection_pressure_females(self):
+        A_ratio = (self.number_A_female_adults.shift(-1) /
+                   self.number_A_female_children)
+        a_ratio = (self.number_a_female_adults.shift(-1) /
+                   self.number_a_female_children)
+        return np.log(A_ratio) - np.log(a_ratio)
+
+    @property
+    def alpha_sexual_selection_pressure_males(self):
+        avg_A_male_children = (self.number_A_male_children /
+                               self.number_A_male_adults)
+        avg_a_male_children = (self.number_a_male_children /
+                               self.number_a_male_adults)
+        return np.log(avg_A_male_children) - np.log(avg_a_male_children)
+
+    @property
+    def alpha_selection_pressure(self):
+        total_pressure = (self.alpha_natural_selection_pressure +
+                          self.alpha_sexual_selection_pressure)
+        return total_pressure
+
+    @property
+    def alpha_sexual_selection_pressure_females(self):
+        A_ratio = (self.number_A_female_adults.shift(-1) /
+                   self.number_A_female_children)
+        a_ratio = (self.number_a_female_adults.shift(-1) /
+                   self.number_a_female_children)
+        return np.log(A_ratio) - np.log(a_ratio)
+
+    @property
+    def gamma_natural_selection_pressure(self):
+        pressure = (self.gamma_natural_selection_pressure_females +
+                    self.gamma_natural_selection_pressure_males)
+        return pressure
+
+    @property
+    def gamma_natural_selection_pressure_females(self):
+        avg_G_female_children = (self.number_G_female_children /
+                                 self.number_G_female_adults)
+        avg_g_female_children = (self.number_g_female_children /
+                                 self.number_g_female_adults)
+        return np.log(avg_G_female_children) - np.log(avg_g_female_children)
+
+    @property
+    def gamma_natural_selection_pressure_males(self):
+        G_ratio = (self.number_G_male_adults.shift(-1) /
+                   self.number_G_male_children)
+        g_ratio = (self.number_g_male_adults.shift(-1) /
+                   self.number_g_male_children)
+        return np.log(G_ratio) - np.log(g_ratio)
+
+    @property
+    def gamma_sexual_selection_pressure(self):
+        pressure = (self.gamma_sexual_selection_pressure_females +
+                    self.gamma_sexual_selection_pressure_males)
+        return pressure
+
+    @property
+    def gamma_sexual_selection_pressure_females(self):
+        G_ratio = (self.number_G_female_adults.shift(-1) /
+                   self.number_G_female_children)
+        g_ratio = (self.number_g_female_adults.shift(-1) /
+                   self.number_g_female_children)
+        return np.log(G_ratio) - np.log(g_ratio)
+
+    @property
+    def gamma_sexual_selection_pressure_males(self):
+        avg_G_male_children = (self.number_G_male_children /
+                               self.number_G_male_adults)
+        avg_g_male_children = (self.number_g_male_children /
+                               self.number_g_male_adults)
+        return np.log(avg_G_male_children) - np.log(avg_g_male_children)
+
+    @property
+    def gamma_selection_pressure(self):
+        total_pressure = (self.gamma_sexual_selection_pressure +
+                          self.gamma_natural_selection_pressure)
+        return total_pressure
 
     @property
     def number_A_female_adults(self):
@@ -185,6 +277,10 @@ class Distribution(object):
         return A_female_children.sum(axis=1)
 
     @property
+    def number_A_male_children(self):
+        return self.number_A_female_children
+
+    @property
     def number_a_female_adults(self):
         a_female_adults = (self.distribution.xs(1, level='female1_genotype') +
                            self.distribution.xs(3, level='female1_genotype') +
@@ -198,10 +294,12 @@ class Distribution(object):
         return a_female_children.sum(axis=1)
 
     @property
+    def number_a_male_children(self):
+        return self.number_a_female_children
+
+    @property
     def number_female_children(self):
-        number_children = (self.number_A_female_children +
-                           self.number_a_female_children)
-        return number_children
+        return self.simulation['Female Children Genotypes'][[0, 1, 2, 3]]
 
     @property
     def number_G_female_adults(self):
@@ -217,6 +315,24 @@ class Distribution(object):
         return G_female_children.sum(axis=1)
 
     @property
+    def number_G_male_adults(self):
+        G_male_adults = self.simulation['Male Adult Genotypes'][[0, 1]]
+        return G_male_adults.sum(axis=1)
+
+    @property
+    def number_G_male_children(self):
+        """
+
+        Notes
+        -----
+        By construction, the number of male chidlren carrying the G allele of
+        the gamme gene is the same as the number of female children carrying
+        that allele.
+
+        """
+        return self.number_G_female_children
+
+    @property
     def number_g_female_adults(self):
         g_female_adults = (self.distribution.xs(2, level='female1_genotype') +
                            self.distribution.xs(3, level='female1_genotype') +
@@ -228,6 +344,24 @@ class Distribution(object):
     def number_g_female_children(self):
         g_female_children = self.simulation['Female Children Genotypes'][[2, 3]]
         return g_female_children.sum(axis=1)
+
+    @property
+    def number_g_male_adults(self):
+        g_male_adults = self.simulation['Male Adult Genotypes'][[2, 3]]
+        return g_male_adults.sum(axis=1)
+
+    @property
+    def number_g_male_children(self):
+        """
+
+        Notes
+        -----
+        By construction, the number of male chidlren carrying the g allele of
+        the gamme gene is the same as the number of female children carrying
+        that allele.
+
+        """
+        return self.number_g_female_children
 
     @property
     def number_GA_female_adults(self):
