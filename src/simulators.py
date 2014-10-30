@@ -265,6 +265,14 @@ class Distribution(object):
 
     @property
     def number_A_female_adults(self):
+        r"""
+        Number of female adults carrying the `A` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of female adults carrying the `A` allele.
+        :type: pandas.Series
+
+        """
         A_female_adults = (self.distribution.xs(0, level='female1_genotype') +
                            self.distribution.xs(2, level='female1_genotype') +
                            self.distribution.xs(0, level='female2_genotype') +
@@ -273,15 +281,59 @@ class Distribution(object):
 
     @property
     def number_A_female_children(self):
+        r"""
+        Number of female children carrying the `A` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of female children carrying the `A` allele.
+        :type: pandas.Series
+
+        """
         A_female_children = self.simulation['Female Children Genotypes'][[0, 2]]
         return A_female_children.sum(axis=1)
 
     @property
+    def number_A_male_adults(self):
+        r"""
+        Number of male adults carrying the `A` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of male adults carrying the `A` allele.
+        :type: pandas.Series
+
+        """
+        A_male_adults = self.simulation['Male Adult Genotypes'][[0, 2]]
+        return A_male_adults.sum(axis=1)
+
+    @property
     def number_A_male_children(self):
+        r"""
+        Number of male children carrying the `A` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of male children carrying the `A` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        By construction, the sex ratio at birth for male and females is 1:1 and
+        thus the number of male children carrying the `A` allele of the
+        :math:`\alpha` gene is the same as the number of female children
+        carrying that allele.
+
+        """
         return self.number_A_female_children
 
     @property
     def number_a_female_adults(self):
+        r"""
+        Number of female adults carrying the `a` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of female adults carrying the `a` allele.
+        :type: pandas.Series
+
+        """
         a_female_adults = (self.distribution.xs(1, level='female1_genotype') +
                            self.distribution.xs(3, level='female1_genotype') +
                            self.distribution.xs(1, level='female2_genotype') +
@@ -290,11 +342,47 @@ class Distribution(object):
 
     @property
     def number_a_female_children(self):
+        r"""
+        Number of female children carrying the `a` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of female children carrying the `a` allele.
+        :type: pandas.Series
+
+        """
         a_female_children = self.simulation['Female Children Genotypes'][[1, 3]]
         return a_female_children.sum(axis=1)
 
     @property
+    def number_a_male_adults(self):
+        r"""
+        Number of male adults carrying the `a` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of male adults carrying the `a` allele.
+        :type: pandas.Series
+
+        """
+        a_male_adults = self.simulation['Male Adult Genotypes'][[1, 3]]
+        return a_male_adults.sum(axis=1)
+
+    @property
     def number_a_male_children(self):
+        r"""
+        Number of male children carrying the `a` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of male children carrying the `a` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        By construction, the sex ratio at birth for male and females is 1:1 and
+        thus the number of male children carrying the `a` allele of the
+        :math:`\alpha` gene is the same as the number of female children
+        carrying that allele.
+
+        """
         return self.number_a_female_children
 
     @property
@@ -303,6 +391,14 @@ class Distribution(object):
 
     @property
     def number_G_female_adults(self):
+        r"""
+        Number of female adults carrying the `G` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of female adults carrying the `G` allele.
+        :type: pandas.Series
+
+        """
         G_female_adults = (self.distribution.xs(0, level='female1_genotype') +
                            self.distribution.xs(1, level='female1_genotype') +
                            self.distribution.xs(0, level='female2_genotype') +
@@ -311,29 +407,59 @@ class Distribution(object):
 
     @property
     def number_G_female_children(self):
+        r"""
+        Number of female children carrying the `G` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of female children carrying the `G` allele.
+        :type: pandas.Series
+
+        """
         G_female_children = self.simulation['Female Children Genotypes'][[0, 1]]
         return G_female_children.sum(axis=1)
 
     @property
     def number_G_male_adults(self):
+        r"""
+        Number of male adults carrying the `G` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of male adults carrying the `G` allele.
+        :type: pandas.Series
+
+        """
         G_male_adults = self.simulation['Male Adult Genotypes'][[0, 1]]
         return G_male_adults.sum(axis=1)
 
     @property
     def number_G_male_children(self):
-        """
+        r"""
+        Number of male children carrying the `G` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of male children carrying the `G` allele.
+        :type: pandas.Series
 
         Notes
         -----
-        By construction, the number of male chidlren carrying the G allele of
-        the gamme gene is the same as the number of female children carrying
-        that allele.
+        By construction, the sex ratio at birth for male and females is 1:1 and
+        thus the number of male children carrying the `G` allele of the
+        :math:`\gamma` gene is the same as the number of female children
+        carrying that allele.
 
         """
         return self.number_G_female_children
 
     @property
     def number_g_female_adults(self):
+        r"""
+        Number of female adults carrying the `g` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of female adults carrying the `g` allele.
+        :type: pandas.Series
+
+        """
         g_female_adults = (self.distribution.xs(2, level='female1_genotype') +
                            self.distribution.xs(3, level='female1_genotype') +
                            self.distribution.xs(2, level='female2_genotype') +
@@ -342,23 +468,45 @@ class Distribution(object):
 
     @property
     def number_g_female_children(self):
+        r"""
+        Number of female children carrying the `g` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of female children carrying the `g` allele.
+        :type: pandas.Series
+
+        """
         g_female_children = self.simulation['Female Children Genotypes'][[2, 3]]
         return g_female_children.sum(axis=1)
 
     @property
     def number_g_male_adults(self):
+        r"""
+        Number of male adults carrying the `g` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of male adults carrying the `g` allele.
+        :type: pandas.Series
+
+        """
         g_male_adults = self.simulation['Male Adult Genotypes'][[2, 3]]
         return g_male_adults.sum(axis=1)
 
     @property
     def number_g_male_children(self):
-        """
+        r"""
+        Number of male children carrying the `g` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of male children carrying the `g` allele.
+        :type: pandas.Series
 
         Notes
         -----
-        By construction, the number of male chidlren carrying the g allele of
-        the gamme gene is the same as the number of female children carrying
-        that allele.
+        By construction, the sex ratio at birth for male and females is 1:1 and
+        thus the number of male children carrying the `g` allele of the
+        :math:`\gamma` gene is the same as the number of female children
+        carrying that allele.
 
         """
         return self.number_g_female_children
@@ -402,26 +550,6 @@ class Distribution(object):
     @property
     def number_ga_female_children(self):
         return self.simulation['Female Children Genotypes'][3]
-
-    @property
-    def number_A_male_adults(self):
-        A_male_adults = self.simulation['Male Adult Genotypes'][[0, 2]]
-        return A_male_adults.sum(axis=1)
-
-    @property
-    def number_a_male_adults(self):
-        a_male_adults = self.simulation['Male Adult Genotypes'][[1, 3]]
-        return a_male_adults.sum(axis=1)
-
-    @property
-    def number_G_male_adults(self):
-        G_male_adults = self.simulation['Male Adult Genotypes'][[0, 1]]
-        return G_male_adults.sum(axis=1)
-
-    @property
-    def number_g_male_adults(self):
-        g_male_adults = self.simulation['Male Adult Genotypes'][[2, 3]]
-        return g_male_adults.sum(axis=1)
 
     @property
     def number_GA_male_adults(self):
