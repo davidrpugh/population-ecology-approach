@@ -7,6 +7,9 @@ The testing functions for the plotting methods only test return types as the
 notebooks and example scripts include many functional tests of the plotting
 methods.
 
+@author : David R. Pugh
+@date : 2014-11-08
+
 """
 import nose
 

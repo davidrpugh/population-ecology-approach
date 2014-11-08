@@ -1,3 +1,10 @@
+"""
+Testing suite for the families.py module.
+
+@author : David R. Pugh
+@date : 2014-11-08
+
+"""
 import unittest
 
 import numpy as np
