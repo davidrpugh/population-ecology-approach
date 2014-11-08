@@ -49,7 +49,7 @@ class Simulator(object):
         mga = 1 - mGA
         initial_male_shares = np.array([mGA, 0.0, 0.0, mga])
 
-        # initial number female children
+        # initial number female offspring
         fGA0 = self.family.params['c'] * self.family.params['PiAA'] * mGA
         fga0 = self.family.params['c'] * self.family.params['Piaa'] * mga
         initial_number_females = np.array([fGA0, 0.0, 0.0, fga0])
@@ -185,11 +185,11 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        avg_A_female_children = (self.number_A_female_children /
+        avg_A_female_offspring = (self.number_A_female_offspring /
                                  self.number_A_female_adults)
-        avg_a_female_children = (self.number_a_female_children /
+        avg_a_female_offspring = (self.number_a_female_offspring /
                                  self.number_a_female_adults)
-        return np.log(avg_A_female_children) - np.log(avg_a_female_children)
+        return np.log(avg_A_female_offspring) - np.log(avg_a_female_offspring)
 
     @property
     def alpha_natural_selection_pressure_males(self):
@@ -202,9 +202,9 @@ class Distribution(object):
 
         """
         A_ratio = (self.number_A_male_adults.shift(-1) /
-                   self.number_A_male_children)
+                   self.number_A_male_offspring)
         a_ratio = (self.number_a_male_adults.shift(-1) /
-                   self.number_a_male_children)
+                   self.number_a_male_offspring)
         return np.log(A_ratio) - np.log(a_ratio)
 
     @property
@@ -231,9 +231,9 @@ class Distribution(object):
 
         """
         A_ratio = (self.number_A_female_adults.shift(-1) /
-                   self.number_A_female_children)
+                   self.number_A_female_offspring)
         a_ratio = (self.number_a_female_adults.shift(-1) /
-                   self.number_a_female_children)
+                   self.number_a_female_offspring)
         return np.log(A_ratio) - np.log(a_ratio)
 
     @property
@@ -246,11 +246,11 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        avg_A_male_children = (self.number_A_male_children /
+        avg_A_male_offspring = (self.number_A_male_offspring /
                                self.number_A_male_adults)
-        avg_a_male_children = (self.number_a_male_children /
+        avg_a_male_offspring = (self.number_a_male_offspring /
                                self.number_a_male_adults)
-        return np.log(avg_A_male_children) - np.log(avg_a_male_children)
+        return np.log(avg_A_male_offspring) - np.log(avg_a_male_offspring)
 
     @property
     def alpha_selection_pressure(self):
@@ -288,11 +288,11 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        avg_G_female_children = (self.number_G_female_children /
+        avg_G_female_offspring = (self.number_G_female_offspring /
                                  self.number_G_female_adults)
-        avg_g_female_children = (self.number_g_female_children /
+        avg_g_female_offspring = (self.number_g_female_offspring /
                                  self.number_g_female_adults)
-        return np.log(avg_G_female_children) - np.log(avg_g_female_children)
+        return np.log(avg_G_female_offspring) - np.log(avg_g_female_offspring)
 
     @property
     def gamma_natural_selection_pressure_males(self):
@@ -305,9 +305,9 @@ class Distribution(object):
 
         """
         G_ratio = (self.number_G_male_adults.shift(-1) /
-                   self.number_G_male_children)
+                   self.number_G_male_offspring)
         g_ratio = (self.number_g_male_adults.shift(-1) /
-                   self.number_g_male_children)
+                   self.number_g_male_offspring)
         return np.log(G_ratio) - np.log(g_ratio)
 
     @property
@@ -334,9 +334,9 @@ class Distribution(object):
 
         """
         G_ratio = (self.number_G_female_adults.shift(-1) /
-                   self.number_G_female_children)
+                   self.number_G_female_offspring)
         g_ratio = (self.number_g_female_adults.shift(-1) /
-                   self.number_g_female_children)
+                   self.number_g_female_offspring)
         return np.log(G_ratio) - np.log(g_ratio)
 
     @property
@@ -349,11 +349,11 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        avg_G_male_children = (self.number_G_male_children /
+        avg_G_male_offspring = (self.number_G_male_offspring /
                                self.number_G_male_adults)
-        avg_g_male_children = (self.number_g_male_children /
+        avg_g_male_offspring = (self.number_g_male_offspring /
                                self.number_g_male_adults)
-        return np.log(avg_G_male_children) - np.log(avg_g_male_children)
+        return np.log(avg_G_male_offspring) - np.log(avg_g_male_offspring)
 
     @property
     def gamma_selection_pressure(self):
@@ -385,17 +385,17 @@ class Distribution(object):
         return A_female_adults.sum(axis=0)
 
     @property
-    def number_A_female_children(self):
+    def number_A_female_offspring(self):
         r"""
-        Number of female children carrying the `A` allele of the :math:`\alpha`
+        Number of female offspring carrying the `A` allele of the :math:`\alpha`
         gene.
 
-        :getter: Return the number of female children carrying the `A` allele.
+        :getter: Return the number of female offspring carrying the `A` allele.
         :type: pandas.Series
 
         """
-        A_female_children = self.simulation['Female Children Genotypes'][[0, 2]]
-        return A_female_children.sum(axis=1)
+        A_female_offspring = self.simulation['Female Children Genotypes'][[0, 2]]
+        return A_female_offspring.sum(axis=1)
 
     @property
     def number_A_male_adults(self):
@@ -411,23 +411,23 @@ class Distribution(object):
         return A_male_adults.sum(axis=1)
 
     @property
-    def number_A_male_children(self):
+    def number_A_male_offspring(self):
         r"""
-        Number of male children carrying the `A` allele of the :math:`\alpha`
+        Number of male offspring carrying the `A` allele of the :math:`\alpha`
         gene.
 
-        :getter: Return the number of male children carrying the `A` allele.
+        :getter: Return the number of male offspring carrying the `A` allele.
         :type: pandas.Series
 
         Notes
         -----
         By construction, the sex ratio at birth for male and females is 1:1 and
-        thus the number of male children carrying the `A` allele of the
-        :math:`\alpha` gene is the same as the number of female children
+        thus the number of male offspring carrying the `A` allele of the
+        :math:`\alpha` gene is the same as the number of female offspring
         carrying that allele.
 
         """
-        return self.number_A_female_children
+        return self.number_A_female_offspring
 
     @property
     def number_a_female_adults(self):
@@ -446,17 +446,17 @@ class Distribution(object):
         return a_female_adults.sum(axis=0)
 
     @property
-    def number_a_female_children(self):
+    def number_a_female_offspring(self):
         r"""
-        Number of female children carrying the `a` allele of the :math:`\alpha`
+        Number of female offspring carrying the `a` allele of the :math:`\alpha`
         gene.
 
-        :getter: Return the number of female children carrying the `a` allele.
+        :getter: Return the number of female offspring carrying the `a` allele.
         :type: pandas.Series
 
         """
-        a_female_children = self.simulation['Female Children Genotypes'][[1, 3]]
-        return a_female_children.sum(axis=1)
+        a_female_offspring = self.simulation['Female Children Genotypes'][[1, 3]]
+        return a_female_offspring.sum(axis=1)
 
     @property
     def number_a_male_adults(self):
@@ -472,41 +472,41 @@ class Distribution(object):
         return a_male_adults.sum(axis=1)
 
     @property
-    def number_a_male_children(self):
+    def number_a_male_offspring(self):
         r"""
-        Number of male children carrying the `a` allele of the :math:`\alpha`
+        Number of male offspring carrying the `a` allele of the :math:`\alpha`
         gene.
 
-        :getter: Return the number of male children carrying the `a` allele.
+        :getter: Return the number of male offspring carrying the `a` allele.
         :type: pandas.Series
 
         Notes
         -----
         By construction, the sex ratio at birth for male and females is 1:1 and
-        thus the number of male children carrying the `a` allele of the
-        :math:`\alpha` gene is the same as the number of female children
+        thus the number of male offspring carrying the `a` allele of the
+        :math:`\alpha` gene is the same as the number of female offspring
         carrying that allele.
 
         """
-        return self.number_a_female_children
+        return self.number_a_female_offspring
 
     @property
-    def number_female_children(self):
+    def number_female_offspring(self):
         """
-        Total number of children produced in a generation.
+        Total number of offspring produced in a generation.
 
-        :getter: Return the toal number of children.
+        :getter: Return the toal number of offspring.
         :type: pandas.Series
 
         Notes
         -----
         By construction, the sex ratio at birth for male and females is 1:1 the
-        total number of children produced in each generation is twice the total
-        number of female children.
+        total number of offspring produced in each generation is twice the total
+        number of female offspring.
 
         """
-        female_children = self.simulation['Female Children Genotypes'][[0, 1, 2, 3]]
-        return female_children.sum(axis=1)
+        female_offspring = self.simulation['Female Children Genotypes'][[0, 1, 2, 3]]
+        return female_offspring.sum(axis=1)
 
     @property
     def number_G_female_adults(self):
@@ -525,17 +525,17 @@ class Distribution(object):
         return G_female_adults.sum(axis=0)
 
     @property
-    def number_G_female_children(self):
+    def number_G_female_offspring(self):
         r"""
-        Number of female children carrying the `G` allele of the :math:`\gamma`
+        Number of female offspring carrying the `G` allele of the :math:`\gamma`
         gene.
 
-        :getter: Return the number of female children carrying the `G` allele.
+        :getter: Return the number of female offspring carrying the `G` allele.
         :type: pandas.Series
 
         """
-        G_female_children = self.simulation['Female Children Genotypes'][[0, 1]]
-        return G_female_children.sum(axis=1)
+        G_female_offspring = self.simulation['Female Children Genotypes'][[0, 1]]
+        return G_female_offspring.sum(axis=1)
 
     @property
     def number_G_male_adults(self):
@@ -551,23 +551,23 @@ class Distribution(object):
         return G_male_adults.sum(axis=1)
 
     @property
-    def number_G_male_children(self):
+    def number_G_male_offspring(self):
         r"""
-        Number of male children carrying the `G` allele of the :math:`\gamma`
+        Number of male offspring carrying the `G` allele of the :math:`\gamma`
         gene.
 
-        :getter: Return the number of male children carrying the `G` allele.
+        :getter: Return the number of male offspring carrying the `G` allele.
         :type: pandas.Series
 
         Notes
         -----
         By construction, the sex ratio at birth for male and females is 1:1 and
-        thus the number of male children carrying the `G` allele of the
-        :math:`\gamma` gene is the same as the number of female children
+        thus the number of male offspring carrying the `G` allele of the
+        :math:`\gamma` gene is the same as the number of female offspring
         carrying that allele.
 
         """
-        return self.number_G_female_children
+        return self.number_G_female_offspring
 
     @property
     def number_g_female_adults(self):
@@ -586,17 +586,17 @@ class Distribution(object):
         return g_female_adults.sum(axis=0)
 
     @property
-    def number_g_female_children(self):
+    def number_g_female_offspring(self):
         r"""
-        Number of female children carrying the `g` allele of the :math:`\gamma`
+        Number of female offspring carrying the `g` allele of the :math:`\gamma`
         gene.
 
-        :getter: Return the number of female children carrying the `g` allele.
+        :getter: Return the number of female offspring carrying the `g` allele.
         :type: pandas.Series
 
         """
-        g_female_children = self.simulation['Female Children Genotypes'][[2, 3]]
-        return g_female_children.sum(axis=1)
+        g_female_offspring = self.simulation['Female Children Genotypes'][[2, 3]]
+        return g_female_offspring.sum(axis=1)
 
     @property
     def number_g_male_adults(self):
@@ -612,23 +612,23 @@ class Distribution(object):
         return g_male_adults.sum(axis=1)
 
     @property
-    def number_g_male_children(self):
+    def number_g_male_offspring(self):
         r"""
-        Number of male children carrying the `g` allele of the :math:`\gamma`
+        Number of male offspring carrying the `g` allele of the :math:`\gamma`
         gene.
 
-        :getter: Return the number of male children carrying the `g` allele.
+        :getter: Return the number of male offspring carrying the `g` allele.
         :type: pandas.Series
 
         Notes
         -----
         By construction, the sex ratio at birth for male and females is 1:1 and
-        thus the number of male children carrying the `g` allele of the
-        :math:`\gamma` gene is the same as the number of female children
+        thus the number of male offspring carrying the `g` allele of the
+        :math:`\gamma` gene is the same as the number of female offspring
         carrying that allele.
 
         """
-        return self.number_g_female_children
+        return self.number_g_female_offspring
 
     @property
     def number_GA_female_adults(self):
@@ -644,11 +644,11 @@ class Distribution(object):
         return GA_female_adults.sum(axis=0)
 
     @property
-    def number_GA_female_children(self):
+    def number_GA_female_offspring(self):
         r"""
-        Number of female children carrying the `GA` genotype.
+        Number of female offspring carrying the `GA` genotype.
 
-        :getter: Return the number of female children carrying the `GA` genotype.
+        :getter: Return the number of female offspring carrying the `GA` genotype.
         :type: pandas.Series
 
         """
@@ -668,11 +668,11 @@ class Distribution(object):
         return Ga_female_adults.sum(axis=0)
 
     @property
-    def number_Ga_female_children(self):
+    def number_Ga_female_offspring(self):
         r"""
-        Number of female children carrying the `Ga` genotype.
+        Number of female offspring carrying the `Ga` genotype.
 
-        :getter: Return the number of female children carrying the `Ga` genotype.
+        :getter: Return the number of female offspring carrying the `Ga` genotype.
         :type: pandas.Series
 
         """
@@ -692,11 +692,11 @@ class Distribution(object):
         return gA_female_adults.sum(axis=0)
 
     @property
-    def number_gA_female_children(self):
+    def number_gA_female_offspring(self):
         r"""
-        Number of female children carrying the `gA` genotype.
+        Number of female offspring carrying the `gA` genotype.
 
-        :getter: Return the number of female children carrying the `gA` genotype.
+        :getter: Return the number of female offspring carrying the `gA` genotype.
         :type: pandas.Series
 
         """
@@ -716,11 +716,11 @@ class Distribution(object):
         return ga_female_adults.sum(axis=0)
 
     @property
-    def number_ga_female_children(self):
+    def number_ga_female_offspring(self):
         r"""
-        Number of female children carrying the `ga` genotype.
+        Number of female offspring carrying the `ga` genotype.
 
-        :getter: Return the number of female children carrying the `ga` genotype.
+        :getter: Return the number of female offspring carrying the `ga` genotype.
         :type: pandas.Series
 
         """
@@ -776,7 +776,7 @@ class Distribution(object):
         Share of female adults carrying the `A` allele of the :math:`\alpha`
         gene.
 
-        :getter: Return the share of female children carrying the `A` allele.
+        :getter: Return the share of female offspring carrying the `A` allele.
         :type: pandas.Series
 
         Notes
@@ -789,16 +789,16 @@ class Distribution(object):
         return 0.5 * self.number_A_female_adults
 
     @property
-    def share_A_female_children(self):
+    def share_A_female_offspring(self):
         r"""
-        Share of female children carrying the `A` allele of the :math:`\alpha`
+        Share of female offspring carrying the `A` allele of the :math:`\alpha`
         gene.
 
-        :getter: Return the share of female children carrying the `A` allele.
+        :getter: Return the share of female offspring carrying the `A` allele.
         :type: pandas.Series
 
         """
-        return self.number_A_female_children / self.number_female_children
+        return self.number_A_female_offspring / self.number_female_offspring
 
     @property
     def share_a_female_adults(self):
@@ -806,7 +806,7 @@ class Distribution(object):
         Share of female adults carrying the `a` allele of the :math:`\alpha`
         gene.
 
-        :getter: Return the share of female children carrying the `a` allele.
+        :getter: Return the share of female offspring carrying the `a` allele.
         :type: pandas.Series
 
         Notes
@@ -819,16 +819,16 @@ class Distribution(object):
         return 0.5 * self.number_a_female_adults
 
     @property
-    def share_a_female_children(self):
+    def share_a_female_offspring(self):
         r"""
-        Share of female children carrying the `a` allele of the :math:`\alpha`
+        Share of female offspring carrying the `a` allele of the :math:`\alpha`
         gene.
 
-        :getter: Return the share of female children carrying the `a` allele.
+        :getter: Return the share of female offspring carrying the `a` allele.
         :type: pandas.Series
 
         """
-        return self.number_a_female_children / self.number_female_children
+        return self.number_a_female_offspring / self.number_female_offspring
 
     @property
     def share_G_female_adults(self):
@@ -836,7 +836,7 @@ class Distribution(object):
         Share of female adults carrying the `G` allele of the :math:`\gamma`
         gene.
 
-        :getter: Return the share of female children carrying the `G` allele.
+        :getter: Return the share of female offspring carrying the `G` allele.
         :type: pandas.Series
 
         Notes
@@ -849,16 +849,16 @@ class Distribution(object):
         return 0.5 * self.number_G_female_adults
 
     @property
-    def share_G_female_children(self):
+    def share_G_female_offspring(self):
         r"""
-        Share of female children carrying the `G` allele of the :math:`\gamma`
+        Share of female offspring carrying the `G` allele of the :math:`\gamma`
         gene.
 
-        :getter: Return the share of female children carrying the `G` allele.
+        :getter: Return the share of female offspring carrying the `G` allele.
         :type: pandas.Series
 
         """
-        return self.number_G_female_children / self.number_female_children
+        return self.number_G_female_offspring / self.number_female_offspring
 
     @property
     def share_g_female_adults(self):
@@ -866,7 +866,7 @@ class Distribution(object):
         Share of female adults carrying the `g` allele of the :math:`\gamma`
         gene.
 
-        :getter: Return the share of female children carrying the `g` allele.
+        :getter: Return the share of female offspring carrying the `g` allele.
         :type: pandas.Series
 
         Notes
@@ -879,16 +879,16 @@ class Distribution(object):
         return 0.5 * self.number_g_female_adults
 
     @property
-    def share_g_female_children(self):
+    def share_g_female_offspring(self):
         r"""
-        Share of female children carrying the `g` allele of the :math:`\gamma`
+        Share of female offspring carrying the `g` allele of the :math:`\gamma`
         gene.
 
-        :getter: Return the share of female children carrying the `g` allele.
+        :getter: Return the share of female offspring carrying the `g` allele.
         :type: pandas.Series
 
         """
-        return self.number_g_female_children / self.number_female_children
+        return self.number_g_female_offspring / self.number_female_offspring
 
     @property
     def share_GA_female_adults(self):
@@ -908,15 +908,15 @@ class Distribution(object):
         return 0.5 * self.number_GA_female_adults
 
     @property
-    def share_GA_female_children(self):
+    def share_GA_female_offspring(self):
         r"""
-        Share of female children carrying the `GA` genotype.
+        Share of female offspring carrying the `GA` genotype.
 
-        :getter: Return the share of female children carrying the `GA` genotype.
+        :getter: Return the share of female offspring carrying the `GA` genotype.
         :type: pandas.Series
 
         """
-        return self.number_GA_female_children / self.number_female_children
+        return self.number_GA_female_offspring / self.number_female_offspring
 
     @property
     def share_Ga_female_adults(self):
@@ -936,15 +936,15 @@ class Distribution(object):
         return 0.5 * self.number_Ga_female_adults
 
     @property
-    def share_Ga_female_children(self):
+    def share_Ga_female_offspring(self):
         r"""
-        Share of female children carrying the `Ga` genotype.
+        Share of female offspring carrying the `Ga` genotype.
 
-        :getter: Return the share of female children carrying the `Ga` genotype.
+        :getter: Return the share of female offspring carrying the `Ga` genotype.
         :type: pandas.Series
 
         """
-        return self.number_Ga_female_children / self.number_female_children
+        return self.number_Ga_female_offspring / self.number_female_offspring
 
     @property
     def share_gA_female_adults(self):
@@ -964,15 +964,15 @@ class Distribution(object):
         return 0.5 * self.number_gA_female_adults
 
     @property
-    def share_gA_female_children(self):
+    def share_gA_female_offspring(self):
         r"""
-        Share of female children carrying the `gA` genotype.
+        Share of female offspring carrying the `gA` genotype.
 
-        :getter: Return the share of female children carrying the `gA` genotype.
+        :getter: Return the share of female offspring carrying the `gA` genotype.
         :type: pandas.Series
 
         """
-        return self.number_gA_female_children / self.number_female_children
+        return self.number_gA_female_offspring / self.number_female_offspring
 
     @property
     def share_ga_female_adults(self):
@@ -992,15 +992,15 @@ class Distribution(object):
         return 0.5 * self.number_ga_female_adults
 
     @property
-    def share_ga_female_children(self):
+    def share_ga_female_offspring(self):
         r"""
-        Share of female children carrying the `ga` genotype.
+        Share of female offspring carrying the `ga` genotype.
 
-        :getter: Return the share of female children carrying the `ga` genotype.
+        :getter: Return the share of female offspring carrying the `ga` genotype.
         :type: pandas.Series
 
         """
-        return self.number_ga_female_children / self.number_female_children
+        return self.number_ga_female_offspring / self.number_female_offspring
 
     def compute_distribution(self, dataframe):
         """Compute distributions of various family configurations."""
@@ -1021,7 +1021,7 @@ class Distribution(object):
 
     def plot_adult_female_genotypes(self, axis, share=False):
         """Plot the timepaths for individual adult female genotypes."""
-        axis.set_title('Adult females', fontsize=20, family='serif')
+        axis.set_title('Female adults', fontsize=20, family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
         if not share:
@@ -1040,26 +1040,26 @@ class Distribution(object):
 
     def plot_offspring_female_genotypes(self, axis, share=False):
         """Plot the timepaths for individual female offspring genotypes."""
-        axis.set_title('Female children', fontsize=20, family='serif')
+        axis.set_title('Female offspring', fontsize=20, family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
         if not share:
-            self.number_GA_female_children.plot(label='$GA$', **kwargs)
-            self.number_Ga_female_children.plot(label='$Ga$', **kwargs)
-            self.number_gA_female_children.plot(label='$gA$', **kwargs)
-            self.number_ga_female_children.plot(label='$ga$', **kwargs)
+            self.number_GA_female_offspring.plot(label='$GA$', **kwargs)
+            self.number_Ga_female_offspring.plot(label='$Ga$', **kwargs)
+            self.number_gA_female_offspring.plot(label='$gA$', **kwargs)
+            self.number_ga_female_offspring.plot(label='$ga$', **kwargs)
         else:
-            self.share_GA_female_children.plot(label='$GA$', **kwargs)
-            self.share_Ga_female_children.plot(label='$Ga$', **kwargs)
-            self.share_gA_female_children.plot(label='$gA$', **kwargs)
-            self.share_ga_female_children.plot(label='$ga$', **kwargs)
+            self.share_GA_female_offspring.plot(label='$GA$', **kwargs)
+            self.share_Ga_female_offspring.plot(label='$Ga$', **kwargs)
+            self.share_gA_female_offspring.plot(label='$gA$', **kwargs)
+            self.share_ga_female_offspring.plot(label='$ga$', **kwargs)
             axis.set_ylim(0, 1)
 
         return axis
 
     def plot_adult_female_alpha_alleles(self, axis, share=False):
         """Plot the timepaths for female adult alpha alleles."""
-        axis.set_title(r'Adult females ($\alpha$ alleles)', fontsize=20,
+        axis.set_title(r'Female adults ($\alpha$ alleles)', fontsize=20,
                        family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
@@ -1080,18 +1080,18 @@ class Distribution(object):
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
         if not share:
-            self.number_A_female_children.plot(label='$A$', **kwargs)
-            self.number_a_female_children.plot(label='$a$', **kwargs)
+            self.number_A_female_offspring.plot(label='$A$', **kwargs)
+            self.number_a_female_offspring.plot(label='$a$', **kwargs)
         else:
-            self.share_A_female_children.plot(label='$A$', **kwargs)
-            self.share_a_female_children.plot(label='$a$', **kwargs)
+            self.share_A_female_offspring.plot(label='$A$', **kwargs)
+            self.share_a_female_offspring.plot(label='$a$', **kwargs)
             axis.set_ylim(0, 1)
 
         return axis
 
     def plot_adult_female_gamma_alleles(self, axis, share=False):
         """Plot the timepaths for female adult gamma alleles."""
-        axis.set_title('Adult females ($\gamma$ alleles)', fontsize=20,
+        axis.set_title('Female adults ($\gamma$ alleles)', fontsize=20,
                        family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
@@ -1112,18 +1112,18 @@ class Distribution(object):
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
         if not share:
-            self.number_G_female_children.plot(label='$G$', **kwargs)
-            self.number_g_female_children.plot(label='$g$', **kwargs)
+            self.number_G_female_offspring.plot(label='$G$', **kwargs)
+            self.number_g_female_offspring.plot(label='$g$', **kwargs)
         else:
-            self.share_G_female_children.plot(label='$G$', **kwargs)
-            self.share_g_female_children.plot(label='$g$', **kwargs)
+            self.share_G_female_offspring.plot(label='$G$', **kwargs)
+            self.share_g_female_offspring.plot(label='$g$', **kwargs)
             axis.set_ylim(0, 1)
 
         return axis
 
     def plot_adult_male_genotypes(self, axis):
         """Plot the timepaths for male adult genotypes."""
-        axis.set_title('Adult males', fontsize=20, family='serif')
+        axis.set_title('Male adults', fontsize=20, family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
         self.number_GA_male_adults.plot(label='$GA$', **kwargs)
@@ -1135,7 +1135,7 @@ class Distribution(object):
 
     def plot_adult_male_alpha_alleles(self, axis):
         """Plot the timepaths for male adult alpha alleles."""
-        axis.set_title(r'Adult males ($\alpha$ alleles)', fontsize=20,
+        axis.set_title(r'Male adults ($\alpha$ alleles)', fontsize=20,
                        family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
@@ -1146,7 +1146,7 @@ class Distribution(object):
 
     def plot_adult_male_gamma_alleles(self, axis):
         """Plot the timepaths for male adult gamma alleles."""
-        axis.set_title('Adult males ($\gamma$ alleles)', fontsize=20,
+        axis.set_title('Male adults ($\gamma$ alleles)', fontsize=20,
                        family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
