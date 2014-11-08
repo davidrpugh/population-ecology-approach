@@ -491,7 +491,7 @@ class Distribution(object):
         return self.number_a_female_children
 
     @property
-    def number_children(self):
+    def number_female_children(self):
         """
         Total number of children produced in a generation.
 
@@ -505,7 +505,8 @@ class Distribution(object):
         number of female children.
 
         """
-        return 2 * self.simulation['Female Children Genotypes'][[0, 1, 2, 3]]
+        female_children = self.simulation['Female Children Genotypes'][[0, 1, 2, 3]]
+        return female_children.sum(axis=1)
 
     @property
     def number_G_female_adults(self):
@@ -797,7 +798,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.number_A_female_children / self.number_children
+        return self.number_A_female_children / self.number_female_children
 
     @property
     def share_a_female_adults(self):
@@ -827,7 +828,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.number_a_female_children / self.number_children
+        return self.number_a_female_children / self.number_female_children
 
     @property
     def share_G_female_adults(self):
@@ -857,7 +858,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.number_G_female_children / self.number_children
+        return self.number_G_female_children / self.number_female_children
 
     @property
     def share_g_female_adults(self):
@@ -887,7 +888,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.number_g_female_children / self.number_children
+        return self.number_g_female_children / self.number_female_children
 
     @property
     def share_GA_female_adults(self):
@@ -915,7 +916,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.number_GA_female_children / self.number_children
+        return self.number_GA_female_children / self.number_female_children
 
     @property
     def share_Ga_female_adults(self):
@@ -943,7 +944,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.number_Ga_female_children / self.number_children
+        return self.number_Ga_female_children / self.number_female_children
 
     @property
     def share_gA_female_adults(self):
@@ -971,7 +972,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.number_gA_female_children / self.number_children
+        return self.number_gA_female_children / self.number_female_children
 
     @property
     def share_ga_female_adults(self):
@@ -999,7 +1000,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.number_ga_female_children / self.number_children
+        return self.number_ga_female_children / self.number_female_children
 
     def compute_distribution(self, dataframe):
         """Compute distributions of various family configurations."""
@@ -1037,21 +1038,21 @@ class Distribution(object):
 
         return axis
 
-    def plot_female_offspring_genotypes(self, axis, share=False):
+    def plot_offspring_female_genotypes(self, axis, share=False):
         """Plot the timepaths for individual female offspring genotypes."""
         axis.set_title('Female children', fontsize=20, family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
         if not share:
             self.number_GA_female_children.plot(label='$GA$', **kwargs)
-            self.number_gA_female_children.plot(label='$Ga$', **kwargs)
+            self.number_Ga_female_children.plot(label='$Ga$', **kwargs)
             self.number_gA_female_children.plot(label='$gA$', **kwargs)
-            self.number_gA_female_children.plot(label='$ga$', **kwargs)
+            self.number_ga_female_children.plot(label='$ga$', **kwargs)
         else:
-            self.share_gA_female_children.plot(label='$GA$', **kwargs)
-            self.share_gA_female_children.plot(label='$Ga$', **kwargs)
+            self.share_GA_female_children.plot(label='$GA$', **kwargs)
+            self.share_Ga_female_children.plot(label='$Ga$', **kwargs)
             self.share_gA_female_children.plot(label='$gA$', **kwargs)
-            self.share_gA_female_children.plot(label='$ga$', **kwargs)
+            self.share_ga_female_children.plot(label='$ga$', **kwargs)
             axis.set_ylim(0, 1)
 
         return axis
@@ -1072,7 +1073,7 @@ class Distribution(object):
 
         return axis
 
-    def plot_female_offspring_alpha_alleles(self, axis, share=False):
+    def plot_offspring_female_alpha_alleles(self, axis, share=False):
         """Plot the timepaths for female offspring alpha alleles."""
         axis.set_title(r'Female offspring ($\alpha$ alleles)', fontsize=20,
                        family='serif')
@@ -1104,7 +1105,7 @@ class Distribution(object):
 
         return axis
 
-    def plot_female_offspring_gamma_alleles(self, axis, share=False):
+    def plot_offspring_female_gamma_alleles(self, axis, share=False):
         """Plot the timepaths for female offsping gamma alleles."""
         axis.set_title('Female offspring ($\gamma$ alleles)', fontsize=20,
                        family='serif')
@@ -1155,7 +1156,7 @@ class Distribution(object):
         return axis
 
     def plot_adult_female_simulation(self, axis, kind='genotypes', share=False):
-        """Plot simulation results for female offspring."""
+        """Plot simulation results for adult females."""
         if kind == 'genotypes':
             self.plot_adult_female_genotypes(axis, share)
         elif kind == 'alpha_allele':
@@ -1178,6 +1179,22 @@ class Distribution(object):
             self.plot_adult_male_alpha_alleles(axis)
         elif kind == 'gamma_allele':
             self.plot_adult_male_gamma_alleles(axis)
+        else:
+            raise ValueError
+
+        axis.set_xlabel('Time', fontsize=15, family='serif')
+        axis.legend(loc=0, frameon=False)
+
+        return axis
+
+    def plot_offspring_female_simulation(self, axis, kind='genotypes', share=False):
+        """Plot simulation results for female offspring."""
+        if kind == 'genotypes':
+            self.plot_offspring_female_genotypes(axis, share)
+        elif kind == 'alpha_allele':
+            self.plot_offspring_female_alpha_alleles(axis, share)
+        elif kind == 'gamma_allele':
+            self.plot_offspring_female_gamma_alleles(axis, share)
         else:
             raise ValueError
 
@@ -1379,13 +1396,14 @@ def plot_isolated_subpopulations_simulation(simulator, mGA0, T=None, rtol=None,
     # compute distributions
     distribution = Distribution(simulator.family, simulation)
 
-    fig, axes = plt.subplots(1, 2, figsize=(12, 8), sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(18, 8), sharey=True)
     distribution.plot_adult_female_simulation(axes[0], females, share)
-    distribution.plot_adult_male_simulation(axes[1], males)
+    distribution.plot_offspring_female_simulation(axes[1], females, share)
+    distribution.plot_adult_male_simulation(axes[2], males)
 
     # figure title
     if not share:
-        fig_title = ('Numbers when\n$^M{{GA}}(0)={0}$, $e={e}$, ' +
+        fig_title = ('Numbers when\n$M^{{GA}}(0)={0}$, $e={e}$, ' +
                      r'$\Pi^{{aA}}={PiaA},\ \Pi^{{AA}}={PiAA},\ ' +
                      r'\Pi^{{aa}}={Piaa},\ \Pi^{{Aa}}={PiAa}$')
     else:
