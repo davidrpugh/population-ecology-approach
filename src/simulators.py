@@ -897,6 +897,7 @@ class Distribution(object):
         return self.number_ga_female_children / self.number_children
 
     def compute_distribution(self, dataframe):
+        """Compute distributions of various family configurations."""
         family_distributions = []
         for config in self.family.configurations:
             self.family.male_genotype = config[0]
@@ -912,56 +913,127 @@ class Distribution(object):
 
         return df.T
 
+    def plot_adult_female_genotypes(cls, axis, share=False):
+        """Plot the timepaths for individual adult female genotypes."""
+        axis.set_title('Adult females', fontsize=20, family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        if not share:
+            cls.number_GA_female_adults.plot(label='$GA$', **kwargs)
+            cls.number_Ga_female_adults.plot(label='$Ga$', **kwargs)
+            cls.number_gA_female_adults.plot(label='$gA$', **kwargs)
+            cls.number_ga_female_adults.plot(label='$ga$', **kwargs)
+        else:
+            cls.share_GA_female_adults.plot(label='$GA$', **kwargs)
+            cls.share_Ga_female_adults.plot(label='$Ga$', **kwargs)
+            cls.share_gA_female_adults.plot(label='$gA$', **kwargs)
+            cls.share_ga_female_adults.plot(label='$ga$', **kwargs)
+            axis.set_ylim(0, 1)
 
-def _plot_genotypes(axis, dataframe):
-    """Plot the timepaths of individual genotypes."""
-    dataframe.plot(marker='.', linestyle='none', legend=False, ax=axis,
-                   alpha=0.5)
-    return axis
+        return axis
 
+    def plot_adult_female_alpha_alleles(cls, axis, share=False):
+        """Plot the timepaths for female adult alpha alleles."""
+        axis.set_title(r'Adult females ($\alpha$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        if not share:
+            cls.number_A_female_adults.plot(label='$A$', **kwargs)
+            cls.number_a_female_adults.plot(label='$a$', **kwargs)
+        else:
+            cls.share_A_female_adults.plot(label='$A$', **kwargs)
+            cls.share_a_female_adults.plot(label='$a$', **kwargs)
+            axis.set_ylim(0, 1)
 
-def _plot_alpha_alleles(axis, dataframe):
-    """Plot the timepaths of alpha alleles."""
-    altruistic_agents = dataframe[[0, 2]].sum(axis=1)
-    selfish_agents = dataframe[[1, 3]].sum(axis=1)
+        return axis
 
-    altruistic_agents.plot(marker='.', linestyle='none', legend=False, ax=axis,
-                           alpha=0.5)
-    selfish_agents.plot(marker='.', linestyle='none', ax=axis, legend=False,
-                        alpha=0.5)
+    def plot_adult_female_gamma_alleles(cls, axis, share=False):
+        """Plot the timepaths for female adult gamma alleles."""
+        axis.set_title('Adult females ($\gamma$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        if not share:
+            cls.number_G_female_adults.plot(label='$G$', **kwargs)
+            cls.number_g_female_adults.plot(label='$g$', **kwargs)
+        else:
+            cls.share_G_female_adults.plot(label='$G$', **kwargs)
+            cls.share_g_female_adults.plot(label='$g$', **kwargs)
+            axis.set_ylim(0, 1)
 
-    return axis
+        return axis
 
+    def plot_adult_male_genotypes(cls, axis):
+        """Plot the timepaths for male adult genotypes."""
+        axis.set_title('Adult males', fontsize=20, family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        cls.number_GA_male_adults.plot(label='$GA$', **kwargs)
+        cls.number_Ga_male_adults.plot(label='$Ga$', **kwargs)
+        cls.number_gA_male_adults.plot(label='$gA$', **kwargs)
+        cls.number_ga_male_adults.plot(label='$ga$', **kwargs)
 
-def _plot_gamma_alleles(axis, dataframe):
-    """Plot the timepaths of alpha alleles."""
-    Gatekeepers = dataframe[[0, 1]].sum(axis=1)
-    gatekeepers = dataframe[[2, 3]].sum(axis=1)
+        return axis
 
-    Gatekeepers.plot(marker='.', linestyle='none', ax=axis, alpha=0.5,
-                     legend=False)
-    gatekeepers.plot(marker='.', linestyle='none', ax=axis, alpha=0.5,
-                     legend=False)
+    def plot_adult_male_alpha_alleles(cls, axis):
+        """Plot the timepaths for male adult alpha alleles."""
+        axis.set_title(r'Adult males ($\alpha$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        cls.number_A_male_adults.plot(label='$A$', **kwargs)
+        cls.number_a_male_adults.plot(label='$a$', **kwargs)
 
-    return axis
+        return axis
 
+    def plot_adult_male_gamma_alleles(cls, axis):
+        """Plot the timepaths for male adult gamma alleles."""
+        axis.set_title('Adult males ($\gamma$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        cls.number_G_male_adults.plot(label='$G$', **kwargs)
+        cls.number_g_male_adults.plot(label='$g$', **kwargs)
 
-def _plot_trajectories(ax, dataframe, kind='genotypes'):
-    """Plot the timepaths of genotypes or alleles depending."""
-    if kind == 'genotypes':
-        female_lines = _plot_genotypes(ax, dataframe)
-    elif kind == 'alpha_allele':
-        female_lines = _plot_alpha_alleles(ax, dataframe)
-    elif kind == 'gamma_allele':
-        female_lines = _plot_gamma_alleles(ax, dataframe)
-    else:
-        raise ValueError
-    return female_lines
+        return axis
+
+    def plot_adult_female_simulation(cls, axis, kind='genotypes', share=False):
+        """Plot simulation results for female offspring."""
+        if kind == 'genotypes':
+            cls.plot_adult_female_genotypes(axis, share)
+        elif kind == 'alpha_allele':
+            cls.plot_adult_female_alpha_alleles(axis, share)
+        elif kind == 'gamma_allele':
+            cls.plot_adult_female_gamma_alleles(axis, share)
+        else:
+            raise ValueError
+
+        axis.set_xlabel('Time', fontsize=15, family='serif')
+        axis.legend(loc=0, frameon=False)
+
+        return axis
+
+    def plot_adult_male_simulation(cls, axis, kind='genotypes'):
+        """Plot simulation results for male adults."""
+        if kind == 'genotypes':
+            cls.plot_adult_male_genotypes(axis)
+        elif kind == 'alpha_allele':
+            cls.plot_adult_male_alpha_alleles(axis)
+        elif kind == 'gamma_allele':
+            cls.plot_adult_male_gamma_alleles(axis)
+        else:
+            raise ValueError
+
+        axis.set_xlabel('Time', fontsize=15, family='serif')
+        axis.legend(loc=0, frameon=False)
+
+        return axis
 
 
 def plot_isolated_subpopulations_simulation(simulator, mGA0, T=None, rtol=None,
                                             males='genotypes', females='genotypes',
-                                            **params):
+                                            share=False, **params):
     """
     Plot a simulated trajectory given an initial condition consistent with the
     isolated sub-populations assumption.
@@ -975,56 +1047,47 @@ def plot_isolated_subpopulations_simulation(simulator, mGA0, T=None, rtol=None,
     rtol : float (default=None)
         Simulate the model until the relative difference between timesteps
         is sufficiently small.
+    males : str (default='genotypes')
+        Which of 'genotypes', 'alpha_allele' or 'gamma_allele' do you wish to
+        plot for adult males.
+    females : str
+        Which of 'genotypes', 'alpha_allele' or 'gamma_allele' do you wish to
+        plot for female offspring.
+    share : boolean (default=False)
+        Flag indicating whether you wish to plot share or number of females.
+    params : dict
+        Dictionary of parameter values
 
     Returns
     -------
     A list containing...
+        fig :
+        axes : list
 
     """
-    fig, axes = plt.subplots(1, 2, figsize=(12, 8))
-
+    # simulate the model
     simulator.family.params = params
     simulator.initial_condition = mGA0
-    df = simulator.simulate(rtol, T)
+    simulation = simulator.simulate(rtol, T)
 
-    # draw the lines
-    male_lines = _plot_trajectories(axes[0], df['Male Adult Genotypes'],
-                                    kind=males)
-    female_lines = _plot_trajectories(axes[1], df['Female Children Genotypes'],
-                                      kind=females)
+    # compute distributions
+    distribution = Distribution(simulator.family, simulation)
 
-    # specify plot options
-    axes[0].set_xlabel('Time', fontsize=15, family='serif')
-    axes[1].set_xlabel('Time', fontsize=15, family='serif')
-    axes[0].set_ylim(0, 1)
-    axes[0].set_title('Male adults', family='serif', fontsize=20)
-    axes[0].grid('on')
+    fig, axes = plt.subplots(1, 2, figsize=(12, 8), sharey=True)
+    distribution.plot_adult_female_simulation(axes[0], females, share)
+    distribution.plot_adult_male_simulation(axes[1], males)
 
-    axes[1].grid('on')
-    axes[1].set_title('Female children', family='serif', fontsize=20)
-
-    # correct labels depend on what it being plotted!
-    if males == 'genotypes':
-        male_labels = ['$GA$', '$Ga$', '$gA$', '$ga$']
-    elif males == 'alpha_allele':
-        male_labels = ['$A$', '$a$']
+    # figure title
+    if not share:
+        fig_title = ('Numbers when\n$^M{{GA}}(0)={0}$, $e={e}$, ' +
+                     r'$\Pi^{{aA}}={PiaA},\ \Pi^{{AA}}={PiAA},\ ' +
+                     r'\Pi^{{aa}}={Piaa},\ \Pi^{{Aa}}={PiAa}$')
     else:
-        male_labels = ['$G$', '$g$']
+        fig_title = ('Population shares when\n$M^{{GA}}(0)={0}$, $e={e}$, ' +
+                     r'$\Pi^{{aA}}={PiaA},\ \Pi^{{AA}}={PiAA},\ ' +
+                     r'\Pi^{{aa}}={Piaa},\ \Pi^{{Aa}}={PiAa}$')
 
-    axes[0].legend(male_lines, labels=male_labels,
-                   loc=0, frameon=False)
+    fig.suptitle(fig_title.format(mGA0, **params), x=0.5, y=1.05, fontsize=25,
+                 family='serif')
 
-    if females == 'genotypes':
-        female_labels = ['$GA$', '$Ga$', '$gA$', '$ga$']
-    elif females == 'alpha_allele':
-        female_labels = ['$A$', '$a$']
-    else:
-        female_labels = ['$G$', '$g$']
-
-    axes[1].legend(female_lines, labels=female_labels,
-                   loc=0, frameon=False)
-
-    fig.suptitle('Number of males and females',
-                 x=0.5, fontsize=25, family='serif')
-
-    return [fig, axes, male_lines, female_lines]
+    return [fig, axes]
