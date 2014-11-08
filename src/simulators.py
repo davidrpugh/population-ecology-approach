@@ -95,7 +95,7 @@ class Simulator(object):
     def _trajectory_to_dataframe(self, trajectory):
         """Converts a numpy array into a suitably formated pandas.DataFrame."""
         idx = pd.Index(range(trajectory.shape[1]), name='Time')
-        headers = ["Male Adult Genotypes", "Female Children Genotypes"]
+        headers = ['Adult Male Genotypes', 'Female Offspring Genotypes']
         genotypes = range(4)
         cols = pd.MultiIndex.from_product([headers, genotypes])
         df = pd.DataFrame(trajectory.T, index=idx, columns=cols)
@@ -186,9 +186,9 @@ class Distribution(object):
 
         """
         avg_A_female_offspring = (self.number_A_female_offspring /
-                                 self.number_A_female_adults)
+                                  self.number_A_female_adults)
         avg_a_female_offspring = (self.number_a_female_offspring /
-                                 self.number_a_female_adults)
+                                  self.number_a_female_adults)
         return np.log(avg_A_female_offspring) - np.log(avg_a_female_offspring)
 
     @property
@@ -247,9 +247,9 @@ class Distribution(object):
 
         """
         avg_A_male_offspring = (self.number_A_male_offspring /
-                               self.number_A_male_adults)
+                                self.number_A_male_adults)
         avg_a_male_offspring = (self.number_a_male_offspring /
-                               self.number_a_male_adults)
+                                self.number_a_male_adults)
         return np.log(avg_A_male_offspring) - np.log(avg_a_male_offspring)
 
     @property
@@ -289,9 +289,9 @@ class Distribution(object):
 
         """
         avg_G_female_offspring = (self.number_G_female_offspring /
-                                 self.number_G_female_adults)
+                                  self.number_G_female_adults)
         avg_g_female_offspring = (self.number_g_female_offspring /
-                                 self.number_g_female_adults)
+                                  self.number_g_female_adults)
         return np.log(avg_G_female_offspring) - np.log(avg_g_female_offspring)
 
     @property
@@ -350,9 +350,9 @@ class Distribution(object):
 
         """
         avg_G_male_offspring = (self.number_G_male_offspring /
-                               self.number_G_male_adults)
+                                self.number_G_male_adults)
         avg_g_male_offspring = (self.number_g_male_offspring /
-                               self.number_g_male_adults)
+                                self.number_g_male_adults)
         return np.log(avg_G_male_offspring) - np.log(avg_g_male_offspring)
 
     @property
@@ -387,14 +387,14 @@ class Distribution(object):
     @property
     def number_A_female_offspring(self):
         r"""
-        Number of female offspring carrying the `A` allele of the :math:`\alpha`
-        gene.
+        Number of female offspring carrying the `A` allele of the
+        :math:`\alpha` gene.
 
         :getter: Return the number of female offspring carrying the `A` allele.
         :type: pandas.Series
 
         """
-        A_female_offspring = self.simulation['Female Children Genotypes'][[0, 2]]
+        A_female_offspring = self.simulation['Female Offspring Genotypes'][[0, 2]]
         return A_female_offspring.sum(axis=1)
 
     @property
@@ -407,7 +407,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        A_male_adults = self.simulation['Male Adult Genotypes'][[0, 2]]
+        A_male_adults = self.simulation['Adult Male Genotypes'][[0, 2]]
         return A_male_adults.sum(axis=1)
 
     @property
@@ -455,7 +455,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        a_female_offspring = self.simulation['Female Children Genotypes'][[1, 3]]
+        a_female_offspring = self.simulation['Female Offspring Genotypes'][[1, 3]]
         return a_female_offspring.sum(axis=1)
 
     @property
@@ -468,7 +468,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        a_male_adults = self.simulation['Male Adult Genotypes'][[1, 3]]
+        a_male_adults = self.simulation['Adult Male Genotypes'][[1, 3]]
         return a_male_adults.sum(axis=1)
 
     @property
@@ -505,7 +505,7 @@ class Distribution(object):
         number of female offspring.
 
         """
-        female_offspring = self.simulation['Female Children Genotypes'][[0, 1, 2, 3]]
+        female_offspring = self.simulation['Female Offspring Genotypes'][[0, 1, 2, 3]]
         return female_offspring.sum(axis=1)
 
     @property
@@ -534,7 +534,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        G_female_offspring = self.simulation['Female Children Genotypes'][[0, 1]]
+        G_female_offspring = self.simulation['Female Offspring Genotypes'][[0, 1]]
         return G_female_offspring.sum(axis=1)
 
     @property
@@ -547,7 +547,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        G_male_adults = self.simulation['Male Adult Genotypes'][[0, 1]]
+        G_male_adults = self.simulation['Adult Male Genotypes'][[0, 1]]
         return G_male_adults.sum(axis=1)
 
     @property
@@ -595,7 +595,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        g_female_offspring = self.simulation['Female Children Genotypes'][[2, 3]]
+        g_female_offspring = self.simulation['Female Offspring Genotypes'][[2, 3]]
         return g_female_offspring.sum(axis=1)
 
     @property
@@ -608,7 +608,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        g_male_adults = self.simulation['Male Adult Genotypes'][[2, 3]]
+        g_male_adults = self.simulation['Adult Male Genotypes'][[2, 3]]
         return g_male_adults.sum(axis=1)
 
     @property
@@ -652,7 +652,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.simulation['Female Children Genotypes'][0]
+        return self.simulation['Female Offspring Genotypes'][0]
 
     @property
     def number_Ga_female_adults(self):
@@ -676,7 +676,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.simulation['Female Children Genotypes'][1]
+        return self.simulation['Female Offspring Genotypes'][1]
 
     @property
     def number_gA_female_adults(self):
@@ -700,7 +700,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.simulation['Female Children Genotypes'][2]
+        return self.simulation['Female Offspring Genotypes'][2]
 
     @property
     def number_ga_female_adults(self):
@@ -724,7 +724,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.simulation['Female Children Genotypes'][3]
+        return self.simulation['Female Offspring Genotypes'][3]
 
     @property
     def number_GA_male_adults(self):
@@ -735,7 +735,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.simulation['Male Adult Genotypes'][0]
+        return self.simulation['Adult Male Genotypes'][0]
 
     @property
     def number_Ga_male_adults(self):
@@ -746,7 +746,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.simulation['Male Adult Genotypes'][1]
+        return self.simulation['Adult Male Genotypes'][1]
 
     @property
     def number_gA_male_adults(self):
@@ -757,7 +757,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.simulation['Male Adult Genotypes'][2]
+        return self.simulation['Adult Male Genotypes'][2]
 
     @property
     def number_ga_male_adults(self):
@@ -768,7 +768,7 @@ class Distribution(object):
         :type: pandas.Series
 
         """
-        return self.simulation['Male Adult Genotypes'][3]
+        return self.simulation['Adult Male Genotypes'][3]
 
     @property
     def share_A_female_adults(self):
