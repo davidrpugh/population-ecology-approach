@@ -151,18 +151,40 @@ class Distribution(object):
 
     @property
     def distribution(self):
+        """
+        Hierarchical DataFrame of time series for family sizes.
+
+        :getter: Return the current DataFrame.
+        :type: pandas.DataFrame
+
+        """
         if self.__distribution is None:
             self.__distribution = self.compute_distribution(self.simulation)
         return self.__distribution
 
     @property
     def alpha_natural_selection_pressure(self):
+        """
+        Measure of natural selection pressure on the alpha gene.
+
+        :getter: Return the current time series for natural selection pressure.
+        :type: pandas.Series
+
+        """
         pressure = (self.alpha_natural_selection_pressure_females +
                     self.alpha_natural_selection_pressure_males)
         return pressure
 
     @property
     def alpha_natural_selection_pressure_females(self):
+        """
+        Measure of the component of natural selection pressure on the alpha
+        gene coming from the females.
+
+        :getter: Return the current time series for natural selection pressure.
+        :type: pandas.Series
+
+        """
         avg_A_female_children = (self.number_A_female_children /
                                  self.number_A_female_adults)
         avg_a_female_children = (self.number_a_female_children /
@@ -171,6 +193,14 @@ class Distribution(object):
 
     @property
     def alpha_natural_selection_pressure_males(self):
+        """
+        Measure of the component of natural selection pressure on the alpha
+        gene coming from the males.
+
+        :getter: Return the current time series for natural selection pressure.
+        :type: pandas.Series
+
+        """
         A_ratio = (self.number_A_male_adults.shift(-1) /
                    self.number_A_male_children)
         a_ratio = (self.number_a_male_adults.shift(-1) /
@@ -179,12 +209,27 @@ class Distribution(object):
 
     @property
     def alpha_sexual_selection_pressure(self):
+        """
+        Measure of the sexual selection pressure on the alpha gene.
+
+        :getter: Return the current time series for sexual selection pressure.
+        :type: pandas.Series
+
+        """
         pressure = (self.alpha_sexual_selection_pressure_females +
                     self.alpha_sexual_selection_pressure_males)
         return pressure
 
     @property
     def alpha_sexual_selection_pressure_females(self):
+        """
+        Measure of the component of sexual selection pressure on the alpha
+        gene from females.
+
+        :getter: Return the current time series for sexual selection pressure.
+        :type: pandas.Series
+
+        """
         A_ratio = (self.number_A_female_adults.shift(-1) /
                    self.number_A_female_children)
         a_ratio = (self.number_a_female_adults.shift(-1) /
@@ -193,6 +238,14 @@ class Distribution(object):
 
     @property
     def alpha_sexual_selection_pressure_males(self):
+        """
+        Measure of the component of sexual selection pressure on the alpha
+        gene from males.
+
+        :getter: Return the current time series for sexual selection pressure.
+        :type: pandas.Series
+
+        """
         avg_A_male_children = (self.number_A_male_children /
                                self.number_A_male_adults)
         avg_a_male_children = (self.number_a_male_children /
@@ -201,26 +254,40 @@ class Distribution(object):
 
     @property
     def alpha_selection_pressure(self):
+        """
+        Measure of total selection pressure on the alpha gene.
+
+        :getter: Return the current time series for total selection pressure.
+        :type: pandas.Series
+
+        """
         total_pressure = (self.alpha_natural_selection_pressure +
                           self.alpha_sexual_selection_pressure)
         return total_pressure
 
     @property
-    def alpha_sexual_selection_pressure_females(self):
-        A_ratio = (self.number_A_female_adults.shift(-1) /
-                   self.number_A_female_children)
-        a_ratio = (self.number_a_female_adults.shift(-1) /
-                   self.number_a_female_children)
-        return np.log(A_ratio) - np.log(a_ratio)
-
-    @property
     def gamma_natural_selection_pressure(self):
+        """
+        Measure of natural selection pressure on the gamma gene.
+
+        :getter: Return the current time series for natural selection pressure.
+        :type: pandas.Series
+
+        """
         pressure = (self.gamma_natural_selection_pressure_females +
                     self.gamma_natural_selection_pressure_males)
         return pressure
 
     @property
     def gamma_natural_selection_pressure_females(self):
+        """
+        Measure of the component of natural selection pressure on the gamma
+        gene coming from the females.
+
+        :getter: Return the current time series for natural selection pressure.
+        :type: pandas.Series
+
+        """
         avg_G_female_children = (self.number_G_female_children /
                                  self.number_G_female_adults)
         avg_g_female_children = (self.number_g_female_children /
@@ -229,6 +296,14 @@ class Distribution(object):
 
     @property
     def gamma_natural_selection_pressure_males(self):
+        """
+        Measure of the component of natural selection pressure on the gamma
+        gene coming from the males.
+
+        :getter: Return the current time series for natural selection pressure.
+        :type: pandas.Series
+
+        """
         G_ratio = (self.number_G_male_adults.shift(-1) /
                    self.number_G_male_children)
         g_ratio = (self.number_g_male_adults.shift(-1) /
@@ -237,12 +312,27 @@ class Distribution(object):
 
     @property
     def gamma_sexual_selection_pressure(self):
+        """
+        Measure of sexual selection pressure on the gamma gene.
+
+        :getter: Return the current time series for sexual selection pressure.
+        :type: pandas.Series
+
+        """
         pressure = (self.gamma_sexual_selection_pressure_females +
                     self.gamma_sexual_selection_pressure_males)
         return pressure
 
     @property
     def gamma_sexual_selection_pressure_females(self):
+        """
+        Measure of the component of sexual selection pressure on the gamma
+        gene from females.
+
+        :getter: Return the current time series for sexual selection pressure.
+        :type: pandas.Series
+
+        """
         G_ratio = (self.number_G_female_adults.shift(-1) /
                    self.number_G_female_children)
         g_ratio = (self.number_g_female_adults.shift(-1) /
@@ -251,6 +341,14 @@ class Distribution(object):
 
     @property
     def gamma_sexual_selection_pressure_males(self):
+        """
+        Measure of the component of sexual selection pressure on the gamma
+        gene from males.
+
+        :getter: Return the current time series for sexual selection pressure.
+        :type: pandas.Series
+
+        """
         avg_G_male_children = (self.number_G_male_children /
                                self.number_G_male_adults)
         avg_g_male_children = (self.number_g_male_children /
@@ -259,6 +357,13 @@ class Distribution(object):
 
     @property
     def gamma_selection_pressure(self):
+        """
+        Measure of total selection pressure on the gamma gene.
+
+        :getter: Return the current time series for total selection pressure.
+        :type: pandas.Series
+
+        """
         total_pressure = (self.gamma_sexual_selection_pressure +
                           self.gamma_natural_selection_pressure)
         return total_pressure
