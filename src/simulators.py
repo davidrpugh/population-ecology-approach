@@ -913,99 +913,99 @@ class Distribution(object):
 
         return df.T
 
-    def plot_adult_female_genotypes(cls, axis, share=False):
+    def plot_adult_female_genotypes(self, axis, share=False):
         """Plot the timepaths for individual adult female genotypes."""
         axis.set_title('Adult females', fontsize=20, family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
         if not share:
-            cls.number_GA_female_adults.plot(label='$GA$', **kwargs)
-            cls.number_Ga_female_adults.plot(label='$Ga$', **kwargs)
-            cls.number_gA_female_adults.plot(label='$gA$', **kwargs)
-            cls.number_ga_female_adults.plot(label='$ga$', **kwargs)
+            self.number_GA_female_adults.plot(label='$GA$', **kwargs)
+            self.number_Ga_female_adults.plot(label='$Ga$', **kwargs)
+            self.number_gA_female_adults.plot(label='$gA$', **kwargs)
+            self.number_ga_female_adults.plot(label='$ga$', **kwargs)
         else:
-            cls.share_GA_female_adults.plot(label='$GA$', **kwargs)
-            cls.share_Ga_female_adults.plot(label='$Ga$', **kwargs)
-            cls.share_gA_female_adults.plot(label='$gA$', **kwargs)
-            cls.share_ga_female_adults.plot(label='$ga$', **kwargs)
+            self.share_GA_female_adults.plot(label='$GA$', **kwargs)
+            self.share_Ga_female_adults.plot(label='$Ga$', **kwargs)
+            self.share_gA_female_adults.plot(label='$gA$', **kwargs)
+            self.share_ga_female_adults.plot(label='$ga$', **kwargs)
             axis.set_ylim(0, 1)
 
         return axis
 
-    def plot_adult_female_alpha_alleles(cls, axis, share=False):
+    def plot_adult_female_alpha_alleles(self, axis, share=False):
         """Plot the timepaths for female adult alpha alleles."""
         axis.set_title(r'Adult females ($\alpha$ alleles)', fontsize=20,
                        family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
         if not share:
-            cls.number_A_female_adults.plot(label='$A$', **kwargs)
-            cls.number_a_female_adults.plot(label='$a$', **kwargs)
+            self.number_A_female_adults.plot(label='$A$', **kwargs)
+            self.number_a_female_adults.plot(label='$a$', **kwargs)
         else:
-            cls.share_A_female_adults.plot(label='$A$', **kwargs)
-            cls.share_a_female_adults.plot(label='$a$', **kwargs)
+            self.share_A_female_adults.plot(label='$A$', **kwargs)
+            self.share_a_female_adults.plot(label='$a$', **kwargs)
             axis.set_ylim(0, 1)
 
         return axis
 
-    def plot_adult_female_gamma_alleles(cls, axis, share=False):
+    def plot_adult_female_gamma_alleles(self, axis, share=False):
         """Plot the timepaths for female adult gamma alleles."""
         axis.set_title('Adult females ($\gamma$ alleles)', fontsize=20,
                        family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
         if not share:
-            cls.number_G_female_adults.plot(label='$G$', **kwargs)
-            cls.number_g_female_adults.plot(label='$g$', **kwargs)
+            self.number_G_female_adults.plot(label='$G$', **kwargs)
+            self.number_g_female_adults.plot(label='$g$', **kwargs)
         else:
-            cls.share_G_female_adults.plot(label='$G$', **kwargs)
-            cls.share_g_female_adults.plot(label='$g$', **kwargs)
+            self.share_G_female_adults.plot(label='$G$', **kwargs)
+            self.share_g_female_adults.plot(label='$g$', **kwargs)
             axis.set_ylim(0, 1)
 
         return axis
 
-    def plot_adult_male_genotypes(cls, axis):
+    def plot_adult_male_genotypes(self, axis):
         """Plot the timepaths for male adult genotypes."""
         axis.set_title('Adult males', fontsize=20, family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
-        cls.number_GA_male_adults.plot(label='$GA$', **kwargs)
-        cls.number_Ga_male_adults.plot(label='$Ga$', **kwargs)
-        cls.number_gA_male_adults.plot(label='$gA$', **kwargs)
-        cls.number_ga_male_adults.plot(label='$ga$', **kwargs)
+        self.number_GA_male_adults.plot(label='$GA$', **kwargs)
+        self.number_Ga_male_adults.plot(label='$Ga$', **kwargs)
+        self.number_gA_male_adults.plot(label='$gA$', **kwargs)
+        self.number_ga_male_adults.plot(label='$ga$', **kwargs)
 
         return axis
 
-    def plot_adult_male_alpha_alleles(cls, axis):
+    def plot_adult_male_alpha_alleles(self, axis):
         """Plot the timepaths for male adult alpha alleles."""
         axis.set_title(r'Adult males ($\alpha$ alleles)', fontsize=20,
                        family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
-        cls.number_A_male_adults.plot(label='$A$', **kwargs)
-        cls.number_a_male_adults.plot(label='$a$', **kwargs)
+        self.number_A_male_adults.plot(label='$A$', **kwargs)
+        self.number_a_male_adults.plot(label='$a$', **kwargs)
 
         return axis
 
-    def plot_adult_male_gamma_alleles(cls, axis):
+    def plot_adult_male_gamma_alleles(self, axis):
         """Plot the timepaths for male adult gamma alleles."""
         axis.set_title('Adult males ($\gamma$ alleles)', fontsize=20,
                        family='serif')
         kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
                   'ax': axis, 'alpha': 0.5}
-        cls.number_G_male_adults.plot(label='$G$', **kwargs)
-        cls.number_g_male_adults.plot(label='$g$', **kwargs)
+        self.number_G_male_adults.plot(label='$G$', **kwargs)
+        self.number_g_male_adults.plot(label='$g$', **kwargs)
 
         return axis
 
-    def plot_adult_female_simulation(cls, axis, kind='genotypes', share=False):
+    def plot_adult_female_simulation(self, axis, kind='genotypes', share=False):
         """Plot simulation results for female offspring."""
         if kind == 'genotypes':
-            cls.plot_adult_female_genotypes(axis, share)
+            self.plot_adult_female_genotypes(axis, share)
         elif kind == 'alpha_allele':
-            cls.plot_adult_female_alpha_alleles(axis, share)
+            self.plot_adult_female_alpha_alleles(axis, share)
         elif kind == 'gamma_allele':
-            cls.plot_adult_female_gamma_alleles(axis, share)
+            self.plot_adult_female_gamma_alleles(axis, share)
         else:
             raise ValueError
 
@@ -1014,14 +1014,14 @@ class Distribution(object):
 
         return axis
 
-    def plot_adult_male_simulation(cls, axis, kind='genotypes'):
+    def plot_adult_male_simulation(self, axis, kind='genotypes'):
         """Plot simulation results for male adults."""
         if kind == 'genotypes':
-            cls.plot_adult_male_genotypes(axis)
+            self.plot_adult_male_genotypes(axis)
         elif kind == 'alpha_allele':
-            cls.plot_adult_male_alpha_alleles(axis)
+            self.plot_adult_male_alpha_alleles(axis)
         elif kind == 'gamma_allele':
-            cls.plot_adult_male_gamma_alleles(axis)
+            self.plot_adult_male_gamma_alleles(axis)
         else:
             raise ValueError
 
@@ -1029,6 +1029,156 @@ class Distribution(object):
         axis.legend(loc=0, frameon=False)
 
         return axis
+
+    def plot_alpha_sexual_selection_pressure(self, axis):
+        """
+        Plot female and male contributions to sexual selection pressure on the
+        alpha gene.
+
+        """
+        kwargs = {'ax': axis, 'linestyle': 'none', 'marker': '.', 'alpha': 0.5}
+        self.alpha_sexual_selection_pressure_males.plot(label='Males',
+                                                        color='red',
+                                                        **kwargs)
+        self.alpha_sexual_selection_pressure_females.plot(label='Females',
+                                                          color='blue',
+                                                          **kwargs)
+        self.alpha_sexual_selection_pressure.plot(label='Total',
+                                                  color='purple',
+                                                  **kwargs)
+        return axis
+
+    def plot_alpha_natural_selection_pressure(self, axis):
+        """
+        Plot female and male contributions to natural selection pressure on the
+        alpha gene.
+
+        """
+        kwargs = {'ax': axis, 'linestyle': 'none', 'marker': '.', 'alpha': 0.5}
+        self.alpha_natural_selection_pressure_males.plot(label='Males',
+                                                         color='red',
+                                                         **kwargs)
+        self.alpha_natural_selection_pressure_females.plot(label='Females',
+                                                           color='blue',
+                                                           **kwargs)
+        self.alpha_natural_selection_pressure.plot(label='Total',
+                                                   color='purple',
+                                                   **kwargs)
+        return axis
+
+    def plot_gamma_sexual_selection_pressure(self, axis):
+        """
+        Plot female and male contributions to sexual selection pressure on the
+        gamma gene.
+
+        """
+        kwargs = {'ax': axis, 'linestyle': 'none', 'marker': '.', 'alpha': 0.5}
+        self.gamma_sexual_selection_pressure_males.plot(label='Males',
+                                                        color='red',
+                                                        **kwargs)
+        self.gamma_sexual_selection_pressure_females.plot(label='Females',
+                                                          color='blue',
+                                                          **kwargs)
+        self.gamma_sexual_selection_pressure.plot(label='Total',
+                                                  color='purple',
+                                                  **kwargs)
+        return axis
+
+    def plot_gamma_natural_selection_pressure(self, axis):
+        """
+        Plot female and male contributions to natural selection pressure on the
+        gamma gene.
+
+        """
+        kwargs = {'ax': axis, 'linestyle': 'none', 'marker': '.', 'alpha': 0.5}
+        self.gamma_natural_selection_pressure_males.plot(label='Males',
+                                                         color='red',
+                                                         **kwargs)
+        self.gamma_natural_selection_pressure_females.plot(label='Females',
+                                                           color='blue',
+                                                           **kwargs)
+        self.gamma_natural_selection_pressure.plot(label='Total',
+                                                   color='purple',
+                                                   **kwargs)
+        return axis
+
+    def plot_alpha_selection_pressure(self, axis):
+        """Plot measures of alpha natural and sexual selection pressure."""
+        kwargs = {'ax': axis, 'linestyle': 'none', 'marker': '.', 'alpha': 0.5}
+        self.alpha_natural_selection_pressure.plot(label='Natural',
+                                                   color='red',
+                                                   **kwargs)
+        self.alpha_sexual_selection_pressure.plot(label='Sexual',
+                                                  color='blue',
+                                                  **kwargs)
+        self.alpha_selection_pressure.plot(label='Total',
+                                           color='purple',
+                                           **kwargs)
+
+        return axis
+
+    def plot_gamma_selection_pressure(self, axis):
+        """Plot measures of gamma natural and sexual selection pressure."""
+        kwargs = {'ax': axis, 'linestyle': 'none', 'marker': '.', 'alpha': 0.5}
+        self.gamma_natural_selection_pressure.plot(label='Natural',
+                                                   color='red',
+                                                   **kwargs)
+        self.gamma_sexual_selection_pressure.plot(label='Sexual',
+                                                  color='blue',
+                                                  **kwargs)
+        self.gamma_selection_pressure.plot(label='Total',
+                                           color='purple',
+                                           **kwargs)
+
+        return axis
+
+
+def plot_selection_pressure(simulator, mGA0, T=None, rtol=None, **params):
+    """Plot measures of selection pressure on the alpha and gamma genes."""
+    # simulate the model
+    simulator.family.params = params
+    simulator.initial_condition = mGA0
+    simulation = simulator.simulate(rtol, T)
+    distribution = Distribution(simulator.family, simulation)
+
+    fig, axes = plt.subplots(3, 2, figsize=(12, 18), sharey=True)
+
+    distribution.plot_alpha_natural_selection_pressure(axes[0, 0])
+    distribution.plot_gamma_natural_selection_pressure(axes[0, 1])
+    distribution.plot_alpha_sexual_selection_pressure(axes[1, 0])
+    distribution.plot_gamma_sexual_selection_pressure(axes[1, 1])
+    distribution.plot_alpha_selection_pressure(axes[2, 0])
+    distribution.plot_gamma_selection_pressure(axes[2, 1])
+
+    # plot titles
+    axes[0, 0].set_title(r'Natural selection, $\alpha$', family='serif',
+                         fontsize=20)
+    axes[0, 1].set_title(r'Natural selection, $\gamma$', family='serif',
+                         fontsize=20)
+    axes[1, 0].set_title(r'Sexual selection, $\alpha$', family='serif',
+                         fontsize=20)
+    axes[1, 1].set_title(r'Sexual selection, $\gamma$', family='serif',
+                         fontsize=20)
+    axes[2, 0].set_title(r'Combined selection, $\alpha$', family='serif',
+                         fontsize=20)
+    axes[2, 1].set_title(r'Combined selection, $\gamma$', family='serif',
+                         fontsize=20)
+
+    # add axis specific subplot options
+    for i in range(3):
+        for j in range(2):
+            axes[i, j].set_xlabel('Time', fontsize=15, family='serif')
+            axes[i, j].axhline(y=0, color='black')
+            axes[i, j].legend(loc=0, frameon=False, prop={'family': 'serif'})
+
+    # figure title
+    title = (r'Selection pressure on $\alpha$ and $\gamma$ genes when' +
+             '\n$M^{{GA}}(0)={0},\ e={e},\ \Pi^{{aA}}={PiaA},\ ' +
+             '\Pi^{{AA}}={PiAA},\ \Pi^{{aa}}={Piaa},\ \Pi^{{Aa}}={PiAa}$')
+    fig.suptitle(title.format(mGA0, **params), x=0.5, family='serif',
+                 fontsize=25)
+
+    return [fig, axes]
 
 
 def plot_isolated_subpopulations_simulation(simulator, mGA0, T=None, rtol=None,
