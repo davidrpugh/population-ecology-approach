@@ -1,10 +1,11 @@
 """
 
 @author: David R. Pugh
-@date: 2014-10-14
+@date: 2014-10-20
 
 """
 import numpy as np
+import pandas as pd
 import sympy as sym
 
 # number of female children of particular genotype
@@ -177,6 +178,17 @@ class Family(object):
         adult_males = [men[i] for i in range(4)]
         female_children = [girls[j] for j in range(4)]
         return adult_males + female_children
+
+    @property
+    def configurations(self):
+        """
+        List of valid genotype configurations for a Family.
+
+        :getter: Return the current list of valid configurations.
+        :type: pandas.MultiIndex
+
+        """
+        raise NotImplementedError
 
     @property
     def female_genotypes(self):
@@ -809,7 +821,7 @@ class Family(object):
 
         """
         size = self._numeric_size(X[:4], X[4:], **self.params)
-        return size.ravel()
+        return size
 
 
 class OneMaleTwoFemales(Family):
@@ -931,3 +943,17 @@ class OneMaleTwoFemales(Family):
         recurrence_relation = sum(terms)
 
         return recurrence_relation
+
+    @property
+    def configurations(self):
+        """
+        List of valid genotype configurations for a Family.
+
+        :getter: Return the current list of valid configurations.
+        :type: pandas.MultiIndex
+
+        """
+        headers = ['male_genotype', 'female1_genotype', 'female2_genotype']
+        configs = pd.MultiIndex.from_product([range(4), range(4), range(4)],
+                                             names=headers)
+        return configs

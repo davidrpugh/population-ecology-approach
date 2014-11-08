@@ -1,3 +1,10 @@
+"""
+Testing suite for the families.py module.
+
+@author : David R. Pugh
+@date : 2014-11-08
+
+"""
 import unittest
 
 import numpy as np
@@ -21,6 +28,9 @@ class FamilyCase(unittest.TestCase):
 
     def test_not_implemented_methods(self):
         """Test that certain methods are not implemented."""
+        with self.assertRaises(NotImplementedError):
+            self.family.configurations
+
         with self.assertRaises(NotImplementedError):
             genotype = np.random.randint(0, 4)
             self.family._recurrence_relation_girls(genotype)
@@ -139,13 +149,14 @@ class PughSchafferSeabrightCase(unittest.TestCase):
         # simulate the trajectory of the model
         simulation = simulators.Simulator(self.family)
         simulation.initial_condition = 0.5
-        traj = simulation.simulate(rtol=1e-12)
+        sim = simulation.simulate(rtol=1e-12)
 
         # equilibrium number of female children is propto payoff
-        actual_females = traj[5::2, -1].sum()
-        expected_females = self.family.params['c'] * self.family.params['Piaa']
+        selfish_females = sim['Female Children Genotypes'][[1, 3]]
+        actual_number_females = selfish_females.sum(axis=1).iloc[-1]
+        expected_number_females = self.family.params['c'] * self.family.params['Piaa']
 
-        self.assertAlmostEqual(actual_females, expected_females)
+        self.assertAlmostEqual(actual_number_females, expected_number_females)
 
     def test_altruistic_equilibrium_female_children(self):
         """Testing number of female children in an altruistic equilibrium."""
@@ -157,13 +168,14 @@ class PughSchafferSeabrightCase(unittest.TestCase):
         # simulate the trajectory of the model
         simulation = simulators.Simulator(self.family)
         simulation.initial_condition = 0.5
-        traj = simulation.simulate(rtol=1e-12)
+        sim = simulation.simulate(rtol=1e-12)
 
         # equilibrium number of female children is propto payoff
-        actual_females = traj[4::2, -1].sum()
-        expected_females = self.family.params['c'] * self.family.params['PiAA']
+        altruistic_females = sim['Female Children Genotypes'][[0, 2]]
+        actual_number_females = altruistic_females.sum(axis=1).iloc[-1]
+        expected_number_females = self.family.params['c'] * self.family.params['PiAA']
 
-        self.assertAlmostEqual(actual_females, expected_females)
+        self.assertAlmostEqual(actual_number_females, expected_number_females)
 
 
 class WrightBergstromCase(unittest.TestCase):
@@ -231,5 +243,5 @@ class WrightBergstromCase(unittest.TestCase):
                         genotype_match_probs = np.zeros(1)
 
                     expected_size = men[i] * genotype_match_probs
-                    actual_size = self.family.compute_size(tmp_X)[0]
+                    actual_size = self.family.compute_size(tmp_X)
                     np.testing.assert_almost_equal(expected_size, actual_size)

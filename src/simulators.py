@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 
 class Simulator(object):
@@ -48,7 +49,7 @@ class Simulator(object):
         mga = 1 - mGA
         initial_male_shares = np.array([mGA, 0.0, 0.0, mga])
 
-        # initial number female children
+        # initial number female offspring
         fGA0 = self.family.params['c'] * self.family.params['PiAA'] * mGA
         fga0 = self.family.params['c'] * self.family.params['Piaa'] * mga
         initial_number_females = np.array([fGA0, 0.0, 0.0, fga0])
@@ -91,6 +92,15 @@ class Simulator(object):
 
         return traj
 
+    def _trajectory_to_dataframe(self, trajectory):
+        """Converts a numpy array into a suitably formated pandas.DataFrame."""
+        idx = pd.Index(range(trajectory.shape[1]), name='Time')
+        headers = ['Adult Male Genotypes', 'Female Offspring Genotypes']
+        genotypes = range(4)
+        cols = pd.MultiIndex.from_product([headers, genotypes])
+        df = pd.DataFrame(trajectory.T, index=idx, columns=cols)
+        return df
+
     def F(self, X):
         """Equation of motion for population allele shares."""
         out = self.family._numeric_system(X[:4], X[4:], **self.family.params)
@@ -115,8 +125,8 @@ class Simulator(object):
 
         Returns
         -------
-        traj : numpy.ndarray
-            Array representing a simulation of the model.
+        df : pandas.DataFrame
+            Hierarchical dataframe representing a simulation of the model.
 
         """
         if T is not None:
@@ -125,11 +135,1228 @@ class Simulator(object):
             traj = self._simulate_variable_trajectory(self.initial_condition, rtol)
         else:
             raise ValueError("One of 'T' or 'rtol' must be specified.")
-        return traj
+
+        df = self._trajectory_to_dataframe(traj)
+
+        return df
+
+
+class Distribution(object):
+
+    __distribution = None
+
+    def __init__(self, family, simulation):
+        self.family = family
+        self.simulation = simulation
+
+    @property
+    def distribution(self):
+        """
+        Hierarchical DataFrame of time series for family sizes.
+
+        :getter: Return the current DataFrame.
+        :type: pandas.DataFrame
+
+        """
+        if self.__distribution is None:
+            self.__distribution = self.compute_distribution(self.simulation)
+        return self.__distribution
+
+    @property
+    def alpha_natural_selection_pressure(self):
+        """
+        Measure of natural selection pressure on the alpha gene.
+
+        :getter: Return the current time series for natural selection pressure.
+        :type: pandas.Series
+
+        """
+        pressure = (self.alpha_natural_selection_pressure_females +
+                    self.alpha_natural_selection_pressure_males)
+        return pressure
+
+    @property
+    def alpha_natural_selection_pressure_females(self):
+        """
+        Measure of the component of natural selection pressure on the alpha
+        gene coming from the females.
+
+        :getter: Return the current time series for natural selection pressure.
+        :type: pandas.Series
+
+        """
+        avg_A_female_offspring = (self.number_A_female_offspring /
+                                  self.number_A_female_adults)
+        avg_a_female_offspring = (self.number_a_female_offspring /
+                                  self.number_a_female_adults)
+        return np.log(avg_A_female_offspring) - np.log(avg_a_female_offspring)
+
+    @property
+    def alpha_natural_selection_pressure_males(self):
+        """
+        Measure of the component of natural selection pressure on the alpha
+        gene coming from the males.
+
+        :getter: Return the current time series for natural selection pressure.
+        :type: pandas.Series
+
+        """
+        A_ratio = (self.number_A_male_adults.shift(-1) /
+                   self.number_A_male_offspring)
+        a_ratio = (self.number_a_male_adults.shift(-1) /
+                   self.number_a_male_offspring)
+        return np.log(A_ratio) - np.log(a_ratio)
+
+    @property
+    def alpha_sexual_selection_pressure(self):
+        """
+        Measure of the sexual selection pressure on the alpha gene.
+
+        :getter: Return the current time series for sexual selection pressure.
+        :type: pandas.Series
+
+        """
+        pressure = (self.alpha_sexual_selection_pressure_females +
+                    self.alpha_sexual_selection_pressure_males)
+        return pressure
+
+    @property
+    def alpha_sexual_selection_pressure_females(self):
+        """
+        Measure of the component of sexual selection pressure on the alpha
+        gene from females.
+
+        :getter: Return the current time series for sexual selection pressure.
+        :type: pandas.Series
+
+        """
+        A_ratio = (self.number_A_female_adults.shift(-1) /
+                   self.number_A_female_offspring)
+        a_ratio = (self.number_a_female_adults.shift(-1) /
+                   self.number_a_female_offspring)
+        return np.log(A_ratio) - np.log(a_ratio)
+
+    @property
+    def alpha_sexual_selection_pressure_males(self):
+        """
+        Measure of the component of sexual selection pressure on the alpha
+        gene from males.
+
+        :getter: Return the current time series for sexual selection pressure.
+        :type: pandas.Series
+
+        """
+        avg_A_male_offspring = (self.number_A_male_offspring /
+                                self.number_A_male_adults)
+        avg_a_male_offspring = (self.number_a_male_offspring /
+                                self.number_a_male_adults)
+        return np.log(avg_A_male_offspring) - np.log(avg_a_male_offspring)
+
+    @property
+    def alpha_selection_pressure(self):
+        """
+        Measure of total selection pressure on the alpha gene.
+
+        :getter: Return the current time series for total selection pressure.
+        :type: pandas.Series
+
+        """
+        total_pressure = (self.alpha_natural_selection_pressure +
+                          self.alpha_sexual_selection_pressure)
+        return total_pressure
+
+    @property
+    def gamma_natural_selection_pressure(self):
+        """
+        Measure of natural selection pressure on the gamma gene.
+
+        :getter: Return the current time series for natural selection pressure.
+        :type: pandas.Series
+
+        """
+        pressure = (self.gamma_natural_selection_pressure_females +
+                    self.gamma_natural_selection_pressure_males)
+        return pressure
+
+    @property
+    def gamma_natural_selection_pressure_females(self):
+        """
+        Measure of the component of natural selection pressure on the gamma
+        gene coming from the females.
+
+        :getter: Return the current time series for natural selection pressure.
+        :type: pandas.Series
+
+        """
+        avg_G_female_offspring = (self.number_G_female_offspring /
+                                  self.number_G_female_adults)
+        avg_g_female_offspring = (self.number_g_female_offspring /
+                                  self.number_g_female_adults)
+        return np.log(avg_G_female_offspring) - np.log(avg_g_female_offspring)
+
+    @property
+    def gamma_natural_selection_pressure_males(self):
+        """
+        Measure of the component of natural selection pressure on the gamma
+        gene coming from the males.
+
+        :getter: Return the current time series for natural selection pressure.
+        :type: pandas.Series
+
+        """
+        G_ratio = (self.number_G_male_adults.shift(-1) /
+                   self.number_G_male_offspring)
+        g_ratio = (self.number_g_male_adults.shift(-1) /
+                   self.number_g_male_offspring)
+        return np.log(G_ratio) - np.log(g_ratio)
+
+    @property
+    def gamma_sexual_selection_pressure(self):
+        """
+        Measure of sexual selection pressure on the gamma gene.
+
+        :getter: Return the current time series for sexual selection pressure.
+        :type: pandas.Series
+
+        """
+        pressure = (self.gamma_sexual_selection_pressure_females +
+                    self.gamma_sexual_selection_pressure_males)
+        return pressure
+
+    @property
+    def gamma_sexual_selection_pressure_females(self):
+        """
+        Measure of the component of sexual selection pressure on the gamma
+        gene from females.
+
+        :getter: Return the current time series for sexual selection pressure.
+        :type: pandas.Series
+
+        """
+        G_ratio = (self.number_G_female_adults.shift(-1) /
+                   self.number_G_female_offspring)
+        g_ratio = (self.number_g_female_adults.shift(-1) /
+                   self.number_g_female_offspring)
+        return np.log(G_ratio) - np.log(g_ratio)
+
+    @property
+    def gamma_sexual_selection_pressure_males(self):
+        """
+        Measure of the component of sexual selection pressure on the gamma
+        gene from males.
+
+        :getter: Return the current time series for sexual selection pressure.
+        :type: pandas.Series
+
+        """
+        avg_G_male_offspring = (self.number_G_male_offspring /
+                                self.number_G_male_adults)
+        avg_g_male_offspring = (self.number_g_male_offspring /
+                                self.number_g_male_adults)
+        return np.log(avg_G_male_offspring) - np.log(avg_g_male_offspring)
+
+    @property
+    def gamma_selection_pressure(self):
+        """
+        Measure of total selection pressure on the gamma gene.
+
+        :getter: Return the current time series for total selection pressure.
+        :type: pandas.Series
+
+        """
+        total_pressure = (self.gamma_sexual_selection_pressure +
+                          self.gamma_natural_selection_pressure)
+        return total_pressure
+
+    @property
+    def number_A_female_adults(self):
+        r"""
+        Number of female adults carrying the `A` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of female adults carrying the `A` allele.
+        :type: pandas.Series
+
+        """
+        A_female_adults = (self.distribution.xs(0, level='female1_genotype') +
+                           self.distribution.xs(2, level='female1_genotype') +
+                           self.distribution.xs(0, level='female2_genotype') +
+                           self.distribution.xs(2, level='female2_genotype'))
+        return A_female_adults.sum(axis=0)
+
+    @property
+    def number_A_female_offspring(self):
+        r"""
+        Number of female offspring carrying the `A` allele of the
+        :math:`\alpha` gene.
+
+        :getter: Return the number of female offspring carrying the `A` allele.
+        :type: pandas.Series
+
+        """
+        A_female_offspring = self.simulation['Female Offspring Genotypes'][[0, 2]]
+        return A_female_offspring.sum(axis=1)
+
+    @property
+    def number_A_male_adults(self):
+        r"""
+        Number of male adults carrying the `A` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of male adults carrying the `A` allele.
+        :type: pandas.Series
+
+        """
+        A_male_adults = self.simulation['Adult Male Genotypes'][[0, 2]]
+        return A_male_adults.sum(axis=1)
+
+    @property
+    def number_A_male_offspring(self):
+        r"""
+        Number of male offspring carrying the `A` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of male offspring carrying the `A` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        By construction, the sex ratio at birth for male and females is 1:1 and
+        thus the number of male offspring carrying the `A` allele of the
+        :math:`\alpha` gene is the same as the number of female offspring
+        carrying that allele.
+
+        """
+        return self.number_A_female_offspring
+
+    @property
+    def number_a_female_adults(self):
+        r"""
+        Number of female adults carrying the `a` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of female adults carrying the `a` allele.
+        :type: pandas.Series
+
+        """
+        a_female_adults = (self.distribution.xs(1, level='female1_genotype') +
+                           self.distribution.xs(3, level='female1_genotype') +
+                           self.distribution.xs(1, level='female2_genotype') +
+                           self.distribution.xs(3, level='female2_genotype'))
+        return a_female_adults.sum(axis=0)
+
+    @property
+    def number_a_female_offspring(self):
+        r"""
+        Number of female offspring carrying the `a` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of female offspring carrying the `a` allele.
+        :type: pandas.Series
+
+        """
+        a_female_offspring = self.simulation['Female Offspring Genotypes'][[1, 3]]
+        return a_female_offspring.sum(axis=1)
+
+    @property
+    def number_a_male_adults(self):
+        r"""
+        Number of male adults carrying the `a` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of male adults carrying the `a` allele.
+        :type: pandas.Series
+
+        """
+        a_male_adults = self.simulation['Adult Male Genotypes'][[1, 3]]
+        return a_male_adults.sum(axis=1)
+
+    @property
+    def number_a_male_offspring(self):
+        r"""
+        Number of male offspring carrying the `a` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the number of male offspring carrying the `a` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        By construction, the sex ratio at birth for male and females is 1:1 and
+        thus the number of male offspring carrying the `a` allele of the
+        :math:`\alpha` gene is the same as the number of female offspring
+        carrying that allele.
+
+        """
+        return self.number_a_female_offspring
+
+    @property
+    def number_female_offspring(self):
+        """
+        Total number of offspring produced in a generation.
+
+        :getter: Return the toal number of offspring.
+        :type: pandas.Series
+
+        Notes
+        -----
+        By construction, the sex ratio at birth for male and females is 1:1 the
+        total number of offspring produced in each generation is twice the total
+        number of female offspring.
+
+        """
+        female_offspring = self.simulation['Female Offspring Genotypes'][[0, 1, 2, 3]]
+        return female_offspring.sum(axis=1)
+
+    @property
+    def number_G_female_adults(self):
+        r"""
+        Number of female adults carrying the `G` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of female adults carrying the `G` allele.
+        :type: pandas.Series
+
+        """
+        G_female_adults = (self.distribution.xs(0, level='female1_genotype') +
+                           self.distribution.xs(1, level='female1_genotype') +
+                           self.distribution.xs(0, level='female2_genotype') +
+                           self.distribution.xs(1, level='female2_genotype'))
+        return G_female_adults.sum(axis=0)
+
+    @property
+    def number_G_female_offspring(self):
+        r"""
+        Number of female offspring carrying the `G` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of female offspring carrying the `G` allele.
+        :type: pandas.Series
+
+        """
+        G_female_offspring = self.simulation['Female Offspring Genotypes'][[0, 1]]
+        return G_female_offspring.sum(axis=1)
+
+    @property
+    def number_G_male_adults(self):
+        r"""
+        Number of male adults carrying the `G` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of male adults carrying the `G` allele.
+        :type: pandas.Series
+
+        """
+        G_male_adults = self.simulation['Adult Male Genotypes'][[0, 1]]
+        return G_male_adults.sum(axis=1)
+
+    @property
+    def number_G_male_offspring(self):
+        r"""
+        Number of male offspring carrying the `G` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of male offspring carrying the `G` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        By construction, the sex ratio at birth for male and females is 1:1 and
+        thus the number of male offspring carrying the `G` allele of the
+        :math:`\gamma` gene is the same as the number of female offspring
+        carrying that allele.
+
+        """
+        return self.number_G_female_offspring
+
+    @property
+    def number_g_female_adults(self):
+        r"""
+        Number of female adults carrying the `g` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of female adults carrying the `g` allele.
+        :type: pandas.Series
+
+        """
+        g_female_adults = (self.distribution.xs(2, level='female1_genotype') +
+                           self.distribution.xs(3, level='female1_genotype') +
+                           self.distribution.xs(2, level='female2_genotype') +
+                           self.distribution.xs(3, level='female2_genotype'))
+        return g_female_adults.sum(axis=0)
+
+    @property
+    def number_g_female_offspring(self):
+        r"""
+        Number of female offspring carrying the `g` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of female offspring carrying the `g` allele.
+        :type: pandas.Series
+
+        """
+        g_female_offspring = self.simulation['Female Offspring Genotypes'][[2, 3]]
+        return g_female_offspring.sum(axis=1)
+
+    @property
+    def number_g_male_adults(self):
+        r"""
+        Number of male adults carrying the `g` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of male adults carrying the `g` allele.
+        :type: pandas.Series
+
+        """
+        g_male_adults = self.simulation['Adult Male Genotypes'][[2, 3]]
+        return g_male_adults.sum(axis=1)
+
+    @property
+    def number_g_male_offspring(self):
+        r"""
+        Number of male offspring carrying the `g` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the number of male offspring carrying the `g` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        By construction, the sex ratio at birth for male and females is 1:1 and
+        thus the number of male offspring carrying the `g` allele of the
+        :math:`\gamma` gene is the same as the number of female offspring
+        carrying that allele.
+
+        """
+        return self.number_g_female_offspring
+
+    @property
+    def number_GA_female_adults(self):
+        r"""
+        Number of female adults carrying the `GA` genotype.
+
+        :getter: Return the number of female adults carrying the `GA` genotype.
+        :type: pandas.Series
+
+        """
+        GA_female_adults = (self.distribution.xs(0, level='female1_genotype') +
+                            self.distribution.xs(0, level='female2_genotype'))
+        return GA_female_adults.sum(axis=0)
+
+    @property
+    def number_GA_female_offspring(self):
+        r"""
+        Number of female offspring carrying the `GA` genotype.
+
+        :getter: Return the number of female offspring carrying the `GA` genotype.
+        :type: pandas.Series
+
+        """
+        return self.simulation['Female Offspring Genotypes'][0]
+
+    @property
+    def number_Ga_female_adults(self):
+        r"""
+        Number of female adults carrying the `Ga` genotype.
+
+        :getter: Return the number of female adults carrying the `Ga` genotype.
+        :type: pandas.Series
+
+        """
+        Ga_female_adults = (self.distribution.xs(1, level='female1_genotype') +
+                            self.distribution.xs(1, level='female2_genotype'))
+        return Ga_female_adults.sum(axis=0)
+
+    @property
+    def number_Ga_female_offspring(self):
+        r"""
+        Number of female offspring carrying the `Ga` genotype.
+
+        :getter: Return the number of female offspring carrying the `Ga` genotype.
+        :type: pandas.Series
+
+        """
+        return self.simulation['Female Offspring Genotypes'][1]
+
+    @property
+    def number_gA_female_adults(self):
+        r"""
+        Number of female adults carrying the `gA` genotype.
+
+        :getter: Return the number of female adults carrying the `gA` genotype.
+        :type: pandas.Series
+
+        """
+        gA_female_adults = (self.distribution.xs(2, level='female1_genotype') +
+                            self.distribution.xs(2, level='female2_genotype'))
+        return gA_female_adults.sum(axis=0)
+
+    @property
+    def number_gA_female_offspring(self):
+        r"""
+        Number of female offspring carrying the `gA` genotype.
+
+        :getter: Return the number of female offspring carrying the `gA` genotype.
+        :type: pandas.Series
+
+        """
+        return self.simulation['Female Offspring Genotypes'][2]
+
+    @property
+    def number_ga_female_adults(self):
+        r"""
+        Number of female adults carrying the `ga` genotype.
+
+        :getter: Return the number of female adults carrying the `ga` genotype.
+        :type: pandas.Series
+
+        """
+        ga_female_adults = (self.distribution.xs(3, level='female1_genotype') +
+                            self.distribution.xs(3, level='female2_genotype'))
+        return ga_female_adults.sum(axis=0)
+
+    @property
+    def number_ga_female_offspring(self):
+        r"""
+        Number of female offspring carrying the `ga` genotype.
+
+        :getter: Return the number of female offspring carrying the `ga` genotype.
+        :type: pandas.Series
+
+        """
+        return self.simulation['Female Offspring Genotypes'][3]
+
+    @property
+    def number_GA_male_adults(self):
+        r"""
+        Number of male adults carrying the `GA` genotype.
+
+        :getter: Return the number of male adults carrying the `GA` genotype.
+        :type: pandas.Series
+
+        """
+        return self.simulation['Adult Male Genotypes'][0]
+
+    @property
+    def number_Ga_male_adults(self):
+        r"""
+        Number of male adults carrying the `Ga` genotype.
+
+        :getter: Return the number of male adults carrying the `Ga` genotype.
+        :type: pandas.Series
+
+        """
+        return self.simulation['Adult Male Genotypes'][1]
+
+    @property
+    def number_gA_male_adults(self):
+        r"""
+        Number of male adults carrying the `gA` genotype.
+
+        :getter: Return the number of male adults carrying the `gA` genotype.
+        :type: pandas.Series
+
+        """
+        return self.simulation['Adult Male Genotypes'][2]
+
+    @property
+    def number_ga_male_adults(self):
+        r"""
+        Number of male adults carrying the `ga` genotype.
+
+        :getter: Return the number of male adults carrying the `ga` genotype.
+        :type: pandas.Series
+
+        """
+        return self.simulation['Adult Male Genotypes'][3]
+
+    @property
+    def share_A_female_adults(self):
+        r"""
+        Share of female adults carrying the `A` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the share of female offspring carrying the `A` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
+        return 0.5 * self.number_A_female_adults
+
+    @property
+    def share_A_female_offspring(self):
+        r"""
+        Share of female offspring carrying the `A` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the share of female offspring carrying the `A` allele.
+        :type: pandas.Series
+
+        """
+        return self.number_A_female_offspring / self.number_female_offspring
+
+    @property
+    def share_a_female_adults(self):
+        r"""
+        Share of female adults carrying the `a` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the share of female offspring carrying the `a` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
+        return 0.5 * self.number_a_female_adults
+
+    @property
+    def share_a_female_offspring(self):
+        r"""
+        Share of female offspring carrying the `a` allele of the :math:`\alpha`
+        gene.
+
+        :getter: Return the share of female offspring carrying the `a` allele.
+        :type: pandas.Series
+
+        """
+        return self.number_a_female_offspring / self.number_female_offspring
+
+    @property
+    def share_G_female_adults(self):
+        r"""
+        Share of female adults carrying the `G` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the share of female offspring carrying the `G` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
+        return 0.5 * self.number_G_female_adults
+
+    @property
+    def share_G_female_offspring(self):
+        r"""
+        Share of female offspring carrying the `G` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the share of female offspring carrying the `G` allele.
+        :type: pandas.Series
+
+        """
+        return self.number_G_female_offspring / self.number_female_offspring
+
+    @property
+    def share_g_female_adults(self):
+        r"""
+        Share of female adults carrying the `g` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the share of female offspring carrying the `g` allele.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
+        return 0.5 * self.number_g_female_adults
+
+    @property
+    def share_g_female_offspring(self):
+        r"""
+        Share of female offspring carrying the `g` allele of the :math:`\gamma`
+        gene.
+
+        :getter: Return the share of female offspring carrying the `g` allele.
+        :type: pandas.Series
+
+        """
+        return self.number_g_female_offspring / self.number_female_offspring
+
+    @property
+    def share_GA_female_adults(self):
+        r"""
+        Share of female adults carrying the `GA` genotype.
+
+        :getter: Return the share of female adults carrying the `GA` genotype.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
+        return 0.5 * self.number_GA_female_adults
+
+    @property
+    def share_GA_female_offspring(self):
+        r"""
+        Share of female offspring carrying the `GA` genotype.
+
+        :getter: Return the share of female offspring carrying the `GA` genotype.
+        :type: pandas.Series
+
+        """
+        return self.number_GA_female_offspring / self.number_female_offspring
+
+    @property
+    def share_Ga_female_adults(self):
+        r"""
+        Share of female adults carrying the `Ga` genotype.
+
+        :getter: Return the share of female adults carrying the `Ga` genotype.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
+        return 0.5 * self.number_Ga_female_adults
+
+    @property
+    def share_Ga_female_offspring(self):
+        r"""
+        Share of female offspring carrying the `Ga` genotype.
+
+        :getter: Return the share of female offspring carrying the `Ga` genotype.
+        :type: pandas.Series
+
+        """
+        return self.number_Ga_female_offspring / self.number_female_offspring
+
+    @property
+    def share_gA_female_adults(self):
+        r"""
+        Share of female adults carrying the `gA` genotype.
+
+        :getter: Return the share of female adults carrying the `gA` genotype.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
+        return 0.5 * self.number_gA_female_adults
+
+    @property
+    def share_gA_female_offspring(self):
+        r"""
+        Share of female offspring carrying the `gA` genotype.
+
+        :getter: Return the share of female offspring carrying the `gA` genotype.
+        :type: pandas.Series
+
+        """
+        return self.number_gA_female_offspring / self.number_female_offspring
+
+    @property
+    def share_ga_female_adults(self):
+        r"""
+        Share of female adults carrying the `ga` genotype.
+
+        :getter: Return the share of female adults carrying the `ga` genotype.
+        :type: pandas.Series
+
+        Notes
+        -----
+        In the one male and two females family unit, the number of adult
+        females is normalized to two. Thus to compute shares one needs only
+        to multiply by 0.5.
+
+        """
+        return 0.5 * self.number_ga_female_adults
+
+    @property
+    def share_ga_female_offspring(self):
+        r"""
+        Share of female offspring carrying the `ga` genotype.
+
+        :getter: Return the share of female offspring carrying the `ga` genotype.
+        :type: pandas.Series
+
+        """
+        return self.number_ga_female_offspring / self.number_female_offspring
+
+    def compute_distribution(self, dataframe):
+        """Compute distributions of various family configurations."""
+        family_distributions = []
+        for config in self.family.configurations:
+            self.family.male_genotype = config[0]
+            self.family.female_genotypes = config[1:]
+
+            tmp_dist = dataframe.apply(self.family.compute_size, axis=1,
+                                       raw=True)
+            family_distributions.append(tmp_dist)
+
+        # want to return a properly formated pandas df
+        df = pd.concat(family_distributions, axis=1)
+        df.columns = self.family.configurations
+
+        return df.T
+
+    def plot_adult_female_genotypes(self, axis, share=False):
+        """Plot the timepaths for individual adult female genotypes."""
+        axis.set_title('Female adults', fontsize=20, family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        if not share:
+            self.number_GA_female_adults.plot(label='$GA$', **kwargs)
+            self.number_Ga_female_adults.plot(label='$Ga$', **kwargs)
+            self.number_gA_female_adults.plot(label='$gA$', **kwargs)
+            self.number_ga_female_adults.plot(label='$ga$', **kwargs)
+        else:
+            self.share_GA_female_adults.plot(label='$GA$', **kwargs)
+            self.share_Ga_female_adults.plot(label='$Ga$', **kwargs)
+            self.share_gA_female_adults.plot(label='$gA$', **kwargs)
+            self.share_ga_female_adults.plot(label='$ga$', **kwargs)
+            axis.set_ylim(0, 1)
+
+        return axis
+
+    def plot_offspring_female_genotypes(self, axis, share=False):
+        """Plot the timepaths for individual female offspring genotypes."""
+        axis.set_title('Female offspring', fontsize=20, family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        if not share:
+            self.number_GA_female_offspring.plot(label='$GA$', **kwargs)
+            self.number_Ga_female_offspring.plot(label='$Ga$', **kwargs)
+            self.number_gA_female_offspring.plot(label='$gA$', **kwargs)
+            self.number_ga_female_offspring.plot(label='$ga$', **kwargs)
+        else:
+            self.share_GA_female_offspring.plot(label='$GA$', **kwargs)
+            self.share_Ga_female_offspring.plot(label='$Ga$', **kwargs)
+            self.share_gA_female_offspring.plot(label='$gA$', **kwargs)
+            self.share_ga_female_offspring.plot(label='$ga$', **kwargs)
+            axis.set_ylim(0, 1)
+
+        return axis
+
+    def plot_adult_female_alpha_alleles(self, axis, share=False):
+        """Plot the timepaths for female adult alpha alleles."""
+        axis.set_title(r'Female adults ($\alpha$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        if not share:
+            self.number_A_female_adults.plot(label='$A$', **kwargs)
+            self.number_a_female_adults.plot(label='$a$', **kwargs)
+        else:
+            self.share_A_female_adults.plot(label='$A$', **kwargs)
+            self.share_a_female_adults.plot(label='$a$', **kwargs)
+            axis.set_ylim(0, 1)
+
+        return axis
+
+    def plot_offspring_female_alpha_alleles(self, axis, share=False):
+        """Plot the timepaths for female offspring alpha alleles."""
+        axis.set_title(r'Female offspring ($\alpha$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        if not share:
+            self.number_A_female_offspring.plot(label='$A$', **kwargs)
+            self.number_a_female_offspring.plot(label='$a$', **kwargs)
+        else:
+            self.share_A_female_offspring.plot(label='$A$', **kwargs)
+            self.share_a_female_offspring.plot(label='$a$', **kwargs)
+            axis.set_ylim(0, 1)
+
+        return axis
+
+    def plot_adult_female_gamma_alleles(self, axis, share=False):
+        """Plot the timepaths for female adult gamma alleles."""
+        axis.set_title('Female adults ($\gamma$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        if not share:
+            self.number_G_female_adults.plot(label='$G$', **kwargs)
+            self.number_g_female_adults.plot(label='$g$', **kwargs)
+        else:
+            self.share_G_female_adults.plot(label='$G$', **kwargs)
+            self.share_g_female_adults.plot(label='$g$', **kwargs)
+            axis.set_ylim(0, 1)
+
+        return axis
+
+    def plot_offspring_female_gamma_alleles(self, axis, share=False):
+        """Plot the timepaths for female offsping gamma alleles."""
+        axis.set_title('Female offspring ($\gamma$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        if not share:
+            self.number_G_female_offspring.plot(label='$G$', **kwargs)
+            self.number_g_female_offspring.plot(label='$g$', **kwargs)
+        else:
+            self.share_G_female_offspring.plot(label='$G$', **kwargs)
+            self.share_g_female_offspring.plot(label='$g$', **kwargs)
+            axis.set_ylim(0, 1)
+
+        return axis
+
+    def plot_adult_male_genotypes(self, axis):
+        """Plot the timepaths for male adult genotypes."""
+        axis.set_title('Male adults', fontsize=20, family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        self.number_GA_male_adults.plot(label='$GA$', **kwargs)
+        self.number_Ga_male_adults.plot(label='$Ga$', **kwargs)
+        self.number_gA_male_adults.plot(label='$gA$', **kwargs)
+        self.number_ga_male_adults.plot(label='$ga$', **kwargs)
+
+        return axis
+
+    def plot_adult_male_alpha_alleles(self, axis):
+        """Plot the timepaths for male adult alpha alleles."""
+        axis.set_title(r'Male adults ($\alpha$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        self.number_A_male_adults.plot(label='$A$', **kwargs)
+        self.number_a_male_adults.plot(label='$a$', **kwargs)
+
+        return axis
+
+    def plot_adult_male_gamma_alleles(self, axis):
+        """Plot the timepaths for male adult gamma alleles."""
+        axis.set_title('Male adults ($\gamma$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'marker': '.', 'linestyle': 'none', 'legend': False,
+                  'ax': axis, 'alpha': 0.5}
+        self.number_G_male_adults.plot(label='$G$', **kwargs)
+        self.number_g_male_adults.plot(label='$g$', **kwargs)
+
+        return axis
+
+    def plot_adult_female_simulation(self, axis, kind='genotypes', share=False):
+        """Plot simulation results for adult females."""
+        if kind == 'genotypes':
+            self.plot_adult_female_genotypes(axis, share)
+        elif kind == 'alpha_allele':
+            self.plot_adult_female_alpha_alleles(axis, share)
+        elif kind == 'gamma_allele':
+            self.plot_adult_female_gamma_alleles(axis, share)
+        else:
+            raise ValueError
+
+        axis.set_xlabel('Time', fontsize=15, family='serif')
+        axis.legend(loc=0, frameon=False)
+
+        return axis
+
+    def plot_adult_male_simulation(self, axis, kind='genotypes'):
+        """Plot simulation results for male adults."""
+        if kind == 'genotypes':
+            self.plot_adult_male_genotypes(axis)
+        elif kind == 'alpha_allele':
+            self.plot_adult_male_alpha_alleles(axis)
+        elif kind == 'gamma_allele':
+            self.plot_adult_male_gamma_alleles(axis)
+        else:
+            raise ValueError
+
+        axis.set_xlabel('Time', fontsize=15, family='serif')
+        axis.legend(loc=0, frameon=False)
+
+        return axis
+
+    def plot_offspring_female_simulation(self, axis, kind='genotypes', share=False):
+        """Plot simulation results for female offspring."""
+        if kind == 'genotypes':
+            self.plot_offspring_female_genotypes(axis, share)
+        elif kind == 'alpha_allele':
+            self.plot_offspring_female_alpha_alleles(axis, share)
+        elif kind == 'gamma_allele':
+            self.plot_offspring_female_gamma_alleles(axis, share)
+        else:
+            raise ValueError
+
+        axis.set_xlabel('Time', fontsize=15, family='serif')
+        axis.legend(loc=0, frameon=False)
+
+        return axis
+
+    def plot_alpha_sexual_selection_pressure(self, axis):
+        """
+        Plot female and male contributions to sexual selection pressure on the
+        alpha gene.
+
+        """
+        kwargs = {'ax': axis, 'linestyle': 'none', 'marker': '.', 'alpha': 0.5}
+        self.alpha_sexual_selection_pressure_males.plot(label='Males',
+                                                        color='red',
+                                                        **kwargs)
+        self.alpha_sexual_selection_pressure_females.plot(label='Females',
+                                                          color='blue',
+                                                          **kwargs)
+        self.alpha_sexual_selection_pressure.plot(label='Total',
+                                                  color='purple',
+                                                  **kwargs)
+        return axis
+
+    def plot_alpha_natural_selection_pressure(self, axis):
+        """
+        Plot female and male contributions to natural selection pressure on the
+        alpha gene.
+
+        """
+        kwargs = {'ax': axis, 'linestyle': 'none', 'marker': '.', 'alpha': 0.5}
+        self.alpha_natural_selection_pressure_males.plot(label='Males',
+                                                         color='red',
+                                                         **kwargs)
+        self.alpha_natural_selection_pressure_females.plot(label='Females',
+                                                           color='blue',
+                                                           **kwargs)
+        self.alpha_natural_selection_pressure.plot(label='Total',
+                                                   color='purple',
+                                                   **kwargs)
+        return axis
+
+    def plot_gamma_sexual_selection_pressure(self, axis):
+        """
+        Plot female and male contributions to sexual selection pressure on the
+        gamma gene.
+
+        """
+        kwargs = {'ax': axis, 'linestyle': 'none', 'marker': '.', 'alpha': 0.5}
+        self.gamma_sexual_selection_pressure_males.plot(label='Males',
+                                                        color='red',
+                                                        **kwargs)
+        self.gamma_sexual_selection_pressure_females.plot(label='Females',
+                                                          color='blue',
+                                                          **kwargs)
+        self.gamma_sexual_selection_pressure.plot(label='Total',
+                                                  color='purple',
+                                                  **kwargs)
+        return axis
+
+    def plot_gamma_natural_selection_pressure(self, axis):
+        """
+        Plot female and male contributions to natural selection pressure on the
+        gamma gene.
+
+        """
+        kwargs = {'ax': axis, 'linestyle': 'none', 'marker': '.', 'alpha': 0.5}
+        self.gamma_natural_selection_pressure_males.plot(label='Males',
+                                                         color='red',
+                                                         **kwargs)
+        self.gamma_natural_selection_pressure_females.plot(label='Females',
+                                                           color='blue',
+                                                           **kwargs)
+        self.gamma_natural_selection_pressure.plot(label='Total',
+                                                   color='purple',
+                                                   **kwargs)
+        return axis
+
+    def plot_alpha_selection_pressure(self, axis):
+        """Plot measures of alpha natural and sexual selection pressure."""
+        kwargs = {'ax': axis, 'linestyle': 'none', 'marker': '.', 'alpha': 0.5}
+        self.alpha_natural_selection_pressure.plot(label='Natural',
+                                                   color='red',
+                                                   **kwargs)
+        self.alpha_sexual_selection_pressure.plot(label='Sexual',
+                                                  color='blue',
+                                                  **kwargs)
+        self.alpha_selection_pressure.plot(label='Total',
+                                           color='purple',
+                                           **kwargs)
+
+        return axis
+
+    def plot_gamma_selection_pressure(self, axis):
+        """Plot measures of gamma natural and sexual selection pressure."""
+        kwargs = {'ax': axis, 'linestyle': 'none', 'marker': '.', 'alpha': 0.5}
+        self.gamma_natural_selection_pressure.plot(label='Natural',
+                                                   color='red',
+                                                   **kwargs)
+        self.gamma_sexual_selection_pressure.plot(label='Sexual',
+                                                  color='blue',
+                                                  **kwargs)
+        self.gamma_selection_pressure.plot(label='Total',
+                                           color='purple',
+                                           **kwargs)
+
+        return axis
+
+
+def plot_selection_pressure(simulator, mGA0, T=None, rtol=None, **params):
+    """Plot measures of selection pressure on the alpha and gamma genes."""
+    # simulate the model
+    simulator.family.params = params
+    simulator.initial_condition = mGA0
+    simulation = simulator.simulate(rtol, T)
+    distribution = Distribution(simulator.family, simulation)
+
+    fig, axes = plt.subplots(3, 2, figsize=(12, 18), sharey=True)
+
+    distribution.plot_alpha_natural_selection_pressure(axes[0, 0])
+    distribution.plot_gamma_natural_selection_pressure(axes[0, 1])
+    distribution.plot_alpha_sexual_selection_pressure(axes[1, 0])
+    distribution.plot_gamma_sexual_selection_pressure(axes[1, 1])
+    distribution.plot_alpha_selection_pressure(axes[2, 0])
+    distribution.plot_gamma_selection_pressure(axes[2, 1])
+
+    # plot titles
+    axes[0, 0].set_title(r'Natural selection, $\alpha$', family='serif',
+                         fontsize=20)
+    axes[0, 1].set_title(r'Natural selection, $\gamma$', family='serif',
+                         fontsize=20)
+    axes[1, 0].set_title(r'Sexual selection, $\alpha$', family='serif',
+                         fontsize=20)
+    axes[1, 1].set_title(r'Sexual selection, $\gamma$', family='serif',
+                         fontsize=20)
+    axes[2, 0].set_title(r'Combined selection, $\alpha$', family='serif',
+                         fontsize=20)
+    axes[2, 1].set_title(r'Combined selection, $\gamma$', family='serif',
+                         fontsize=20)
+
+    # add axis specific subplot options
+    for i in range(3):
+        for j in range(2):
+            axes[i, j].set_xlabel('Time', fontsize=15, family='serif')
+            axes[i, j].axhline(y=0, color='black')
+            axes[i, j].legend(loc=0, frameon=False, prop={'family': 'serif'})
+
+    # figure title
+    title = (r'Selection pressure on $\alpha$ and $\gamma$ genes when' +
+             '\n$M^{{GA}}(0)={0},\ e={e},\ \Pi^{{aA}}={PiaA},\ ' +
+             '\Pi^{{AA}}={PiAA},\ \Pi^{{aa}}={Piaa},\ \Pi^{{Aa}}={PiAa}$')
+    fig.suptitle(title.format(mGA0, **params), x=0.5, family='serif',
+                 fontsize=25)
+
+    return [fig, axes]
 
 
 def plot_isolated_subpopulations_simulation(simulator, mGA0, T=None, rtol=None,
-                                            **params):
+                                            males='genotypes', females='genotypes',
+                                            share=False, **params):
     """
     Plot a simulated trajectory given an initial condition consistent with the
     isolated sub-populations assumption.
@@ -143,49 +1370,48 @@ def plot_isolated_subpopulations_simulation(simulator, mGA0, T=None, rtol=None,
     rtol : float (default=None)
         Simulate the model until the relative difference between timesteps
         is sufficiently small.
+    males : str (default='genotypes')
+        Which of 'genotypes', 'alpha_allele' or 'gamma_allele' do you wish to
+        plot for adult males.
+    females : str
+        Which of 'genotypes', 'alpha_allele' or 'gamma_allele' do you wish to
+        plot for female offspring.
+    share : boolean (default=False)
+        Flag indicating whether you wish to plot share or number of females.
+    params : dict
+        Dictionary of parameter values
 
     Returns
     -------
     A list containing...
+        fig :
+        axes : list
 
     """
-    fig, axes = plt.subplots(1, 2, figsize=(12, 8))
-
+    # simulate the model
     simulator.family.params = params
     simulator.initial_condition = mGA0
-    tmp_traj = simulator.simulate(rtol, T)
+    simulation = simulator.simulate(rtol, T)
 
-    # male allele trajectories
-    m_GA, = axes[0].plot(tmp_traj[0], color='b', linestyle='none', marker='.',
-                         markeredgecolor='b', alpha=0.5)
-    m_Ga, = axes[0].plot(tmp_traj[1], color='g', linestyle='none', marker='.',
-                         markeredgecolor='g', alpha=0.5)
-    m_gA, = axes[0].plot(tmp_traj[2], color='r', linestyle='none', marker='.',
-                         markeredgecolor='r', alpha=0.5)
-    m_ga, = axes[0].plot(tmp_traj[3], color='c', linestyle='none', marker='.',
-                         markeredgecolor='c', alpha=0.5)
+    # compute distributions
+    distribution = Distribution(simulator.family, simulation)
 
-    # female allele trajectories
-    f_GA, = axes[1].plot(tmp_traj[4], color='b', linestyle='none', marker='.',
-                         markeredgecolor='b', alpha=0.5, label='$GA$')
-    f_Ga, = axes[1].plot(tmp_traj[5], color='g', linestyle='none', marker='.',
-                         markeredgecolor='g', alpha=0.5, label='$Ga$')
-    f_gA, = axes[1].plot(tmp_traj[6], color='r', linestyle='none', marker='.',
-                         markeredgecolor='r', alpha=0.5, label='$gA$')
-    f_ga, = axes[1].plot(tmp_traj[7], color='c', linestyle='none', marker='.',
-                         markeredgecolor='c', alpha=0.5, label='$ga$')
+    fig, axes = plt.subplots(1, 3, figsize=(18, 8), sharey=True)
+    distribution.plot_adult_female_simulation(axes[0], females, share)
+    distribution.plot_offspring_female_simulation(axes[1], females, share)
+    distribution.plot_adult_male_simulation(axes[2], males)
 
-    # specify plot options
-    axes[0].set_xlabel('Time', fontsize=15, family='serif')
-    axes[1].set_xlabel('Time', fontsize=15, family='serif')
-    axes[0].set_ylim(0, 1)
-    axes[0].set_title('Males', family='serif', fontsize=20)
-    axes[1].set_title('Females', family='serif', fontsize=20)
-    axes[0].grid('on')
-    axes[1].grid('on')
-    axes[1].legend(loc=0, frameon=False, bbox_to_anchor=(1.25, 1.0))
+    # figure title
+    if not share:
+        fig_title = ('Numbers when\n$M^{{GA}}(0)={0}$, $e={e}$, ' +
+                     r'$\Pi^{{aA}}={PiaA},\ \Pi^{{AA}}={PiAA},\ ' +
+                     r'\Pi^{{aa}}={Piaa},\ \Pi^{{Aa}}={PiAa}$')
+    else:
+        fig_title = ('Population shares when\n$M^{{GA}}(0)={0}$, $e={e}$, ' +
+                     r'$\Pi^{{aA}}={PiaA},\ \Pi^{{AA}}={PiAA},\ ' +
+                     r'\Pi^{{aa}}={Piaa},\ \Pi^{{Aa}}={PiAa}$')
 
-    fig.suptitle('Number of males and females by genotype', fontsize=25,
+    fig.suptitle(fig_title.format(mGA0, **params), x=0.5, y=1.05, fontsize=25,
                  family='serif')
 
     return [fig, axes]
