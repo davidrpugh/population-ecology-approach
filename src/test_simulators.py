@@ -26,6 +26,14 @@ family = families.OneMaleTwoFemales(params,
 simulator = simulators.Simulator(family)
 
 
+def test_simulate():
+    """test the simulate method of the Simulator class."""
+    # one of either rtol or T must be specified!
+    simulator.initial_condition = 0.5
+    with nose.tools.assert_raises(ValueError):
+        simulator.simulate()
+
+
 def test_plot_isolated_subpopulations_simulation():
     """Test return type for isolated subpopulations simulation plot."""
     valid_kinds = ['genotypes', 'alpha_allele', 'gamma_allele']
