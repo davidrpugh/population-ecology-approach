@@ -826,6 +826,20 @@ class Family(object):
 
 class OneMaleTwoFemales(Family):
 
+    @property
+    def configurations(self):
+        """
+        List of valid genotype configurations for a Family.
+
+        :getter: Return the current list of valid configurations.
+        :type: pandas.MultiIndex
+
+        """
+        headers = ['male_genotype', 'female1_genotype', 'female2_genotype']
+        configs = pd.MultiIndex.from_product([range(4), range(4), range(4)],
+                                             names=headers)
+        return configs
+
     def _family_unit(self, male_genotype, *female_genotypes):
         """
         A family unit in the 1M2F model is comprised of a single adult male and
@@ -943,17 +957,3 @@ class OneMaleTwoFemales(Family):
         recurrence_relation = sum(terms)
 
         return recurrence_relation
-
-    @property
-    def configurations(self):
-        """
-        List of valid genotype configurations for a Family.
-
-        :getter: Return the current list of valid configurations.
-        :type: pandas.MultiIndex
-
-        """
-        headers = ['male_genotype', 'female1_genotype', 'female2_genotype']
-        configs = pd.MultiIndex.from_product([range(4), range(4), range(4)],
-                                             names=headers)
-        return configs
