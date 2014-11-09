@@ -1,3 +1,8 @@
 # ignore all .pyc files
 *.pyc
 
+# ignore coverage stats
+src/.coverage
+
+# ignore ipython checkpoints
+src/.ipynb_checkpoints/
