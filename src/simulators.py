@@ -103,12 +103,14 @@ class Simulator(object):
 
     def F(self, X):
         """Equation of motion for population allele shares."""
-        out = self.family._numeric_system(X[:4], X[4:], **self.family.params)
+        out = self.family._numeric_system(X[:4], X[4:],
+                                          *self.family.params.values())
         return out.ravel()
 
     def F_jacobian(self, X):
         """Jacobian for equation of motion."""
-        jac = self.family._numeric_jacobian(X[:4], X[4:], **self.family.params)
+        jac = self.family._numeric_jacobian(X[:4], X[4:],
+                                            *self.family.params.values())
         return jac
 
     def simulate(self, rtol=None, T=None):

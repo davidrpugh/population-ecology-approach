@@ -820,7 +820,7 @@ class Family(object):
             Size of the family unit period t+1.
 
         """
-        size = self._numeric_size(X[:4], X[4:], **self.params)
+        size = self._numeric_size(X[:4], X[4:], *self.params.values())
         return size
 
 
