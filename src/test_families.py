@@ -128,7 +128,7 @@ class PughSchafferSeabrightCase(unittest.TestCase):
         """Validate the shape of the numeric Jacobian matrix."""
         X = np.repeat(0.25, 8)
         tmp_jacobian = self.family._numeric_jacobian(X[:4], X[4:],
-                                                     **self.family.params)
+                                                     *self.family.params.values())
         actual_shape = tmp_jacobian.shape
         expected_shape = (8, 8)
         self.assertEquals(actual_shape, expected_shape)
@@ -152,7 +152,7 @@ class PughSchafferSeabrightCase(unittest.TestCase):
         sim = simulation.simulate(rtol=1e-12)
 
         # equilibrium number of female children is propto payoff
-        selfish_females = sim['Female Children Genotypes'][[1, 3]]
+        selfish_females = sim['Female Offspring Genotypes'][[1, 3]]
         actual_number_females = selfish_females.sum(axis=1).iloc[-1]
         expected_number_females = self.family.params['c'] * self.family.params['Piaa']
 
@@ -171,7 +171,7 @@ class PughSchafferSeabrightCase(unittest.TestCase):
         sim = simulation.simulate(rtol=1e-12)
 
         # equilibrium number of female children is propto payoff
-        altruistic_females = sim['Female Children Genotypes'][[0, 2]]
+        altruistic_females = sim['Female Offspring Genotypes'][[0, 2]]
         actual_number_females = altruistic_females.sum(axis=1).iloc[-1]
         expected_number_females = self.family.params['c'] * self.family.params['PiAA']
 
