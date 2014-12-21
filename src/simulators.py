@@ -1348,7 +1348,7 @@ def plot_selection_pressure(simulator, mGA0, T=None, rtol=None, **params):
 
     # figure title
     title = (r'Selection pressure on $\alpha$ and $\gamma$ genes when' +
-             '\n$M^{{GA}}(0)={0},\ e={e},\ \Pi^{{aA}}={PiaA},\ ' +
+             '\n$M^{{GA}}(0)={0},\ \Pi^{{aA}}={PiaA},\ ' +
              '\Pi^{{AA}}={PiAA},\ \Pi^{{aa}}={Piaa},\ \Pi^{{Aa}}={PiAa}$')
     fig.suptitle(title.format(mGA0, **params), x=0.5, family='serif',
                  fontsize=25)
@@ -1405,11 +1405,11 @@ def plot_isolated_subpopulations_simulation(simulator, mGA0, T=None, rtol=None,
 
     # figure title
     if not share:
-        fig_title = ('Numbers when\n$M^{{GA}}(0)={0}$, $e={e}$, ' +
+        fig_title = ('Numbers when\n$M^{{GA}}(0)={0}$,' +
                      r'$\Pi^{{aA}}={PiaA},\ \Pi^{{AA}}={PiAA},\ ' +
                      r'\Pi^{{aa}}={Piaa},\ \Pi^{{Aa}}={PiAa}$')
     else:
-        fig_title = ('Population shares when\n$M^{{GA}}(0)={0}$, $e={e}$, ' +
+        fig_title = ('Population shares when\n$M^{{GA}}(0)={0}$,' +
                      r'$\Pi^{{aA}}={PiaA},\ \Pi^{{AA}}={PiAA},\ ' +
                      r'\Pi^{{aa}}={Piaa},\ \Pi^{{Aa}}={PiAa}$')
 
