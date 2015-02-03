@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 
 
@@ -656,3 +657,178 @@ class Visualizer(object):
         categories = [range(4), range(4), range(4)]
         cols = pd.MultiIndex.from_product(categories, names=labels)
         return pd.DataFrame(values, index=idx, columns=cols)
+
+    def plot_adult_female_genotypes(self, axis, share=False):
+        """Plot the timepaths for individual adult female genotypes."""
+        axis.set_title('Female adults', fontsize=20, family='serif')
+        kwargs = {'legend': False, 'ax': axis}
+        if not share:
+            self.number_GA_female_adults.plot(label='$GA$', **kwargs)
+            self.number_Ga_female_adults.plot(label='$Ga$', **kwargs)
+            self.number_gA_female_adults.plot(label='$gA$', **kwargs)
+            self.number_ga_female_adults.plot(label='$ga$', **kwargs)
+        else:
+            self.share_GA_female_adults.plot(label='$GA$', **kwargs)
+            self.share_Ga_female_adults.plot(label='$Ga$', **kwargs)
+            self.share_gA_female_adults.plot(label='$gA$', **kwargs)
+            self.share_ga_female_adults.plot(label='$ga$', **kwargs)
+            axis.set_ylim(0, 1)
+
+        return axis
+
+    def plot_offspring_female_genotypes(self, axis, share=False):
+        """Plot the timepaths for individual female offspring genotypes."""
+        axis.set_title('Female offspring', fontsize=20, family='serif')
+        kwargs = {'legend': False, 'ax': axis}
+        if not share:
+            self.number_GA_female_offspring.plot(label='$GA$', **kwargs)
+            self.number_Ga_female_offspring.plot(label='$Ga$', **kwargs)
+            self.number_gA_female_offspring.plot(label='$gA$', **kwargs)
+            self.number_ga_female_offspring.plot(label='$ga$', **kwargs)
+        else:
+            self.share_GA_female_offspring.plot(label='$GA$', **kwargs)
+            self.share_Ga_female_offspring.plot(label='$Ga$', **kwargs)
+            self.share_gA_female_offspring.plot(label='$gA$', **kwargs)
+            self.share_ga_female_offspring.plot(label='$ga$', **kwargs)
+            axis.set_ylim(0, 1)
+
+        return axis
+
+    def plot_adult_female_alpha_alleles(self, axis, share=False):
+        """Plot the timepaths for female adult alpha alleles."""
+        axis.set_title(r'Female adults ($\alpha$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'legend': False, 'ax': axis}
+        if not share:
+            self.number_A_female_adults.plot(label='$A$', **kwargs)
+            self.number_a_female_adults.plot(label='$a$', **kwargs)
+        else:
+            self.share_A_female_adults.plot(label='$A$', **kwargs)
+            self.share_a_female_adults.plot(label='$a$', **kwargs)
+            axis.set_ylim(0, 1)
+
+        return axis
+
+    def plot_offspring_female_alpha_alleles(self, axis, share=False):
+        """Plot the timepaths for female offspring alpha alleles."""
+        axis.set_title(r'Female offspring ($\alpha$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'legend': False, 'ax': axis}
+        if not share:
+            self.number_A_female_offspring.plot(label='$A$', **kwargs)
+            self.number_a_female_offspring.plot(label='$a$', **kwargs)
+        else:
+            self.share_A_female_offspring.plot(label='$A$', **kwargs)
+            self.share_a_female_offspring.plot(label='$a$', **kwargs)
+            axis.set_ylim(0, 1)
+
+        return axis
+
+    def plot_adult_female_gamma_alleles(self, axis, share=False):
+        """Plot the timepaths for female adult gamma alleles."""
+        axis.set_title('Female adults ($\gamma$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'legend': False, 'ax': axis}
+        if not share:
+            self.number_G_female_adults.plot(label='$G$', **kwargs)
+            self.number_g_female_adults.plot(label='$g$', **kwargs)
+        else:
+            self.share_G_female_adults.plot(label='$G$', **kwargs)
+            self.share_g_female_adults.plot(label='$g$', **kwargs)
+            axis.set_ylim(0, 1)
+
+        return axis
+
+    def plot_offspring_female_gamma_alleles(self, axis, share=False):
+        """Plot the timepaths for female offsping gamma alleles."""
+        axis.set_title('Female offspring ($\gamma$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'legend': False, 'ax': axis}
+        if not share:
+            self.number_G_female_offspring.plot(label='$G$', **kwargs)
+            self.number_g_female_offspring.plot(label='$g$', **kwargs)
+        else:
+            self.share_G_female_offspring.plot(label='$G$', **kwargs)
+            self.share_g_female_offspring.plot(label='$g$', **kwargs)
+            axis.set_ylim(0, 1)
+
+        return axis
+
+    def plot_adult_male_genotypes(self, axis):
+        """Plot the timepaths for male adult genotypes."""
+        axis.set_title('Male adults', fontsize=20, family='serif')
+        kwargs = {'legend': False, 'ax': axis}
+        self.number_GA_male_adults.plot(label='$GA$', **kwargs)
+        self.number_Ga_male_adults.plot(label='$Ga$', **kwargs)
+        self.number_gA_male_adults.plot(label='$gA$', **kwargs)
+        self.number_ga_male_adults.plot(label='$ga$', **kwargs)
+
+        return axis
+
+    def plot_adult_male_alpha_alleles(self, axis):
+        """Plot the timepaths for male adult alpha alleles."""
+        axis.set_title(r'Male adults ($\alpha$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'legend': False, 'ax': axis}
+        self.number_A_male_adults.plot(label='$A$', **kwargs)
+        self.number_a_male_adults.plot(label='$a$', **kwargs)
+
+        return axis
+
+    def plot_adult_male_gamma_alleles(self, axis):
+        """Plot the timepaths for male adult gamma alleles."""
+        axis.set_title('Male adults ($\gamma$ alleles)', fontsize=20,
+                       family='serif')
+        kwargs = {'legend': False, 'ax': axis}
+        self.number_G_male_adults.plot(label='$G$', **kwargs)
+        self.number_g_male_adults.plot(label='$g$', **kwargs)
+
+        return axis
+
+    def plot_adult_female_simulation(self, axis, kind='genotypes', share=False):
+        """Plot simulation results for adult females."""
+        if kind == 'genotypes':
+            self.plot_adult_female_genotypes(axis, share)
+        elif kind == 'alpha_allele':
+            self.plot_adult_female_alpha_alleles(axis, share)
+        elif kind == 'gamma_allele':
+            self.plot_adult_female_gamma_alleles(axis, share)
+        else:
+            raise ValueError
+
+        axis.set_xlabel('Time', fontsize=15, family='serif')
+        axis.legend(loc=0, frameon=False)
+
+        return axis
+
+    def plot_adult_male_simulation(self, axis, kind='genotypes'):
+        """Plot simulation results for male adults."""
+        if kind == 'genotypes':
+            self.plot_adult_male_genotypes(axis)
+        elif kind == 'alpha_allele':
+            self.plot_adult_male_alpha_alleles(axis)
+        elif kind == 'gamma_allele':
+            self.plot_adult_male_gamma_alleles(axis)
+        else:
+            raise ValueError
+
+        axis.set_xlabel('Time', fontsize=15, family='serif')
+        axis.legend(loc=0, frameon=False)
+
+        return axis
+
+    def plot_offspring_female_simulation(self, axis, kind='genotypes', share=False):
+        """Plot simulation results for female offspring."""
+        if kind == 'genotypes':
+            self.plot_offspring_female_genotypes(axis, share)
+        elif kind == 'alpha_allele':
+            self.plot_offspring_female_alpha_alleles(axis, share)
+        elif kind == 'gamma_allele':
+            self.plot_offspring_female_gamma_alleles(axis, share)
+        else:
+            raise ValueError
+
+        axis.set_xlabel('Time', fontsize=15, family='serif')
+        axis.legend(loc=0, frameon=False)
+
+        return axis

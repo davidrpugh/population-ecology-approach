@@ -20,13 +20,14 @@ class Simulator(object):
 
     _modules = [{'ImmutableMatrix': np.array}, "numpy"]
 
-    def __init__(self, model, params):
+    def __init__(self, model, params, with_jacobian=False):
         """
         Create an instance of the Simulator class.
 
         """
         self.model = model
         self.params = params
+        self.with_jacobian = with_jacobian
 
     @property
     def _change_of_variables(self):
@@ -113,7 +114,10 @@ class Simulator(object):
         :type: ivp.IVP
 
         """
-        tmp_ivp = ivp.IVP(self._numeric_system, self._numeric_jacobian)
+        if self.with_jacobian:
+            tmp_ivp = ivp.IVP(self._numeric_system, self._numeric_jacobian)
+        else:
+            tmp_ivp = ivp.IVP(self._numeric_system)
         tmp_ivp.f_params = tuple(self.params.values())
         tmp_ivp.jac_params = tuple(self.params.values())
         return tmp_ivp
